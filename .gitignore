@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Production builds
+/out/
+/dist/
+.next/
+_next/
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.test
+
+# Python virtual environment
+backend/venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Database
+backend/db.sqlite3
+backend/db-*.sqlite3
+
+# Logs
+*.log
+django.log
+security.log
+
+# Build artifacts
+tsconfig.tsbuildinfo
+.DS_Store
+
+# Deploy directories
+admin-deploy/
+admin-production/
+firebase-store/
+store-admin-deploy/
+terminal-deploy/
+user-deploy/
+
+# Archives
+*.zip
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary files
+_ul*
+next.config-*.js
+middleware.ts.bak
