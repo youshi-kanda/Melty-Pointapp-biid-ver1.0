@@ -207,12 +207,37 @@ CACHES = {
 # URL末尾スラッシュ問題を解消
 APPEND_SLASH = False
 
-# GMOPG設定
+# 決済ゲートウェイ設定
 import os
+
+# GMOPG設定（既存）
 GMOPG_MOCK = os.getenv("GMOPG_MOCK", "false").lower() == "true"
-GMO_SHOP_ID = os.getenv("GMO_SHOP_ID", "your_shop_id")
-GMO_SHOP_PASS = os.getenv("GMO_SHOP_PASS", "your_shop_pass")
-GMO_SITE_ID = os.getenv("GMO_SITE_ID", "your_site_id")
-GMO_SITE_PASS = os.getenv("GMO_SITE_PASS", "your_site_pass")
-GMO_ENV = os.getenv("GMO_ENV", "sandbox")
-GMO_ENDPOINT = os.getenv("GMO_ENDPOINT", "https://pt01.mul-pay.jp")
+GMOPG_SHOP_ID = os.getenv("GMOPG_SHOP_ID", "your_shop_id")  # 名前変更
+GMOPG_SHOP_PASSWORD = os.getenv("GMOPG_SHOP_PASSWORD", "your_shop_pass")  # 名前変更
+GMOPG_SITE_ID = os.getenv("GMOPG_SITE_ID", "your_site_id")  # 名前変更
+GMOPG_SITE_PASSWORD = os.getenv("GMOPG_SITE_PASSWORD", "your_site_pass")  # 名前変更
+GMOPG_API_BASE_URL = os.getenv("GMOPG_API_BASE_URL", "https://pt01.mul-pay.jp")
+GMOPG_IS_PRODUCTION = os.getenv("GMOPG_IS_PRODUCTION", "false").lower() == "true"
+
+# GMO FINCODE設定（新規）
+FINCODE_MOCK = os.getenv("FINCODE_MOCK", "false").lower() == "true"  # テストAPIキー提供でfalseに変更
+FINCODE_API_KEY = os.getenv("FINCODE_API_KEY", "p_test_YTY3YTRkZDMtOWIzNS00ODlhLTkzZDYtMzQzYWE5ZDQyMDQ5ZDdmZjIyYzgtNGNlZi00ODRhLWE0OTQtMzY3NTk2NTc4ZmZmc18yNTA4MjEwODQyOQ")
+FINCODE_SECRET_KEY = os.getenv("FINCODE_SECRET_KEY", "")
+FINCODE_SHOP_ID = os.getenv("FINCODE_SHOP_ID", "")
+FINCODE_API_BASE_URL = os.getenv("FINCODE_API_BASE_URL", "https://api.test.fincode.jp")  # テスト環境URL
+FINCODE_IS_PRODUCTION = os.getenv("FINCODE_IS_PRODUCTION", "false").lower() == "true"
+
+# 決済ゲートウェイ選択設定
+PAYMENT_GATEWAY = os.getenv("PAYMENT_GATEWAY", "fincode").lower()  # "gmopg" or "fincode"
+
+# 後方互換性のため（既存のGMOPG設定を維持）
+GMO_SHOP_ID = GMOPG_SHOP_ID
+GMO_SHOP_PASS = GMOPG_SHOP_PASSWORD
+GMO_SITE_ID = GMOPG_SITE_ID
+GMO_SITE_PASS = GMOPG_SITE_PASSWORD
+GMO_ENV = "production" if GMOPG_IS_PRODUCTION else "sandbox"
+GMO_ENDPOINT = GMOPG_API_BASE_URL
+
+# MELTY API連携設定（既存API活用版）
+MELTY_API_BASE_URL = os.getenv('MELTY_API_BASE_URL', 'http://app-melty.com/melty-app_system/api')
+# APIキー不要（既存ログインAPIを直接使用）

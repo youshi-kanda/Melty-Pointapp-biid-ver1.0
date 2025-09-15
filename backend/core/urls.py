@@ -20,7 +20,7 @@ urlpatterns = [
     path('auth/password-reset/', auth_views.PasswordResetView.as_view(), name='password-reset'),
     path('auth/password-reset-confirm/', auth_views.PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
     
-    # meltyアプリ連携
+    # meltyアプリ連携（SSO非対応版）
     path('auth/melty/url/', melty_views.melty_auth_url, name='melty-auth-url'),
     path('auth/melty/callback/', melty_views.melty_callback, name='melty-callback'),
     path('auth/melty/register/', melty_views.register_with_melty, name='register-with-melty'),
@@ -69,4 +69,10 @@ urlpatterns = [
     
     # Social Skin API
     path('social-skin/', views.SocialSkinView.as_view(), name='social-skin'),
+    
+    # ソーシャル機能API（一時的に無効化）
+    # path('', include('core.social_urls')),
+    
+    # セキュリティ・モデレーション機能API（一時的に無効化）
+    # path('', include('core.security_urls')),
 ]

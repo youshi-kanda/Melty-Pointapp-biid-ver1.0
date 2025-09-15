@@ -13,4 +13,8 @@ urlpatterns = [
     
     # 自動チャージ管理
     path('stores/<int:store_id>/deposit/auto-charge/', deposit_views.manage_auto_charge, name='deposit-auto-charge'),
+    
+    # ECポイント専用デポジット管理
+    path('stores/<int:store_id>/deposit/ec/balance/', deposit_views.get_ec_deposit_balance, name='ec-deposit-balance'),
+    path('stores/<int:store_id>/deposit/ec/usage-logs/', deposit_views.get_ec_usage_logs, name='ec-deposit-usage-logs'),
 ]

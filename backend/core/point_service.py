@@ -49,6 +49,52 @@ class PointService:
             raise
     
     @transaction.atomic
+    def award_points(self, user: User, points: int, description: str = "", 
+                    store: Store = None, reference_id: str = ""):
+        """ECポイント付与専用メソッド（PointTransaction記録付き）"""
+        try:
+            if points <= 0:
+                raise ValidationError("付与ポイントは1以上である必要があります")
+            
+            # ユーザーの残高を取得
+            balance_before = user.point_balance
+            
+            # ポイント付与
+            user_point = user.add_points(
+                points=points,
+                expiry_months=6,  # 6ヶ月有効
+                source_description=description or f"EC購入ポイント付与: {points}pt"
+            )
+            
+            # PointTransaction記録を作成
+            point_transaction = PointTransaction.objects.create(
+                user=user,
+                store=store,
+                points=points,  # 正の値で付与
+                transaction_type='grant',
+                description=description,
+                balance_before=balance_before,
+                balance_after=user.point_balance,
+                reference_id=reference_id
+            )
+            
+            # 通知作成
+            Notification.objects.create(
+                user=user,
+                notification_type='point_received',
+                title=f'{points}ポイントが付与されました',
+                message=f'{store.name if store else "システム"}から{points}ポイントが付与されました。\n{description}',
+                priority='normal'
+            )
+            
+            logger.info(f"EC Points awarded: {user.username} +{points}pt from {store.name if store else 'system'}")
+            return point_transaction
+            
+        except Exception as e:
+            logger.error(f"Failed to award EC points: {str(e)}")
+            raise
+    
+    @transaction.atomic
     def process_store_payment(self, customer: User, store: Store, points: int, 
                             description: str = "", processed_by: User = None):
         """店舗でのポイント決済処理"""

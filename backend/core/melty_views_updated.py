@@ -1,5 +1,5 @@
 """
-meltyアプリ連携用のAPIビュー
+meltyアプリ連携用のAPIビュー - SSO非対応版（既存API活用）
 """
 
 from rest_framework import status, permissions
@@ -17,99 +17,103 @@ from .serializers import UserSerializer
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([permissions.AllowAny])
-def melty_auth_url(request):
-    """melty OAuth認証URL取得"""
+def melty_direct_login(request):
+    """melty既存ログインAPI経由ログイン"""
     try:
-        # CSRF対策のためのstate生成
-        import secrets
-        state = secrets.token_urlsafe(32)
-        request.session['melty_oauth_state'] = state
+        email = request.data.get('email')
+        password = request.data.get('password')
         
-        auth_url = melty_direct_auth.generate_auth_url(state=state)
+        if not all([email, password]):
+            return Response({
+                'success': False,
+                'error': 'メールアドレスとパスワードが必要です'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # melty既存APIで認証
+        user, is_new = melty_direct_auth.authenticate_user(email, password)
+        
+        # Django認証
+        login(request, user)
+        
+        # ユーザー情報をシリアライズ
+        serializer = UserSerializer(user)
         
         return Response({
             'success': True,
-            'auth_url': auth_url,
-            'state': state
+            'user': serializer.data,
+            'is_new_user': is_new,
+            'message': 'MELTYアカウントでのログインが完了しました'
         })
+        
+    except MeltyIntegrationError as e:
+        if "registration required" in str(e):
+            return Response({
+                'success': False,
+                'error': 'アカウント登録が必要です',
+                'requires_registration': True
+            }, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({
+                'success': False,
+                'error': str(e)
+            }, status=status.HTTP_401_UNAUTHORIZED)
     except Exception as e:
-        logger.error(f"Failed to generate melty auth URL: {str(e)}")
+        logger.error(f"melty direct login error: {str(e)}")
         return Response({
             'success': False,
-            'error': 'Auth URL generation failed'
+            'error': 'ログイン処理中にエラーが発生しました'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([permissions.AllowAny])
-def melty_callback(request):
-    """melty OAuth コールバック処理"""
+def melty_verify_email(request):
+    """meltyアカウント存在確認（パスワードリセットAPI活用）"""
     try:
-        # パラメータ取得
-        code = request.GET.get('code')
-        state = request.GET.get('state')
-        error = request.GET.get('error')
+        email = request.data.get('email')
         
-        if error:
-            logger.warning(f"melty OAuth error: {error}")
-            return HttpResponseRedirect(f"/user/login?error=melty_auth_failed")
+        if not email:
+            return Response({
+                'success': False,
+                'error': 'メールアドレスが必要です'
+            }, status=status.HTTP_400_BAD_REQUEST)
         
-        if not code:
-            return HttpResponseRedirect(f"/user/login?error=missing_code")
+        # meltyパスワードリセットAPIでアカウント存在確認
+        exists = melty_direct_auth.verify_email_exists(email)
         
-        # state検証
-        session_state = request.session.get('melty_oauth_state')
-        if not session_state or session_state != state:
-            logger.warning("melty OAuth state mismatch")
-            return HttpResponseRedirect(f"/user/login?error=state_mismatch")
-        
-        # melty SSO処理
-        try:
-            user, access_token = melty_direct_auth.handle_callback(code, state)
-            
-            # Django認証
-            login(request, user)
-            
-            # セッション情報をクリア
-            request.session.pop('melty_oauth_state', None)
-            
-            logger.info(f"melty SSO successful for user: {user.username}")
-            return HttpResponseRedirect("/user?melty_login=success")
-            
-        except MeltyIntegrationError as e:
-            if "registration required" in str(e):
-                # 新規ユーザーの場合は登録画面へ
-                return HttpResponseRedirect(f"/user/register?source=melty&code={code}")
-            else:
-                logger.error(f"melty SSO failed: {str(e)}")
-                return HttpResponseRedirect(f"/user/login?error=melty_sso_failed")
+        return Response({
+            'success': True,
+            'exists': exists,
+            'message': 'MELTYアカウント確認完了' if exists else 'MELTYアカウントが見つかりません'
+        })
         
     except Exception as e:
-        logger.error(f"melty callback error: {str(e)}")
-        return HttpResponseRedirect(f"/user/login?error=callback_error")
+        logger.error(f"melty email verification error: {str(e)}")
+        return Response({
+            'success': False,
+            'error': 'アカウント確認中にエラーが発生しました'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def register_with_melty(request):
-    """melty経由での新規登録"""
+    """melty既存API経由での新規登録"""
     try:
         # リクエストデータ取得
-        melty_user_id = request.data.get('melty_user_id')
         email = request.data.get('email')
         first_name = request.data.get('first_name')
         last_name = request.data.get('last_name')
         melty_password = request.data.get('melty_password')
         
-        if not all([melty_user_id, email, first_name, last_name, melty_password]):
+        if not all([email, first_name, last_name, melty_password]):
             return Response({
                 'success': False,
                 'error': '必須項目が不足しています'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # melty経由でbiidアカウント作成
+        # melty既存API経由でbiidアカウント作成
         user, is_new = melty_user_service.create_biid_account_from_melty(
-            melty_user_id=melty_user_id,
             email=email,
             first_name=first_name,
             last_name=last_name,
@@ -122,13 +126,20 @@ def register_with_melty(request):
         # ユーザー情報をシリアライズ
         serializer = UserSerializer(user)
         
+        # MELTY会員種別に応じたボーナスポイント計算
+        welcome_bonus = 0
+        if is_new:
+            welcome_bonus = 2000 if user.rank == 'gold' else 1000
+        
         return Response({
             'success': True,
             'user': serializer.data,
             'is_new_user': is_new,
             'rank': user.rank,
-            'welcome_bonus': 1000 if is_new else 0,
-            'message': 'melty連携でのアカウント作成が完了しました' if is_new else 'meltyアカウントにリンクしました'
+            'membership_type': 'premium' if user.rank == 'gold' else 'standard',
+            'welcome_bonus': welcome_bonus,
+            'special_benefits': self._get_rank_benefits(user.rank),
+            'message': self._get_registration_message(user.rank, is_new)
         }, status=status.HTTP_201_CREATED if is_new else status.HTTP_200_OK)
         
     except MeltyIntegrationError as e:
@@ -231,12 +242,13 @@ def register_direct(request):
 def link_melty_account(request):
     """既存biidアカウントにmeltyアカウントをリンク"""
     try:
-        melty_code = request.data.get('melty_code')
+        email = request.data.get('melty_email')
+        melty_password = request.data.get('melty_password')
         
-        if not melty_code:
+        if not all([email, melty_password]):
             return Response({
                 'success': False,
-                'error': 'melty認証コードが必要です'
+                'error': 'melty認証情報が必要です'
             }, status=status.HTTP_400_BAD_REQUEST)
         
         user = request.user
@@ -247,18 +259,18 @@ def link_melty_account(request):
                 'error': '既にmeltyアカウントとリンクされています'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # meltyアカウント情報を取得してリンク
-        token_data = melty_user_service.api_client.exchange_code_for_token(melty_code)
-        access_token = token_data.get('access_token')
+        # melty認証確認
+        auth_result = melty_user_service.api_client.verify_user_credentials(email, melty_password)
         
-        if not access_token:
+        if not auth_result or not auth_result.get('verified'):
             return Response({
                 'success': False,
                 'error': 'melty認証に失敗しました'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        melty_profile = melty_user_service.api_client.get_user_profile(access_token)
-        melty_user_id = melty_profile.get('user_id')
+        # ユーザー情報取得
+        melty_user_data = auth_result.get('user_data', {})
+        melty_user_id = auth_result.get('user_id', '') or melty_user_data.get('id', '')
         
         # 他のユーザーが同じmeltyアカウントを使用していないかチェック
         if User.objects.filter(melty_user_id=melty_user_id).exists():
@@ -268,7 +280,7 @@ def link_melty_account(request):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         # リンク実行
-        melty_user_service.link_melty_to_existing_user(user, melty_user_id, melty_profile)
+        melty_user_service.link_melty_to_existing_user(user, melty_user_id, melty_user_data)
         
         # ユーザー情報を更新して返す
         user.refresh_from_db()
@@ -276,13 +288,20 @@ def link_melty_account(request):
         
         rank_upgrade = user.rank == 'silver'
         
+        # アップグレードボーナス計算
+        upgrade_bonus = 0
+        if rank_upgrade:
+            upgrade_bonus = 2000 if user.rank == 'gold' else 1000
+        
         return Response({
             'success': True,
             'user': serializer.data,
             'rank_upgraded': rank_upgrade,
             'new_rank': user.rank,
-            'welcome_bonus': 1000 if rank_upgrade else 0,
-            'message': 'meltyアカウントとのリンクが完了しました'
+            'membership_type': 'premium' if user.rank == 'gold' else 'standard',
+            'welcome_bonus': upgrade_bonus,
+            'special_benefits': self._get_rank_benefits(user.rank) if rank_upgrade else [],
+            'message': self._get_link_message(user.rank, rank_upgrade)
         })
         
     except MeltyIntegrationError as e:
@@ -348,13 +367,17 @@ def melty_profile_sync(request):
                 'error': 'meltyアカウントとリンクされていません'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # アクセストークンが必要だが、簡易実装では省略
-        # 実際の実装では、保存されたrefresh_tokenから新しいaccess_tokenを取得
+        # meltyプロフィール同期
+        sync_success = melty_user_service.sync_melty_profile(user)
         
+        if sync_success:
+            user.refresh_from_db()
+            
         return Response({
             'success': True,
             'melty_profile': user.melty_profile_data,
             'linked_at': user.melty_connected_at,
+            'sync_success': sync_success,
             'message': 'meltyプロフィール情報を取得しました'
         })
         
@@ -364,3 +387,52 @@ def melty_profile_sync(request):
             'success': False,
             'error': 'プロフィール同期中にエラーが発生しました'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def _get_rank_benefits(self, rank: str) -> list:
+        """ランク別特典一覧を取得"""
+        benefits = {
+            'bronze': [
+                '基本ポイント機能',
+                'ギフト交換',
+                'サポートチケット'
+            ],
+            'silver': [
+                '基本ポイント機能',
+                'ギフト交換',
+                'MELTY連携特典',
+                'ポイント有効期限延長（12ヶ月）',
+                '優先サポート',
+                '特別キャンペーン参加資格'
+            ],
+            'gold': [
+                'すべてのSilver特典',
+                'MELTYプレミアム連携特典',
+                'ポイント有効期限延長（18ヶ月）',
+                'お仕事関連店舗でポイント2倍',
+                'VIP優先サポート',
+                '限定ギフトアクセス',
+                '特別イベント招待',
+                'パーソナルコンシェルジュサービス'
+            ]
+        }
+        return benefits.get(rank, [])
+    
+    def _get_registration_message(self, rank: str, is_new: bool) -> str:
+        """登録完了メッセージを生成"""
+        if not is_new:
+            return 'meltyアカウントにリンクしました'
+            
+        if rank == 'gold':
+            return '🎆 MELTYプレミアム会員限定！ゴールドランクでアカウント作成が完了しました'
+        else:
+            return '✨ MELTY連携でシルバーランクアカウント作成が完了しました'
+    
+    def _get_link_message(self, rank: str, rank_upgraded: bool) -> str:
+        """リンク完了メッセージを生成"""
+        if not rank_upgraded:
+            return 'meltyアカウントとのリンクが完了しました'
+            
+        if rank == 'gold':
+            return '🎆 MELTYプレミアム連携でゴールドランクにアップグレード！リンク完了しました'
+        else:
+            return '✨ MELTY連携でシルバーランクにアップグレード！リンク完了しました'

@@ -205,8 +205,48 @@ class TokenRefreshView(APIView):
 
 class CurrentUserView(APIView):
     def get(self, request):
-        user_serializer = UserSerializer(request.user)
-        return Response(user_serializer.data)
+        user = request.user
+        user_serializer = UserSerializer(user)
+        
+        # MELTY連携ステータス情報を取得
+        melty_status = {
+            'is_linked': user.is_melty_linked,
+            'linked_at': user.melty_connected_at,
+            'melty_email': user.melty_email if user.is_melty_linked else None,
+            'membership_type': None,
+            'membership_display': None
+        }
+        
+        # MELTY設定情報を取得
+        if user.is_melty_linked:
+            try:
+                config = user.get_melty_configuration()
+                if config:
+                    melty_status['membership_type'] = config.melty_membership_type
+                    melty_status['membership_display'] = config.get_melty_membership_type_display()
+                    melty_status['welcome_bonus'] = config.welcome_bonus_points
+                    melty_status['points_expiry_months'] = config.points_expiry_months
+            except:
+                pass
+        
+        # ランク情報を取得
+        rank_info = {
+            'current_rank': user.rank,
+            'rank_display': user.get_rank_display(),
+            'point_balance': user.point_balance,
+            'registration_source': user.registration_source,
+            'registration_source_display': user.get_registration_source_display()
+        }
+        
+        # レスポンスデータを構築
+        response_data = user_serializer.data
+        response_data['melty_status'] = melty_status
+        response_data['rank_info'] = rank_info
+        
+        return Response({
+            'success': True,
+            'user': response_data
+        })
 
 
 class PointGrantView(APIView):

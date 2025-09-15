@@ -4,6 +4,11 @@ from .models import (
     UserPoint, PointTransfer, Notification, PromotionMail, AccountRank,
     RefundRequest, BlogTheme, UserBlogTheme, Area, EmailTemplate, EmailLog
 )
+# Social models imports - temporarily commented out due to model issues
+# from .social_models import (
+#     BlockedUser, SecurityLog, ContentModerationQueue,
+#     Notification as SocialNotification, NotificationPreference
+# )
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -236,3 +241,16 @@ class EmailLogSerializer(serializers.ModelSerializer):
         fields = ['id', 'notification', 'notification_title', 'recipient_email', 
                  'subject', 'template_used', 'status', 'sent_at', 'error_message',
                  'retry_count', 'created_at']
+
+
+# Socialシリアライザーは一時的に無効化（モデル依存問題のため）
+# 実際のプロダクションでは、social_models.pyが完全に実装されてからこれらを有効化
+
+class ReportContentSerializer(serializers.Serializer):
+    """コンテンツ報告シリアライザー"""
+    content_type = serializers.ChoiceField(choices=['post', 'comment', 'review'])
+    content_id = serializers.IntegerField()
+    reason = serializers.ChoiceField(choices=[
+        'spam', 'harassment', 'inappropriate', 'misinformation', 'copyright', 'other'
+    ])
+    description = serializers.CharField(max_length=1000, required=False, allow_blank=True)

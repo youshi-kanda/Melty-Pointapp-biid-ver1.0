@@ -48,6 +48,29 @@ class User(AbstractUser):
     ]
     rank = models.CharField(max_length=20, choices=RANK_CHOICES, default='bronze')
     
+    # ソーシャル機能拡張
+    display_name = models.CharField(max_length=100, blank=True)
+    bio = models.TextField(max_length=500, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    
+    def get_notification_preferences(self):
+        from .social_models import NotificationPreference
+        return NotificationPreference.objects.filter(user=self).first()
+    
+    def get_privacy_settings(self):
+        from .social_models import UserPrivacySettings
+        return UserPrivacySettings.objects.filter(user=self).first()
+    
+    def is_blocked_by(self, user):
+        """指定されたユーザーにブロックされているかチェック"""
+        from .social_models import BlockedUser
+        return BlockedUser.objects.filter(blocker=user, blocked=self, is_active=True).exists()
+    
+    def has_blocked(self, user):
+        """指定されたユーザーをブロックしているかチェック"""
+        from .social_models import BlockedUser
+        return BlockedUser.objects.filter(blocker=self, blocked=user, is_active=True).exists()
+    
     # meltyアカウント連携機能
     melty_user_id = models.CharField(max_length=100, blank=True, null=True, unique=True)
     melty_email = models.EmailField(blank=True, null=True)
@@ -76,6 +99,68 @@ class User(AbstractUser):
         blank=True, 
         null=True,
         help_text="User's selected social profile theme"
+    )
+    unlocked_social_skins = models.JSONField(
+        default=list,
+        help_text="List of unlocked social skins for the user"
+    )
+    
+    # ソーシャルプロフィール情報
+    bio = models.TextField(
+        max_length=500,
+        blank=True,
+        help_text="User's self-introduction"
+    )
+    birth_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="User's birth date"
+    )
+    gender = models.CharField(
+        max_length=10,
+        choices=[('male', '男性'), ('female', '女性'), ('other', 'その他'), ('private', '非公開')],
+        default='private',
+        help_text="User's gender"
+    )
+    website = models.URLField(
+        blank=True,
+        help_text="User's personal website or blog"
+    )
+    
+    # ソーシャル統計情報
+    friends_count = models.IntegerField(
+        default=0,
+        help_text="Number of friends this user has"
+    )
+    posts_count = models.IntegerField(
+        default=0,
+        help_text="Number of social posts by this user"
+    )
+    reviews_count = models.IntegerField(
+        default=0,
+        help_text="Number of reviews posted by this user"
+    )
+    
+    # プライバシー・表示設定
+    profile_visibility = models.CharField(
+        max_length=20,
+        choices=[
+            ('private', '非公開'),
+            ('friends', 'フレンドのみ'),
+            ('limited', '制限公開'),
+            ('public', '完全公開')
+        ],
+        default='private',
+        help_text="Overall profile visibility setting"
+    )
+    show_online_status = models.BooleanField(
+        default=False,
+        help_text="Show online/offline status to friends"
+    )
+    last_active_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Last time user was active on social features"
     )
     
     # 決済・レシート配信設定
@@ -891,6 +976,264 @@ class Notification(models.Model):
         return f"{self.user.username} - {self.title}"
 
 
+# === EC Point Award System Models ===
+
+class ECPointRequest(models.Model):
+    """EC購入ポイント付与申請"""
+    REQUEST_TYPE_CHOICES = [
+        ('webhook', 'Webhook'),
+        ('receipt', 'Receipt'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', '店舗承認待ち'),
+        ('approved', '承認済み'),
+        ('rejected', '拒否済み'),
+        ('completed', 'ポイント付与完了'),
+        ('failed', '処理失敗'),
+    ]
+    
+    PAYMENT_METHOD_CHOICES = [
+        ('card_payment', 'クレジット決済'),
+        ('deposit_consumption', 'デポジット消費'),
+    ]
+    
+    # 基本情報
+    request_type = models.CharField(max_length=20, choices=REQUEST_TYPE_CHOICES, verbose_name='申請方式')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='申請者')
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, verbose_name='店舗')
+    purchase_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='購入金額')
+    order_id = models.CharField(max_length=100, verbose_name='注文ID')
+    purchase_date = models.DateTimeField(verbose_name='購入日時')
+    
+    # レシート関連フィールド
+    receipt_image = models.ImageField(upload_to='receipts/', blank=True, null=True, verbose_name='レシート画像')
+    receipt_description = models.TextField(blank=True, verbose_name='レシート詳細')
+    
+    # 処理状況
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='処理状況')
+    points_to_award = models.IntegerField(verbose_name='付与予定ポイント')
+    points_awarded = models.IntegerField(default=0, verbose_name='実付与ポイント')
+    
+    # 店舗処理情報
+    store_approved_at = models.DateTimeField(blank=True, null=True, verbose_name='店舗承認日時')
+    store_approved_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        blank=True, 
+        null=True, 
+        related_name='approved_ec_requests', 
+        verbose_name='店舗承認者'
+    )
+    rejection_reason = models.TextField(blank=True, verbose_name='拒否理由')
+    
+    # 決済・デポジット情報
+    payment_method = models.CharField(
+        max_length=20, 
+        choices=PAYMENT_METHOD_CHOICES, 
+        blank=True, 
+        verbose_name='支払い方法'
+    )
+    payment_reference = models.CharField(max_length=100, blank=True, verbose_name='決済参照ID')
+    deposit_transaction = models.ForeignKey(
+        'DepositTransaction', 
+        on_delete=models.SET_NULL, 
+        blank=True, 
+        null=True, 
+        verbose_name='デポジット取引'
+    )
+    
+    # 重複防止・監査
+    request_hash = models.CharField(max_length=64, unique=True, verbose_name='リクエストハッシュ')
+    ip_address = models.GenericIPAddressField(verbose_name='IPアドレス')
+    user_agent = models.TextField(blank=True, verbose_name='User Agent')
+    
+    # タイムスタンプ
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='作成日時')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新日時')
+    completed_at = models.DateTimeField(blank=True, null=True, verbose_name='完了日時')
+    
+    class Meta:
+        db_table = 'ec_point_requests'
+        verbose_name = 'ECポイント申請'
+        verbose_name_plural = 'ECポイント申請'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', 'created_at']),
+            models.Index(fields=['store', 'status']),
+            models.Index(fields=['user', 'created_at']),
+            models.Index(fields=['order_id']),
+            models.Index(fields=['request_hash']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.store.name} - {self.purchase_amount}円 ({self.get_status_display()})"
+    
+    def calculate_points(self):
+        """付与ポイント数を計算"""
+        # 基本的には購入金額の1%（100円で1ポイント）
+        return int(self.purchase_amount // 100)
+    
+    def generate_request_hash(self):
+        """リクエストハッシュを生成"""
+        import hashlib
+        data = f"{self.user_id}_{self.store_id}_{self.order_id}_{self.purchase_amount}_{self.purchase_date}"
+        return hashlib.sha256(data.encode()).hexdigest()
+    
+    def can_be_approved(self):
+        """承認可能かチェック"""
+        return self.status == 'pending'
+    
+    def approve(self, approved_by, payment_method, payment_reference=''):
+        """申請を承認"""
+        from django.utils import timezone
+        
+        self.status = 'approved'
+        self.store_approved_by = approved_by
+        self.store_approved_at = timezone.now()
+        self.payment_method = payment_method
+        self.payment_reference = payment_reference
+        self.points_to_award = self.calculate_points()
+        self.save()
+    
+    def reject(self, rejected_by, reason):
+        """申請を拒否"""
+        from django.utils import timezone
+        
+        self.status = 'rejected'
+        self.store_approved_by = rejected_by
+        self.store_approved_at = timezone.now()
+        self.rejection_reason = reason
+        self.save()
+    
+    def mark_completed(self, points_awarded):
+        """付与完了マーク"""
+        from django.utils import timezone
+        
+        self.status = 'completed'
+        self.points_awarded = points_awarded
+        self.completed_at = timezone.now()
+        self.save()
+
+
+class StoreWebhookKey(models.Model):
+    """店舗Webhook認証キー"""
+    store = models.OneToOneField(
+        Store, 
+        on_delete=models.CASCADE, 
+        related_name='webhook_key', 
+        verbose_name='店舗'
+    )
+    webhook_key = models.CharField(max_length=64, unique=True, verbose_name='Webhook認証キー')
+    allowed_ips = models.JSONField(default=list, verbose_name='許可IPアドレス')
+    is_active = models.BooleanField(default=True, verbose_name='有効状態')
+    rate_limit_per_minute = models.IntegerField(default=60, verbose_name='分間リクエスト制限')
+    last_used_at = models.DateTimeField(blank=True, null=True, verbose_name='最終使用日時')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='作成日時')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新日時')
+    
+    class Meta:
+        db_table = 'store_webhook_keys'
+        verbose_name = '店舗Webhookキー'
+        verbose_name_plural = '店舗Webhookキー'
+    
+    def __str__(self):
+        return f"{self.store.name} - Webhook Key"
+    
+    @classmethod
+    def generate_key(cls):
+        """Webhookキーを生成"""
+        import secrets
+        return secrets.token_hex(32)
+    
+    def is_ip_allowed(self, ip_address):
+        """IPアドレスが許可されているかチェック"""
+        if not self.allowed_ips:
+            return True  # 制限なし
+        return ip_address in self.allowed_ips
+    
+    def update_last_used(self):
+        """最終使用日時を更新"""
+        from django.utils import timezone
+        self.last_used_at = timezone.now()
+        self.save(update_fields=['last_used_at'])
+
+
+class PointAwardLog(models.Model):
+    """ポイント付与ログ"""
+    ec_request = models.OneToOneField(
+        ECPointRequest, 
+        on_delete=models.CASCADE, 
+        related_name='award_log', 
+        verbose_name='EC申請'
+    )
+    point_transaction = models.ForeignKey(
+        'PointTransaction', 
+        on_delete=models.CASCADE, 
+        verbose_name='ポイント取引'
+    )
+    awarded_points = models.IntegerField(verbose_name='付与ポイント')
+    award_rate = models.DecimalField(max_digits=8, decimal_places=4, verbose_name='付与率')
+    processing_duration_ms = models.IntegerField(blank=True, null=True, verbose_name='処理時間(ms)')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='作成日時')
+    
+    class Meta:
+        db_table = 'point_award_logs'
+        verbose_name = 'ポイント付与ログ'
+        verbose_name_plural = 'ポイント付与ログ'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.ec_request.user.username} - {self.awarded_points}pt"
+
+
+class DuplicateDetection(models.Model):
+    """重複検知"""
+    DETECTION_TYPE_CHOICES = [
+        ('order_id', '注文ID重複'),
+        ('pattern_match', 'パターンマッチ'),
+        ('suspicious', '不審な活動'),
+    ]
+    
+    SEVERITY_CHOICES = [
+        ('low', '低'),
+        ('medium', '中'),
+        ('high', '高'),
+        ('critical', '重大'),
+    ]
+    
+    detection_type = models.CharField(max_length=20, choices=DETECTION_TYPE_CHOICES, verbose_name='検知種別')
+    original_request = models.ForeignKey(
+        ECPointRequest, 
+        on_delete=models.CASCADE, 
+        related_name='duplicate_detections_as_original', 
+        verbose_name='元申請'
+    )
+    duplicate_request = models.ForeignKey(
+        ECPointRequest, 
+        on_delete=models.CASCADE, 
+        blank=True, 
+        null=True, 
+        related_name='duplicate_detections_as_duplicate', 
+        verbose_name='重複申請'
+    )
+    detection_details = models.JSONField(default=dict, verbose_name='検知詳細')
+    severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES, verbose_name='重要度')
+    is_resolved = models.BooleanField(default=False, verbose_name='解決済み')
+    resolved_by = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='解決者')
+    resolved_at = models.DateTimeField(blank=True, null=True, verbose_name='解決日時')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='検知日時')
+    
+    class Meta:
+        db_table = 'duplicate_detections'
+        verbose_name = '重複検知'
+        verbose_name_plural = '重複検知'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.get_detection_type_display()} - {self.get_severity_display()}"
+
+
 class EmailTemplate(models.Model):
     """メールテンプレート管理"""
     name = models.CharField(max_length=100, unique=True)
@@ -1202,6 +1545,57 @@ class AccountRank(models.Model):
     
     def __str__(self):
         return f"{self.get_rank_display()} - {self.required_points}pt"
+
+
+class MeltyRankConfiguration(models.Model):
+    """MELTY会員種別からBIIDランクへのマッピング設定"""
+    MELTY_MEMBERSHIP_CHOICES = [
+        ('free', 'MELTY無料会員'),
+        ('premium', 'MELTYプレミアム会員'),
+    ]
+    
+    melty_membership_type = models.CharField(
+        max_length=20, 
+        choices=MELTY_MEMBERSHIP_CHOICES, 
+        unique=True,
+        verbose_name="MELTY会員種別"
+    )
+    biid_initial_rank = models.CharField(
+        max_length=20, 
+        choices=User.RANK_CHOICES,
+        verbose_name="BIID初期ランク"
+    )
+    welcome_bonus_points = models.IntegerField(
+        default=1000,
+        verbose_name="ウェルカムボーナスポイント"
+    )
+    points_expiry_months = models.IntegerField(
+        default=12,
+        verbose_name="ポイント有効期限（月）"
+    )
+    member_id_prefix = models.CharField(
+        max_length=5,
+        default="S",
+        verbose_name="会員ID接頭辞"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="有効"
+    )
+    description = models.TextField(
+        blank=True,
+        verbose_name="説明"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['melty_membership_type']
+        verbose_name = "MELTY会員ランク設定"
+        verbose_name_plural = "MELTY会員ランク設定"
+    
+    def __str__(self):
+        return f"{self.get_melty_membership_type_display()} → {self.get_biid_initial_rank_display()}"
 
 
 # === ポイント払戻し申請・管理機能 ===
@@ -1822,6 +2216,8 @@ class PaymentTransaction(models.Model):
     # 外部システム連携
     gmopg_order_id = models.CharField(max_length=100, blank=True, null=True)
     gmopg_transaction_id = models.CharField(max_length=100, blank=True, null=True)
+    fincode_payment_id = models.CharField(max_length=100, blank=True, null=True)
+    fincode_order_id = models.CharField(max_length=100, blank=True, null=True)
     external_payment_data = models.JSONField(default=dict, blank=True)
     
     # メタデータ
@@ -1847,6 +2243,7 @@ class PaymentTransaction(models.Model):
             models.Index(fields=['status', 'created_at']),
             models.Index(fields=['transaction_id']),
             models.Index(fields=['gmopg_order_id']),
+            models.Index(fields=['fincode_payment_id']),
         ]
     
     def __str__(self):
