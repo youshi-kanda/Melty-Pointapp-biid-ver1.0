@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BIID - ユーザープロフィール</title>
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <link rel="stylesheet" href="{% static '_next/static/css/160f526fac4d567d.css' %}">
+    
+    <!-- PWA用メタタグ -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-title" content="BIID">
+    
+    <!-- アイコン設定 -->
+    <link rel="apple-touch-icon" sizes="192x192" href="{% static 'icons/icon-192x192.png' %}">
+    <link rel="apple-touch-icon" sizes="512x512" href="{% static 'icons/icon-512x512.png' %}">
+</head>
+<body>
+    <div id="__next">
+        <!-- Next.jsで生成されたユーザー画面コンテンツがここに配置される -->
+        <div style="display:flex;justify-content:center;align-items:center;height:100vh;font-size:18px;color:#666">
+            ユーザー画面を読み込んでいます...
+        </div>
+    </div>
+    
+    <!-- Next.js JavaScript -->
+    <script src="{% static '_next/static/chunks/webpack-bfa4fae4f9104c9e.js' %}"></script>
+    <script src="{% static '_next/static/chunks/framework-1594f84e519182f7.js' %}"></script>
+    <script src="{% static '_next/static/chunks/main-cdac1e7c2832f5aa.js' %}"></script>
+    <script src="{% static '_next/static/chunks/pages/_app-d9130df01c4b76e5.js' %}"></script>
+    <script src="{% static '_next/static/chunks/pages/user-7d1497f1747ac50d.js' %}"></script>
+    
+    <!-- ユーザー画面用設定 -->
+    <script>
+        // API Base URL設定（Django統合用）
+        window.__BIID_CONFIG__ = {
+            apiBaseUrl: '/api/',
+            demoMode: false,
+            interface: 'user',
+            version: '1.0.0',
+            features: {
+                socialFeatures: true,
+                pointManagement: true,
+                giftExchange: true,
+                storeLocator: true,
+                meltyIntegration: true,
+                twoFactorAuth: true
+            },
+            pwa: {
+                enabled: true,
+                serviceWorker: '/static/sw.js'
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4f46e5"/>
+      <stop offset="100%" style="stop-color:#6366f1"/>
+    </linearGradient>
+    <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff"/>
+      <stop offset="100%" style="stop-color:#e0e7ff"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="512" height="512" rx="80" fill="url(#bg-gradient)"/>
+  
+  <!-- Terminal Icon -->
+  <g transform="translate(80, 80)">
+    <!-- Screen -->
+    <rect x="0" y="0" width="352" height="280" rx="20" fill="url(#icon-gradient)" opacity="0.9"/>
+    <rect x="16" y="16" width="320" height="248" rx="12" fill="#1e1b4b"/>
+    
+    <!-- Status Bar -->
+    <rect x="16" y="16" width="320" height="32" rx="12" fill="#4f46e5" opacity="0.8"/>
+    <circle cx="40" cy="32" r="4" fill="#10b981"/>
+    <rect x="56" y="28" width="60" height="8" rx="4" fill="#ffffff" opacity="0.6"/>
+    <rect x="280" y="28" width="40" height="8" rx="4" fill="#ffffff" opacity="0.6"/>
+    
+    <!-- Content Lines -->
+    <rect x="32" y="72" width="200" height="8" rx="4" fill="#6366f1" opacity="0.8"/>
+    <rect x="32" y="96" width="160" height="8" rx="4" fill="#8b5cf6" opacity="0.8"/>
+    <rect x="32" y="120" width="240" height="8" rx="4" fill="#06b6d4" opacity="0.8"/>
+    
+    <!-- QR Code Symbol -->
+    <g transform="translate(240, 80)">
+      <rect x="0" y="0" width="80" height="80" rx="8" fill="#ffffff" opacity="0.9"/>
+      <rect x="8" y="8" width="64" height="64" rx="4" fill="#1e1b4b"/>
+      <rect x="12" y="12" width="20" height="20" fill="#ffffff"/>
+      <rect x="44" y="12" width="20" height="20" fill="#ffffff"/>
+      <rect x="12" y="44" width="20" height="20" fill="#ffffff"/>
+      <rect x="20" y="20" width="4" height="4" fill="#1e1b4b"/>
+      <rect x="52" y="20" width="4" height="4" fill="#1e1b4b"/>
+      <rect x="20" y="52" width="4" height="4" fill="#1e1b4b"/>
+      <rect x="36" y="28" width="8" height="8" fill="#ffffff"/>
+      <rect x="44" y="36" width="12" height="12" fill="#ffffff"/>
+      <rect x="36" y="52" width="16" height="4" fill="#ffffff"/>
+    </g>
+    
+    <!-- NFC Symbol -->
+    <g transform="translate(32, 180)">
+      <circle cx="40" cy="40" r="40" fill="#10b981" opacity="0.2"/>
+      <circle cx="40" cy="40" r="30" fill="#10b981" opacity="0.3"/>
+      <circle cx="40" cy="40" r="20" fill="#10b981" opacity="0.5"/>
+      <circle cx="40" cy="40" r="8" fill="#10b981"/>
+      <path d="M20 20 Q40 0 60 20" stroke="#10b981" stroke-width="3" fill="none" opacity="0.8"/>
+      <path d="M20 60 Q40 80 60 60" stroke="#10b981" stroke-width="3" fill="none" opacity="0.8"/>
+    </g>
+    
+    <!-- Credit Card Symbol -->
+    <g transform="translate(140, 180)">
+      <rect x="0" y="20" width="80" height="50" rx="8" fill="#ffffff" opacity="0.9"/>
+      <rect x="4" y="24" width="72" height="42" rx="6" fill="#6366f1"/>
+      <rect x="4" y="32" width="72" height="12" fill="#1e1b4b"/>
+      <rect x="8" y="52" width="24" height="6" rx="3" fill="#ffffff" opacity="0.8"/>
+      <rect x="52" y="52" width="20" height="6" rx="3" fill="#ffffff" opacity="0.8"/>
+    </g>
+    
+    <!-- Mobile Phone Symbol -->
+    <g transform="translate(260, 180)">
+      <rect x="10" y="0" width="40" height="80" rx="12" fill="#ffffff" opacity="0.9"/>
+      <rect x="14" y="8" width="32" height="56" rx="4" fill="#1e1b4b"/>
+      <rect x="18" y="12" width="24" height="4" rx="2" fill="#4f46e5"/>
+      <rect x="18" y="20" width="24" height="32" fill="#6366f1" opacity="0.8"/>
+      <circle cx="30" cy="68" r="4" fill="#10b981"/>
+    </g>
+  </g>
+  
+  <!-- Bottom Text -->
+  <g transform="translate(256, 420)">
+    <text x="0" y="0" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="32" font-weight="bold">biid</text>
+    <text x="0" y="32" text-anchor="middle" fill="#e0e7ff" font-family="sans-serif" font-size="18">Terminal</text>
+  </g>
+</svg>

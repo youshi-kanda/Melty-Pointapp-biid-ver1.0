@@ -200,7 +200,7 @@ class User(AbstractUser):
         null=True
     )
     unlocked_social_skins = models.JSONField(
-        default=lambda: ['classic', 'modern', 'casual'],
+        default=list,
         help_text="List of unlocked social skin themes"
     )
     

@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BIID Store - 店舗管理ダッシュボード</title>
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <link rel="stylesheet" href="{% static '_next/static/css/160f526fac4d567d.css' %}">
+</head>
+<body>
+    <div id="__next">
+        <!-- Next.jsで生成された店舗ダッシュボードコンテンツがここに配置される -->
+        <div style="display:flex;justify-content:center;align-items:center;height:100vh;font-size:18px;color:#666">
+            店舗管理画面を読み込んでいます...
+        </div>
+    </div>
+    
+    <!-- Next.js JavaScript -->
+    <script src="{% static '_next/static/chunks/webpack-bfa4fae4f9104c9e.js' %}"></script>
+    <script src="{% static '_next/static/chunks/framework-1594f84e519182f7.js' %}"></script>
+    <script src="{% static '_next/static/chunks/main-cdac1e7c2832f5aa.js' %}"></script>
+    <script src="{% static '_next/static/chunks/pages/_app-d9130df01c4b76e5.js' %}"></script>
+    <script src="{% static '_next/static/chunks/pages/store-b9009b3e80320101.js' %}"></script>
+    
+    <!-- 店舗管理画面用設定 -->
+    <script>
+        // API Base URL設定（Django統合用）
+        window.__BIID_CONFIG__ = {
+            apiBaseUrl: '/api/',
+            demoMode: false,
+            interface: 'store',
+            version: '1.0.0',
+            features: {
+                paymentProcessing: true,
+                depositManagement: true,
+                promotionManagement: true,
+                customerBilling: true,
+                reports: true
+            }
+        };
+    </script>
+</body>
+</html>

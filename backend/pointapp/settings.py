@@ -6,9 +6,76 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-production')
 
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['*']
+# 本番環境用ホスト設定
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,testserver', cast=lambda v: [s.strip() for s in v.split(',')])
+
+# 本番環境セキュリティ設定
+if not DEBUG:
+    # HTTPS強制設定
+    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+    SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000, cast=int)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    
+    # セキュアクッキー設定
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = True
+    
+    # セキュリティヘッダー設定
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    X_FRAME_OPTIONS = 'DENY'
+    
+    # セッション設定
+    SESSION_COOKIE_AGE = config('SESSION_COOKIE_AGE', default=3600, cast=int)  # 1時間
+    SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+    
+    # 本番環境用ログ設定
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+                'style': '{',
+            },
+        },
+        'handlers': {
+            'file': {
+                'level': 'WARNING',
+                'class': 'logging.FileHandler',
+                'filename': BASE_DIR / 'logs' / 'django.log',
+                'formatter': 'verbose',
+            },
+            'security_file': {
+                'level': 'WARNING',
+                'class': 'logging.FileHandler', 
+                'filename': BASE_DIR / 'logs' / 'security.log',
+                'formatter': 'verbose',
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['file'],
+                'level': 'WARNING',
+                'propagate': True,
+            },
+            'django.security': {
+                'handlers': ['security_file'],
+                'level': 'WARNING',
+                'propagate': False,
+            },
+            'core.security': {
+                'handlers': ['security_file'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+        },
+    }
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -25,15 +92,25 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    
+    # 本番環境用セキュリティミドルウェア（本番優先）
+    'core.production_middleware.ProductionSecurityMiddleware',
+    'core.production_middleware.APIAuthenticationMiddleware',
+    
+    # 既存のセキュリティミドルウェア
     'core.partner_auth.PartnerAPIMiddleware',
     'core.security_middleware.SecurityMiddleware',
     'core.security_middleware.FraudDetectionMiddleware',
+    
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    # 監査ログミドルウェア（最後に実行）
+    'core.production_middleware.AuditLogMiddleware',
 ]
 
 ROOT_URLCONF = 'pointapp.urls'
@@ -56,12 +133,30 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'pointapp.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Database configuration with PostgreSQL support
+import os
+
+if os.getenv('USE_POSTGRESQL'):
+    # PostgreSQL configuration
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'biid_production',
+            'USER': os.getenv('DB_USER', os.getenv('USER')),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+            'CONN_MAX_AGE': 600,
+        }
     }
-}
+else:
+    # SQLite fallback
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -210,14 +305,6 @@ APPEND_SLASH = False
 # 決済ゲートウェイ設定
 import os
 
-# GMOPG設定（既存）
-GMOPG_MOCK = os.getenv("GMOPG_MOCK", "false").lower() == "true"
-GMOPG_SHOP_ID = os.getenv("GMOPG_SHOP_ID", "your_shop_id")  # 名前変更
-GMOPG_SHOP_PASSWORD = os.getenv("GMOPG_SHOP_PASSWORD", "your_shop_pass")  # 名前変更
-GMOPG_SITE_ID = os.getenv("GMOPG_SITE_ID", "your_site_id")  # 名前変更
-GMOPG_SITE_PASSWORD = os.getenv("GMOPG_SITE_PASSWORD", "your_site_pass")  # 名前変更
-GMOPG_API_BASE_URL = os.getenv("GMOPG_API_BASE_URL", "https://pt01.mul-pay.jp")
-GMOPG_IS_PRODUCTION = os.getenv("GMOPG_IS_PRODUCTION", "false").lower() == "true"
 
 # GMO FINCODE設定（新規）
 FINCODE_MOCK = os.getenv("FINCODE_MOCK", "false").lower() == "true"  # テストAPIキー提供でfalseに変更
@@ -227,16 +314,8 @@ FINCODE_SHOP_ID = os.getenv("FINCODE_SHOP_ID", "")
 FINCODE_API_BASE_URL = os.getenv("FINCODE_API_BASE_URL", "https://api.test.fincode.jp")  # テスト環境URL
 FINCODE_IS_PRODUCTION = os.getenv("FINCODE_IS_PRODUCTION", "false").lower() == "true"
 
-# 決済ゲートウェイ選択設定
-PAYMENT_GATEWAY = os.getenv("PAYMENT_GATEWAY", "fincode").lower()  # "gmopg" or "fincode"
-
-# 後方互換性のため（既存のGMOPG設定を維持）
-GMO_SHOP_ID = GMOPG_SHOP_ID
-GMO_SHOP_PASS = GMOPG_SHOP_PASSWORD
-GMO_SITE_ID = GMOPG_SITE_ID
-GMO_SITE_PASS = GMOPG_SITE_PASSWORD
-GMO_ENV = "production" if GMOPG_IS_PRODUCTION else "sandbox"
-GMO_ENDPOINT = GMOPG_API_BASE_URL
+# 決済ゲートウェイ設定（FINCODE統一）
+PAYMENT_GATEWAY = "fincode"
 
 # MELTY API連携設定（既存API活用版）
 MELTY_API_BASE_URL = os.getenv('MELTY_API_BASE_URL', 'http://app-melty.com/melty-app_system/api')

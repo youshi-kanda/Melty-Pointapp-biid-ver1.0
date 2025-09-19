@@ -25,13 +25,22 @@ class FINCODEService:
     """GMO FINCODE 決済サービス"""
     
     def __init__(self):
-        # FINCODE設定（API仕様提供後に更新）
-        self.api_key = getattr(settings, 'FINCODE_API_KEY', '')
-        self.secret_key = getattr(settings, 'FINCODE_SECRET_KEY', '')
-        self.shop_id = getattr(settings, 'FINCODE_SHOP_ID', '')
-        self.api_base_url = getattr(settings, 'FINCODE_API_BASE_URL', 'https://api.fincode.jp')
-        self.is_production = getattr(settings, 'FINCODE_IS_PRODUCTION', False)
-        self.timeout = 30
+        # FINCODE設定（本番環境対応）
+        from decouple import config
+        self.api_key = config('FINCODE_API_KEY', default='')
+        self.secret_key = config('FINCODE_SECRET_KEY', default='')
+        self.shop_id = config('FINCODE_SHOP_ID', default='')
+        self.api_base_url = config('FINCODE_BASE_URL', default='https://api.fincode.jp')
+        self.is_production = config('FINCODE_IS_PRODUCTION', default=False, cast=bool)
+        self.timeout = config('FINCODE_TIMEOUT', default=30, cast=int)
+        
+        # 本番環境でのAPI設定検証
+        if self.is_production:
+            if not all([self.api_key, self.secret_key, self.shop_id]):
+                raise FINCODEError("本番環境でFINCODE認証情報が不足しています")
+            logger.info("FINCODE本番環境モードで初期化されました")
+        else:
+            logger.info("FINCODEテスト環境モードで初期化されました")
         
         # 決済方法マッピング（FINCODE仕様に合わせて更新予定）
         self.payment_method_map = {

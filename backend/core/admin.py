@@ -1,19 +1,39 @@
+"""
+BIID Point App 本番環境用 Django Admin 設定（修正版）
+実際のモデルフィールドに合わせて調整
+"""
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.utils.html import format_html
+from django.db.models import Count, Sum
+from django.utils import timezone
+
 from .models import (
+    # 基本モデルのみ確実に存在するものを登録
     User, Store, PointTransaction, AccountRank, 
+    PaymentTransaction, Receipt, Notification,
+    Gift, GiftCategory, SecurityLog, AuditLog,
     MeltyRankConfiguration
 )
 
+# ===== 基本設定 =====
+class BaseAdmin(admin.ModelAdmin):
+    """全Adminクラスの基底クラス"""
+    save_as = True
+    save_on_top = True
 
+
+# ===== ユーザー・認証関連 =====
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ('username', 'email', 'member_id', 'point_balance', 'rank', 'melty_linked_status', 'status', 'registration_date')
-    list_filter = ('status', 'rank', 'registration_source', 'is_melty_linked', 'registration_date', 'last_login_date')
+    list_display = ('username', 'email', 'member_id', 'point_balance_display', 'rank', 'melty_linked_status', 'status', 'registration_date')
+    list_filter = ('status', 'rank', 'registration_source', 'is_melty_linked', 'registration_date')
     search_fields = ('username', 'email', 'member_id')
+    date_hierarchy = 'registration_date'
     
     fieldsets = BaseUserAdmin.fieldsets + (
-        ('Point System Info', {
+        ('BIID Point System', {
             'fields': ('member_id', 'rank', 'status', 'location', 'avatar')
         }),
         ('MELTY Integration', {
@@ -22,106 +42,151 @@ class UserAdmin(BaseUserAdmin):
         }),
     )
     
-    readonly_fields = BaseUserAdmin.readonly_fields + ('melty_connected_at',)
+    readonly_fields = BaseUserAdmin.readonly_fields + ('melty_connected_at', 'registration_date')
     
-    actions = ['reset_melty_link', 'upgrade_to_silver', 'upgrade_to_gold']
+    actions = ['reset_melty_link', 'upgrade_to_silver', 'upgrade_to_gold', 'suspend_users', 'activate_users']
     
-    def reset_melty_link(self, request, queryset):
-        """MELTY連携をリセット"""
-        count = 0
-        for user in queryset:
-            if user.is_melty_linked:
-                user.is_melty_linked = False
-                user.melty_user_id = None
-                user.melty_email = None
-                user.melty_connected_at = None
-                user.melty_profile_data = {}
-                user.save()
-                count += 1
-        self.message_user(request, f'{count}件のMELTY連携をリセットしました。')
-    reset_melty_link.short_description = 'MELTY連携をリセット'
-    
-    def upgrade_to_silver(self, request, queryset):
-        """シルバーランクにアップグレード"""
-        count = 0
-        for user in queryset.filter(rank='bronze'):
-            user.rank = 'silver'
-            user.save()
-            count += 1
-        self.message_user(request, f'{count}件のユーザーをシルバーランクにアップグレードしました。')
-    upgrade_to_silver.short_description = 'シルバーランクにアップグレード'
-    
-    def upgrade_to_gold(self, request, queryset):
-        """ゴールドランクにアップグレード"""
-        count = 0
-        for user in queryset.filter(rank__in=['bronze', 'silver']):
-            user.rank = 'gold'
-            user.save()
-            count += 1
-        self.message_user(request, f'{count}件のユーザーをゴールドランクにアップグレードしました。')
-    upgrade_to_gold.short_description = 'ゴールドランクにアップグレード'
-    
-    def point_balance(self, obj):
-        """ポイント残高を表示"""
-        return f"{obj.point_balance}pt"
-    point_balance.short_description = 'ポイント残高'
+    def point_balance_display(self, obj):
+        return f"{obj.point_balance:,}pt" if hasattr(obj, 'point_balance') else "0pt"
+    point_balance_display.short_description = 'ポイント残高'
     
     def melty_linked_status(self, obj):
-        """MELTY連携状態を表示"""
         if obj.is_melty_linked:
-            config = obj.get_melty_configuration()
-            membership = config.get_melty_membership_type_display() if config else 'N/A'
-            return f"連携済み ({membership})"
-        return "連携なし"
+            return format_html('<span style="color: green;">✓ 連携済み</span>')
+        return format_html('<span style="color: red;">× 未連携</span>')
     melty_linked_status.short_description = 'MELTY連携'
-
-
-@admin.register(Store)
-class StoreAdmin(admin.ModelAdmin):
-    list_display = ('name', 'owner_name', 'category', 'status', 'point_rate', 'registration_date')
-    list_filter = ('status', 'category', 'price_range', 'biid_partner')
-    search_fields = ('name', 'owner_name', 'email')
-    readonly_fields = ('registration_date',)
-
-
-@admin.register(PointTransaction)
-class PointTransactionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'store', 'points', 'transaction_type', 'balance_after', 'created_at')
-    list_filter = ('transaction_type', 'created_at')
-    search_fields = ('user__username', 'store__name', 'description')
-    readonly_fields = ('created_at', 'balance_before', 'balance_after')
     
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related('user', 'store', 'processed_by')
+    # カスタムアクション
+    def reset_melty_link(self, request, queryset):
+        count = queryset.filter(is_melty_linked=True).update(
+            is_melty_linked=False, melty_user_id=None, melty_email=None
+        )
+        self.message_user(request, f'{count}件のMELTY連携をリセットしました。')
+    
+    def suspend_users(self, request, queryset):
+        count = queryset.update(status='suspended')
+        self.message_user(request, f'{count}件のユーザーを停止しました。')
+    
+    def activate_users(self, request, queryset):
+        count = queryset.update(status='active')
+        self.message_user(request, f'{count}件のユーザーを有効化しました。')
 
 
 @admin.register(AccountRank)
-class AccountRankAdmin(admin.ModelAdmin):
-    """アカウントランク管理"""
-    list_display = ('rank', 'required_points', 'required_transactions', 'point_multiplier')
+class AccountRankAdmin(BaseAdmin):
+    list_display = ('rank', 'required_points', 'required_transactions', 'point_multiplier', 'user_count')
     list_filter = ('rank',)
     ordering = ['required_points']
     
+    def user_count(self, obj):
+        return User.objects.filter(rank=obj.rank).count()
+    user_count.short_description = '該当ユーザー数'
+
+
+# ===== 店舗関連 =====
+@admin.register(Store)
+class StoreAdmin(BaseAdmin):
+    list_display = ('name', 'owner_name', 'category', 'status', 'registration_date')
+    list_filter = ('status', 'category', 'registration_date')
+    search_fields = ('name', 'owner_name', 'email')
+    date_hierarchy = 'registration_date'
+    readonly_fields = ('registration_date',)
+
+
+# ===== 決済・金融関連 =====
+@admin.register(PaymentTransaction)
+class PaymentTransactionAdmin(BaseAdmin):
+    list_display = ('transaction_id', 'customer', 'store', 'total_amount', 'payment_method', 'status', 'created_at')
+    list_filter = ('status', 'payment_method', 'created_at')
+    search_fields = ('transaction_id', 'customer__username', 'store__name')
+    date_hierarchy = 'created_at'
+    readonly_fields = ('transaction_id', 'created_at', 'completed_at')
+
+
+@admin.register(Receipt)
+class ReceiptAdmin(BaseAdmin):
+    list_display = ('receipt_number', 'transaction', 'status', 'generated_at')
+    list_filter = ('status', 'generated_at')
+    search_fields = ('receipt_number', 'transaction__transaction_id')
+    readonly_fields = ('generated_at',)
+
+
+# ===== ポイントシステム =====
+@admin.register(PointTransaction)
+class PointTransactionAdmin(BaseAdmin):
+    list_display = ('id', 'user', 'store', 'points', 'transaction_type', 'created_at')
+    list_filter = ('transaction_type', 'created_at')
+    search_fields = ('user__username', 'store__name', 'description')
+    date_hierarchy = 'created_at'
+    readonly_fields = ('created_at',)
+
+
+# ===== ギフト・商品関連 =====
+@admin.register(Gift)
+class GiftAdmin(BaseAdmin):
+    list_display = ('name', 'category', 'points_required', 'created_at')
+    list_filter = ('category', 'created_at')
+    search_fields = ('name', 'description')
+    
     fieldsets = (
-        ('基本設定', {
-            'fields': ('rank', 'required_points', 'required_transactions')
+        ('基本情報', {
+            'fields': ('name', 'category', 'description', 'image_url')
         }),
-        ('ランク特典', {
-            'fields': ('point_multiplier', 'privileges')
+        ('ポイント設定', {
+            'fields': ('points_required',)
         }),
     )
 
 
+@admin.register(GiftCategory)
+class GiftCategoryAdmin(BaseAdmin):
+    list_display = ('name', 'gift_count')
+    search_fields = ('name', 'description')
+    
+    def gift_count(self, obj):
+        return obj.gift_set.count()
+    gift_count.short_description = 'ギフト数'
+
+
+# ===== 通知・コミュニケーション =====
+@admin.register(Notification)
+class NotificationAdmin(BaseAdmin):
+    list_display = ('user', 'notification_type', 'title', 'is_read', 'is_sent', 'created_at')
+    list_filter = ('notification_type', 'is_read', 'is_sent', 'created_at')
+    search_fields = ('user__username', 'title')
+    date_hierarchy = 'created_at'
+    readonly_fields = ('created_at',)
+
+
+# ===== セキュリティ・監査 =====
+@admin.register(SecurityLog)
+class SecurityLogAdmin(BaseAdmin):
+    list_display = ('user', 'event_type', 'ip_address', 'user_agent_short', 'timestamp')
+    list_filter = ('event_type', 'timestamp')
+    search_fields = ('user__username', 'ip_address')
+    date_hierarchy = 'timestamp'
+    readonly_fields = ('timestamp',)
+    
+    def user_agent_short(self, obj):
+        return obj.user_agent[:50] + '...' if len(obj.user_agent) > 50 else obj.user_agent
+    user_agent_short.short_description = 'User Agent'
+
+
+@admin.register(AuditLog)
+class AuditLogAdmin(BaseAdmin):
+    list_display = ('user', 'action_type', 'object_type', 'object_id', 'timestamp')
+    list_filter = ('action_type', 'object_type', 'timestamp')
+    search_fields = ('user__username', 'object_repr')
+    date_hierarchy = 'timestamp'
+    readonly_fields = ('timestamp',)
+
+
+# ===== EC・外部連携 =====
 @admin.register(MeltyRankConfiguration)
-class MeltyRankConfigurationAdmin(admin.ModelAdmin):
-    """MELTY会員ランク設定管理"""
-    list_display = (
-        'melty_membership_type', 'biid_initial_rank', 'welcome_bonus_points', 
-        'points_expiry_months', 'member_id_prefix', 'is_active'
-    )
+class MeltyRankConfigurationAdmin(BaseAdmin):
+    list_display = ('melty_membership_type', 'biid_initial_rank', 'welcome_bonus_points', 'is_active')
     list_filter = ('is_active', 'biid_initial_rank', 'melty_membership_type')
-    list_editable = ('welcome_bonus_points', 'points_expiry_months', 'is_active')
-    ordering = ['melty_membership_type']
+    list_editable = ('welcome_bonus_points', 'is_active')
     
     fieldsets = (
         ('MELTY会員種別', {
@@ -137,14 +202,13 @@ class MeltyRankConfigurationAdmin(admin.ModelAdmin):
             'fields': ('is_active', 'description')
         }),
     )
-    
-    def get_readonly_fields(self, request, obj=None):
-        if obj:  # 編集時
-            return ['melty_membership_type']  # 会員種別は変更不可
-        return []
-    
-    def has_delete_permission(self, request, obj=None):
-        # デフォルト設定は削除不可
-        if obj and obj.melty_membership_type in ['free', 'premium']:
-            return False
-        return True
+
+
+# ===== 管理画面カスタマイズ =====
+admin.site.site_header = 'BIID Point App 運営管理画面'
+admin.site.site_title = 'BIID Point App Admin'
+admin.site.index_title = 'システム管理'
+
+# 本番環境用の管理画面設定
+if hasattr(admin.site, 'enable_nav_sidebar'):
+    admin.site.enable_nav_sidebar = False  # サイドバー無効化（パフォーマンス向上）

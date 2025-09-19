@@ -1,0 +1,146 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>決済端末ログイン - BIID</title>
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .logo h1 {
+            color: #f59e0b;
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-weight: 500;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: #f59e0b;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 0.875rem;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .login-btn:hover {
+            transform: translateY(-1px);
+        }
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+        .terminal-info {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #92400e;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>BIID 端末</h1>
+            <p class="subtitle">決済端末インターフェース</p>
+        </div>
+        
+        <div class="terminal-info">
+            決済端末専用ログインシステム<br>
+            NFC・決済処理・ポイント管理対応
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="terminal_id">端末ID</label>
+                <input type="text" id="terminal_id" name="terminal_id" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">パスワード</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="login-btn">ログイン</button>
+        </form>
+    </div>
+
+    <script>
+        // BIID 設定
+        window.__BIID_CONFIG__ = {
+            apiBaseUrl: '/api/',
+            demoMode: false,
+            interface: 'terminal',
+            version: '1.0.0'
+        };
+
+        // ログインフォーム処理
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const terminal_id = document.getElementById('terminal_id').value;
+            const password = document.getElementById('password').value;
+            
+            // 開発時はメイン端末画面に直接遷移
+            if (terminal_id && password) {
+                // 実際のAPI認証処理はここに追加
+                console.log('端末ログイン試行:', { terminal_id, password });
+                
+                // メイン端末画面に遷移
+                window.location.href = '/main/';
+            }
+        });
+    </script>
+</body>
+</html>

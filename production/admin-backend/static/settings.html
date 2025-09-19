@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>システム設定 - BIID 運営管理</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <!-- ヘッダー -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-shield-alt text-white"></i>
+                            </div>
+                            <h1 class="text-xl font-bold text-gray-900">biid 運営管理</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div class="flex items-center space-x-4">
+                        <button class="p-2 rounded-md text-gray-400 hover:text-gray-500">
+                            <i class="fas fa-bell"></i>
+                        </button>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-gray-600"></i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700">テスト</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex">
+        <!-- サイドバー -->
+        <div class="w-64 bg-white shadow-sm min-h-screen">
+            <nav class="mt-5 px-2">
+                <a href="/api/admin/management/" class="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                    <i class="fas fa-chart-line mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                    ダッシュボード
+                </a>
+                <a href="/api/out/admin/users.html" class="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                    <i class="fas fa-users mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                    ユーザー管理
+                </a>
+                <a href="/api/out/admin/stores.html" class="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                    <i class="fas fa-store mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                    店舗管理
+                </a>
+                <a href="/api/out/admin/transactions.html" class="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                    <i class="fas fa-exchange-alt mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                    取引管理
+                </a>
+                <a href="/api/out/admin/gifts.html" class="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                    <i class="fas fa-gift mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                    ギフト管理
+                </a>
+                <a href="/api/out/admin/reports.html" class="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                    <i class="fas fa-chart-bar mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                    レポート
+                </a>
+                <a href="#" class="group flex items-center px-2 py-2 text-base font-medium rounded-md bg-blue-100 text-blue-700">
+                    <i class="fas fa-cog mr-3 text-blue-500"></i>
+                    システム設定
+                </a>
+            </nav>
+        </div>
+
+        <!-- メインコンテンツ -->
+        <div class="flex-1 p-8">
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">システム設定</h2>
+                    <p class="text-gray-600 mt-1">基本設定・セキュリティ・API管理</p>
+                </div>
+
+                <!-- 設定タブ -->
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="-mb-px flex space-x-8">
+                        <button onclick="showTab('general')" id="tab-general" class="py-2 px-1 border-b-2 font-medium text-sm focus:outline-none border-gray-300 text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            <i class="fas fa-cog mr-2"></i>一般設定
+                        </button>
+                        <button onclick="showTab('payment')" id="tab-payment" class="py-2 px-1 border-b-2 font-medium text-sm focus:outline-none border-gray-300 text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            <i class="fas fa-credit-card mr-2"></i>決済設定
+                        </button>
+                        <button onclick="showTab('notification')" id="tab-notification" class="py-2 px-1 border-b-2 font-medium text-sm focus:outline-none border-gray-300 text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            <i class="fas fa-bell mr-2"></i>通知設定
+                        </button>
+                        <button onclick="showTab('operation')" id="tab-operation" class="py-2 px-1 border-b-2 font-medium text-sm focus:outline-none border-blue-500 text-blue-600">
+                            <i class="fas fa-tools mr-2"></i>運営設定
+                        </button>
+                        <button onclick="showTab('member')" id="tab-member" class="py-2 px-1 border-b-2 font-medium text-sm focus:outline-none border-gray-300 text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            <i class="fas fa-users-cog mr-2"></i>会員ランク
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- 運営設定コンテンツ -->
+                <div id="content-operation" class="space-y-6">
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-medium text-gray-900">運営設定</h3>
+                        </div>
+                        <div class="px-6 py-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- 既存の運営設定項目 -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">ポイント有効期限 (月)</label>
+                                    <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="6">
+                                    <p class="text-xs text-gray-500 mt-1">ユーザーが保有するポイントの有効期限</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">店舗デポジット必要額 (円)</label>
+                                    <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="50000">
+                                    <p class="text-xs text-gray-500 mt-1">新規店舗登録時の必要デポジット額</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">プロモーションメール送信料 (円)</label>
+                                    <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="10">
+                                    <p class="text-xs text-gray-500 mt-1">店舗からユーザーへのメール送信あたりの料金</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">ポイント送金手数料率</label>
+                                    <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="10">
+                                    <p class="text-xs text-gray-500 mt-1">ユーザー間ポイント送金時の手数料率 (%)</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">店舗決済手数料 (円)</label>
+                                    <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="500">
+                                    <p class="text-xs text-gray-500 mt-1">店舗決済でのポイント利用時の手数料</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">店舗決済最小利用額 (円)</label>
+                                    <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="20000">
+                                    <p class="text-xs text-gray-500 mt-1">店舗決済でポイント利用可能な最小決済額</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">店舗払戻還元率</label>
+                                    <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="90">
+                                    <p class="text-xs text-gray-500 mt-1">店舗への払戻時の還元率 (%)</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">システム手数料率 (%)</label>
+                                    <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="3">
+                                    <p class="text-xs text-gray-500 mt-1">システム利用料</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">銀行振込手数料 (円)</label>
+                                    <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="220">
+                                    <p class="text-xs text-gray-500 mt-1">店舗への払戻時の振込手数料</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">最小払戻金額 (円)</label>
+                                    <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="20000">
+                                    <p class="text-xs text-gray-500 mt-1">店舗払戻申請時可能な最小決済額</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 価格設定セクション -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-medium text-gray-900">ポイント価格設定</h3>
+                            <p class="text-sm text-gray-600 mt-1">店舗がポイントを購入する際の価格設定</p>
+                        </div>
+                        <div class="px-6 py-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">基本ポイント単価 (円)</label>
+                                    <input type="number" id="base-point-price" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="1.00">
+                                    <p class="text-xs text-gray-500 mt-1">1ポイント当たりの基本価格</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">消費税率 (%)</label>
+                                    <input type="number" id="tax-rate" step="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="10.0">
+                                    <p class="text-xs text-gray-500 mt-1">ポイント購入時の税率</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">運営手数料率 (%)</label>
+                                    <input type="number" id="operation-fee" step="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="5.0">
+                                    <p class="text-xs text-gray-500 mt-1">ポイント購入時の運営手数料</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">最小購入単位 (ポイント)</label>
+                                    <input type="number" id="min-purchase" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="1000">
+                                    <p class="text-xs text-gray-500 mt-1">一回の取引での最小購入量</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 店舗ティア別価格設定 -->
+                            <div class="mt-6">
+                                <h4 class="text-md font-medium text-gray-900 mb-3">店舗ティア別価格設定</h4>
+                                <div class="space-y-4">
+                                    <div class="grid grid-cols-4 gap-4 items-center p-4 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">ティア名</label>
+                                            <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                                <option>標準店舗</option>
+                                                <option>プレミアム店舗</option>
+                                                <option>VIP店舗</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">単価 (円)</label>
+                                            <input type="number" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="1.00">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">割引率 (%)</label>
+                                            <input type="number" step="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="0.0">
+                                        </div>
+                                        <div class="flex items-end">
+                                            <button class="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 価格計算プレビュー -->
+                            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                                <h4 class="text-md font-medium text-gray-900 mb-3">価格計算プレビュー</h4>
+                                <div class="grid grid-cols-3 gap-4 text-sm">
+                                    <div>
+                                        <span class="text-gray-600">1,000ポイント購入時</span>
+                                        <p class="font-semibold text-lg" id="preview-1000">¥1,100</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">10,000ポイント購入時</span>
+                                        <p class="font-semibold text-lg" id="preview-10000">¥11,000</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">100,000ポイント購入時</span>
+                                        <p class="font-semibold text-lg" id="preview-100000">¥110,000</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 他のタブコンテンツ（非表示） -->
+                <div id="content-general" class="hidden">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">一般設定</h3>
+                        <p class="text-gray-600">一般設定の内容がここに表示されます。</p>
+                    </div>
+                </div>
+                <div id="content-payment" class="hidden">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">決済設定</h3>
+                        <p class="text-gray-600">決済設定の内容がここに表示されます。</p>
+                    </div>
+                </div>
+                <div id="content-notification" class="hidden">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">通知設定</h3>
+                        <p class="text-gray-600">通知設定の内容がここに表示されます。</p>
+                    </div>
+                </div>
+                <div id="content-member" class="hidden">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">会員ランク</h3>
+                        <p class="text-gray-600">会員ランク設定の内容がここに表示されます。</p>
+                    </div>
+                </div>
+
+                <!-- 保存ボタン -->
+                <div class="flex justify-end mt-6">
+                    <button onclick="saveSettings()" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <i class="fas fa-save mr-2"></i>設定を保存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // タブ切り替え機能
+        function showTab(tabName) {
+            // 全てのタブコンテンツを非表示にする
+            const contents = ['general', 'payment', 'notification', 'operation', 'member'];
+            contents.forEach(name => {
+                const content = document.getElementById('content-' + name);
+                const tab = document.getElementById('tab-' + name);
+                if (content) content.classList.add('hidden');
+                if (tab) {
+                    tab.classList.remove('border-blue-500', 'text-blue-600');
+                    tab.classList.add('border-gray-300', 'text-gray-500');
+                }
+            });
+            
+            // 選択されたタブのコンテンツを表示する
+            const selectedContent = document.getElementById('content-' + tabName);
+            const selectedTab = document.getElementById('tab-' + tabName);
+            if (selectedContent) selectedContent.classList.remove('hidden');
+            if (selectedTab) {
+                selectedTab.classList.remove('border-gray-300', 'text-gray-500');
+                selectedTab.classList.add('border-blue-500', 'text-blue-600');
+            }
+        }
+
+        // 価格計算プレビュー更新
+        function updatePricingPreview() {
+            const basePrice = parseFloat(document.getElementById('base-point-price')?.value || 1.0);
+            const taxRate = parseFloat(document.getElementById('tax-rate')?.value || 10.0);
+            const operationFee = parseFloat(document.getElementById('operation-fee')?.value || 5.0);
+            
+            const amounts = [1000, 10000, 100000];
+            amounts.forEach(amount => {
+                const totalPrice = amount * basePrice * (1 + taxRate / 100) * (1 + operationFee / 100);
+                const element = document.getElementById(`preview-${amount}`);
+                if (element) {
+                    element.textContent = `¥${Math.round(totalPrice).toLocaleString()}`;
+                }
+            });
+        }
+
+        // 設定保存
+        function saveSettings() {
+            const settings = {
+                pointExpiry: document.querySelector('input[type="number"]').value,
+                basePrintPrice: document.getElementById('base-point-price')?.value,
+                taxRate: document.getElementById('tax-rate')?.value,
+                operationFee: document.getElementById('operation-fee')?.value,
+                minPurchase: document.getElementById('min-purchase')?.value
+            };
+            
+            // Django APIに送信
+            fetch('/api/admin/settings/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(settings)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('設定が保存されました');
+                } else {
+                    alert('設定の保存に失敗しました: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('設定の保存に失敗しました');
+            });
+        }
+
+        // CSRF Token取得
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // 価格入力フィールドの変更時にプレビューを更新
+        document.addEventListener('DOMContentLoaded', function() {
+            const priceInputs = ['base-point-price', 'tax-rate', 'operation-fee'];
+            priceInputs.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', updatePricingPreview);
+                }
+            });
+            
+            // 初期プレビュー更新
+            updatePricingPreview();
+        });
+    </script>
+</body>
+</html>

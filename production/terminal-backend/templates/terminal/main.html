@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BIID Terminal - 決済端末</title>
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <link rel="stylesheet" href="{% static '_next/static/css/160f526fac4d567d.css' %}">
+    
+    <!-- 端末専用メタタグ -->
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="nfc" content="enabled">
+    <meta name="camera" content="enabled">
+    <meta name="getUserMedia" content="enabled">
+</head>
+<body>
+    <div id="__next">
+        <!-- Next.jsで生成された決済端末画面コンテンツがここに配置される -->
+        <div style="display:flex;justify-content:center;align-items:center;height:100vh;font-size:18px;color:#666">
+            決済端末画面を読み込んでいます...
+        </div>
+    </div>
+    
+    <!-- Next.js JavaScript -->
+    <script src="{% static '_next/static/chunks/webpack-bfa4fae4f9104c9e.js' %}"></script>
+    <script src="{% static '_next/static/chunks/framework-1594f84e519182f7.js' %}"></script>
+    <script src="{% static '_next/static/chunks/main-cdac1e7c2832f5aa.js' %}"></script>
+    <script src="{% static '_next/static/chunks/pages/_app-d9130df01c4b76e5.js' %}"></script>
+    <script src="{% static '_next/static/chunks/pages/terminal-4f44ce10c7603fe7.js' %}"></script>
+    
+    <!-- 決済端末用設定 -->
+    <script>
+        // API Base URL設定（Django統合用）
+        window.__BIID_CONFIG__ = {
+            apiBaseUrl: '/api/',
+            demoMode: false,
+            interface: 'terminal',
+            version: '1.0.0',
+            features: {
+                nfcScanning: true,
+                paymentProcessing: true,
+                pointGranting: true,
+                receiptPrinting: true,
+                offlineMode: true,
+                autoLogout: true
+            },
+            terminal: {
+                autoLogoutMinutes: 30,
+                offlineStorageEnabled: true,
+                nfcEnabled: true,
+                cameraEnabled: true
+            }
+        };
+    </script>
+</body>
+</html>
