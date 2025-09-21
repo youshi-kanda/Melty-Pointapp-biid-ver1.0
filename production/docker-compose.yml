@@ -1,0 +1,158 @@
+# BIID Point App - 本番用 Docker Compose
+# Usage: docker-compose up -d
+
+version: '3.8'
+
+services:
+  # === データベース・キャッシュ ===
+  postgresql:
+    image: postgres:15
+    container_name: biid-postgresql
+    environment:
+      POSTGRES_DB: ${DB_NAME:-biid_production}
+      POSTGRES_USER: ${DB_USER:-biid_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_HOST_AUTH_METHOD: md5
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+      - ./postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - biid-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-biid_user} -d ${DB_NAME:-biid_production}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: biid-redis
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - biid-network
+    restart: unless-stopped
+
+  # === BIID バックエンドサービス ===
+  admin-backend:
+    build:
+      context: .
+      dockerfile: admin-backend/Dockerfile
+    container_name: biid-admin-backend
+    environment:
+      - DEBUG=${DEBUG:-False}
+      - USE_POSTGRESQL=True
+      - USE_REDIS=True
+      - DB_HOST=postgresql
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env.production
+    ports:
+      - "8001:8001"
+    depends_on:
+      - postgresql
+      - redis
+    volumes:
+      - admin_static:/app/admin-backend/static
+      - admin_media:/app/admin-backend/media
+      - logs:/var/log/biid
+    networks:
+      - biid-network
+    restart: unless-stopped
+
+  store-backend:
+    build:
+      context: .
+      dockerfile: store-backend/Dockerfile
+    container_name: biid-store-backend
+    environment:
+      - DEBUG=${DEBUG:-False}
+      - USE_POSTGRESQL=True
+      - USE_REDIS=True
+      - DB_HOST=postgresql
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env.production
+    ports:
+      - "8002:8002"
+    depends_on:
+      - postgresql
+      - redis
+    volumes:
+      - store_static:/app/store-backend/static
+      - store_media:/app/store-backend/media
+      - logs:/var/log/biid
+    networks:
+      - biid-network
+    restart: unless-stopped
+
+  user-backend:
+    build:
+      context: .
+      dockerfile: user-backend/Dockerfile
+    container_name: biid-user-backend
+    environment:
+      - DEBUG=${DEBUG:-False}
+      - USE_POSTGRESQL=True
+      - USE_REDIS=True
+      - DB_HOST=postgresql
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env.production
+    ports:
+      - "8003:8003"
+    depends_on:
+      - postgresql
+      - redis
+    volumes:
+      - user_static:/app/user-backend/static
+      - user_media:/app/user-backend/media
+      - logs:/var/log/biid
+    networks:
+      - biid-network
+    restart: unless-stopped
+
+  terminal-backend:
+    build:
+      context: .
+      dockerfile: terminal-backend/Dockerfile
+    container_name: biid-terminal-backend
+    environment:
+      - DEBUG=${DEBUG:-False}
+      - USE_POSTGRESQL=True
+      - USE_REDIS=True
+      - DB_HOST=postgresql
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env.production
+    ports:
+      - "8004:8004"
+    depends_on:
+      - postgresql
+      - redis
+    volumes:
+      - terminal_static:/app/terminal-backend/static
+      - terminal_media:/app/terminal-backend/media
+      - logs:/var/log/biid
+    networks:
+      - biid-network
+    restart: unless-stopped
+
+volumes:
+  postgresql_data:
+  redis_data:
+  admin_static:
+  admin_media:
+  store_static:
+  store_media:
+  user_static:
+  user_media:
+  terminal_static:
+  terminal_media:
+  logs:
+
+networks:
+  biid-network:
+    driver: bridge

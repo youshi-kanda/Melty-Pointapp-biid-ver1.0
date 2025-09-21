@@ -1548,7 +1548,10 @@ class AccountRank(models.Model):
 
 
 class MeltyRankConfiguration(models.Model):
-    """MELTY会員種別からBIIDランクへのマッピング設定"""
+    """
+    MELTY会員ランク設定
+    対象: ユーザー向け(MELTY連携・初期ランク・ボーナスポイント)
+    """
     MELTY_MEMBERSHIP_CHOICES = [
         ('free', 'MELTY無料会員'),
         ('premium', 'MELTYプレミアム会員'),
@@ -1558,25 +1561,30 @@ class MeltyRankConfiguration(models.Model):
         max_length=20, 
         choices=MELTY_MEMBERSHIP_CHOICES, 
         unique=True,
-        verbose_name="MELTY会員種別"
+        verbose_name="MELTY会員種別 [ユーザー向け]",
+        help_text="MELTY連携ユーザーの初期ランク決定"
     )
     biid_initial_rank = models.CharField(
         max_length=20, 
         choices=User.RANK_CHOICES,
-        verbose_name="BIID初期ランク"
+        verbose_name="BIID初期ランク [ユーザー向け]",
+        help_text="MELTY連携ユーザーの初期ランク決定"
     )
     welcome_bonus_points = models.IntegerField(
         default=1000,
-        verbose_name="ウェルカムボーナスポイント"
+        verbose_name="ウェルカムボーナスポイント [ユーザー向け]",
+        help_text="新規ユーザーへの初期ポイント付与"
     )
     points_expiry_months = models.IntegerField(
         default=12,
-        verbose_name="ポイント有効期限（月）"
+        verbose_name="ポイント有効期限 [ユーザー向け]",
+        help_text="ユーザーのポイント管理(月)"
     )
     member_id_prefix = models.CharField(
         max_length=5,
         default="S",
-        verbose_name="会員ID接頭辞"
+        verbose_name="会員ID接頭辞 [ユーザー向け]",
+        help_text="ユーザーの会員ID生成ルール"
     )
     is_active = models.BooleanField(
         default=True,
@@ -1591,8 +1599,8 @@ class MeltyRankConfiguration(models.Model):
     
     class Meta:
         ordering = ['melty_membership_type']
-        verbose_name = "MELTY会員ランク設定"
-        verbose_name_plural = "MELTY会員ランク設定"
+        verbose_name = "会員ランク設定 (ユーザー向け)"
+        verbose_name_plural = "会員ランク設定 (ユーザー向け)"
     
     def __str__(self):
         return f"{self.get_melty_membership_type_display()} → {self.get_biid_initial_rank_display()}"

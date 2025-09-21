@@ -299,3 +299,32 @@ def transaction_management(request):
     }
     
     return render(request, 'production_admin/transaction_management.html', context)
+
+
+def point_pricing_settings(request):
+    """
+    ポイント価格設定API
+    店舗管理画面で使用される価格設定を返す
+    """
+    # システム設定から価格設定を取得（実際の設定システムに合わせて調整）
+    # 現在はデフォルト値を返す
+    
+    pricing_data = {
+        'unit_price': 1.00,  # 基本単価（円/ポイント）
+        'system_fee_rate': 3.0,  # システム手数料率（％）
+        'min_purchase_amount': 100,  # 最小購入額（ポイント）
+        'max_purchase_amount': 50000,  # 最大購入額（ポイント）
+        'tax_rate': 10.0,  # 消費税率（％）
+        'operation_fee_rate': 5.0,  # 運営手数料率（％）
+        'store_tier_discounts': {
+            'standard': 0.0,  # 標準店舗割引率
+            'premium': 2.0,   # プレミアム店舗割引率
+            'vip': 5.0        # VIP店舗割引率
+        }
+    }
+    
+    return JsonResponse({
+        'success': True,
+        'data': pricing_data,
+        'timestamp': timezone.now().isoformat()
+    })

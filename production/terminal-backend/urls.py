@@ -31,9 +31,8 @@ def serve_next_static(request, path):
     import os
     import mimetypes
     
-    # /out/_next フォルダからファイルを取得
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-    static_file_path = os.path.join(base_dir, 'out', '_next', path)
+    # 内部の static/_next フォルダからファイルを取得
+    static_file_path = os.path.join(os.path.dirname(__file__), 'static', '_next', path)
     
     if not os.path.exists(static_file_path):
         raise Http404(f"Static file not found: {path}")

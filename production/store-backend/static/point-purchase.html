@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ポイント購入 - 店舗管理</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <!-- ヘッダー -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-store text-white"></i>
+                            </div>
+                            <h1 class="text-xl font-bold text-gray-900">店舗管理</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-sm">
+                            <span class="text-gray-500">保有ポイント:</span>
+                            <span class="font-bold text-green-600" id="current-points">0</span>
+                            <span class="text-gray-500">pt</span>
+                        </div>
+                        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-gray-600"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700">店舗管理者</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex">
+        <!-- サイドバー -->
+        <div class="w-64 bg-white shadow-sm min-h-screen">
+            <nav class="mt-5 px-2">
+                <a href="/dashboard/" class="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                    <i class="fas fa-chart-line mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                    ダッシュボード
+                </a>
+                <a href="#" class="group flex items-center px-2 py-2 text-base font-medium rounded-md bg-green-100 text-green-700">
+                    <i class="fas fa-coins mr-3 text-green-500"></i>
+                    ポイント購入
+                </a>
+                <a href="/payment/" class="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                    <i class="fas fa-credit-card mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                    決済管理
+                </a>
+                <a href="/reports/" class="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                    <i class="fas fa-chart-bar mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                    レポート
+                </a>
+                <a href="/settings/" class="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                    <i class="fas fa-cog mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                    設定
+                </a>
+            </nav>
+        </div>
+
+        <!-- メインコンテンツ -->
+        <div class="flex-1 p-8">
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">ポイント購入</h2>
+                    <p class="text-gray-600 mt-1">店舗でのポイント利用のためのポイント購入</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- ポイント購入フォーム -->
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">ポイント購入</h3>
+                        
+                        <!-- 現在の価格設定表示 -->
+                        <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+                            <h4 class="text-md font-medium text-gray-900 mb-2">現在の価格設定</h4>
+                            <div class="text-sm text-gray-600">
+                                <p>基本単価: <span class="font-bold text-blue-600" id="unit-price">1.00</span>円/ポイント</p>
+                                <p>システム手数料: <span class="font-bold text-blue-600" id="system-fee">3.0</span>%</p>
+                                <p>店舗ランク: <span class="font-bold text-green-600">標準店舗</span></p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">購入ポイント数</label>
+                                <input type="number" id="point-amount" min="100" step="100" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500" placeholder="1000" onchange="calculateTotal()">
+                                <p class="text-xs text-gray-500 mt-1">最小: 100pt、最大: 50,000pt</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">支払い金額</label>
+                                <div class="relative">
+                                    <input type="text" id="total-amount" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-right pr-12 text-lg font-bold text-green-600" readonly>
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">円</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-sm text-gray-600">
+                                    <div class="flex justify-between">
+                                        <span>基本料金:</span>
+                                        <span id="base-cost">0円</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>システム手数料:</span>
+                                        <span id="fee-cost">0円</span>
+                                    </div>
+                                    <div class="flex justify-between border-t pt-1 font-bold">
+                                        <span>合計:</span>
+                                        <span id="total-cost">0円</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-4">
+                                <button onclick="purchasePoints()" class="w-full bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-lg font-medium">
+                                    <i class="fas fa-shopping-cart mr-2"></i>ポイント購入
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 購入履歴 -->
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">購入履歴</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                <div>
+                                    <div class="font-medium text-gray-900">5,000pt</div>
+                                    <div class="text-sm text-gray-500">2024/09/19 14:30</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-medium text-green-600">¥5,150</div>
+                                    <div class="text-sm text-gray-500">完了</div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                <div>
+                                    <div class="font-medium text-gray-900">10,000pt</div>
+                                    <div class="text-sm text-gray-500">2024/09/18 10:15</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-medium text-green-600">¥10,300</div>
+                                    <div class="text-sm text-gray-500">完了</div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                <div>
+                                    <div class="font-medium text-gray-900">3,000pt</div>
+                                    <div class="text-sm text-gray-500">2024/09/17 16:45</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-medium text-green-600">¥3,090</div>
+                                    <div class="text-sm text-gray-500">完了</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <a href="/purchase-history/" class="text-green-600 hover:text-green-500 text-sm font-medium">
+                                すべての履歴を見る <i class="fas fa-arrow-right ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 自動チャージ設定 -->
+                <div class="mt-8 bg-white shadow rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">自動チャージ設定</h3>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-medium text-gray-900">自動チャージ機能</h4>
+                            <p class="text-sm text-gray-500">残高が設定額を下回った際に自動でポイントを購入します</p>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="auto-charge" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                            <label for="auto-charge" class="ml-2 block text-sm text-gray-900">有効にする</label>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">残高閾値</label>
+                            <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500" value="1000">
+                            <p class="text-xs text-gray-500 mt-1">この金額を下回ると自動チャージ</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">チャージ金額</label>
+                            <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500" value="5000">
+                            <p class="text-xs text-gray-500 mt-1">自動でチャージするポイント数</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            設定を保存
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 運営管理画面の価格設定を取得（API経由）
+        let unitPrice = 1.00;
+        let systemFeeRate = 3.0;
+        
+        // 価格取得（API経由で運営設定から取得）
+        function fetchPricingSettings() {
+            fetch('http://127.0.0.1:8002/api/point-pricing/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        unitPrice = data.data.unit_price || 1.00;
+                        systemFeeRate = data.data.system_fee_rate || 3.0;
+                        
+                        document.getElementById('unit-price').textContent = unitPrice.toFixed(2);
+                        document.getElementById('system-fee').textContent = systemFeeRate.toFixed(1);
+                        calculateTotal();
+                    } else {
+                        console.error('価格設定の取得に失敗:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('価格設定の取得に失敗:', error);
+                });
+        }
+
+        // 合計金額計算
+        function calculateTotal() {
+            const pointAmount = parseInt(document.getElementById('point-amount').value) || 0;
+            
+            if (pointAmount > 0) {
+                const baseCost = pointAmount * unitPrice;
+                const feeCost = baseCost * (systemFeeRate / 100);
+                const totalCost = baseCost + feeCost;
+                
+                document.getElementById('base-cost').textContent = `${Math.round(baseCost).toLocaleString()}円`;
+                document.getElementById('fee-cost').textContent = `${Math.round(feeCost).toLocaleString()}円`;
+                document.getElementById('total-cost').textContent = `${Math.round(totalCost).toLocaleString()}円`;
+                document.getElementById('total-amount').value = Math.round(totalCost).toLocaleString();
+            } else {
+                document.getElementById('base-cost').textContent = '0円';
+                document.getElementById('fee-cost').textContent = '0円';
+                document.getElementById('total-cost').textContent = '0円';
+                document.getElementById('total-amount').value = '';
+            }
+        }
+
+        // ポイント購入処理
+        function purchasePoints() {
+            const pointAmount = parseInt(document.getElementById('point-amount').value);
+            
+            if (!pointAmount || pointAmount < 100) {
+                alert('購入ポイント数は100pt以上で入力してください。');
+                return;
+            }
+            
+            if (pointAmount > 50000) {
+                alert('1回の購入上限は50,000ptです。');
+                return;
+            }
+            
+            const baseCost = pointAmount * unitPrice;
+            const feeCost = baseCost * (systemFeeRate / 100);
+            const totalCost = baseCost + feeCost;
+            
+            if (confirm(`${pointAmount.toLocaleString()}ポイントを${Math.round(totalCost).toLocaleString()}円で購入しますか？`)) {
+                // FINCODE決済API呼び出し
+                fetch('/api/store/purchase-points/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        point_amount: pointAmount,
+                        total_amount: Math.round(totalCost)
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('ポイント購入が完了しました！');
+                        updateCurrentPoints();
+                        document.getElementById('point-amount').value = '';
+                        calculateTotal();
+                    } else {
+                        alert('購入に失敗しました: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('購入処理エラー:', error);
+                    alert('購入処理中にエラーが発生しました。');
+                });
+            }
+        }
+
+        // 現在のポイント残高更新
+        function updateCurrentPoints() {
+            fetch('/api/store/current-points/')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('current-points').textContent = data.points.toLocaleString();
+                });
+        }
+
+        // CSRF Token取得
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // ページ読み込み時の初期化
+        window.onload = function() {
+            fetchPricingSettings();
+            updateCurrentPoints();
+        };
+    </script>
+</body>
+</html>

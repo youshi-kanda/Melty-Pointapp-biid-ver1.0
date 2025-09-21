@@ -10,7 +10,7 @@ sys.path.append(str(BASE_DIR))
 from pointapp.settings import *
 
 # 決済端末専用設定の上書き
-DEBUG = os.getenv('TERMINAL_DEBUG', 'True').lower() == 'true'  # 開発時はTrue
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'  # 開発時はTrue
 
 # 決済端末用ホスト設定
 ALLOWED_HOSTS = os.getenv('TERMINAL_ALLOWED_HOSTS', 'terminal.biid.app,localhost,127.0.0.1').split(',')

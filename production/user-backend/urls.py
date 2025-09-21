@@ -58,7 +58,19 @@ def user_login(request):
     from django.http import FileResponse
     import os
     static_file = os.path.join(os.path.dirname(__file__), 'static', 'login.html')
-    return FileResponse(open(static_file, 'rb'), content_type='text/html')
+    response = FileResponse(open(static_file, 'rb'), content_type='text/html')
+    # 開発環境でHTTPSを防ぐためのヘッダー
+    csp_policy = (
+        "default-src 'self' http://127.0.0.1:* http://localhost:* 'unsafe-inline' 'unsafe-eval'; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' http://127.0.0.1:* http://localhost:* https://maps.googleapis.com"
+    )
+    response['Content-Security-Policy'] = csp_policy
+    response['Strict-Transport-Security'] = 'max-age=0'
+    return response
 
 def serve_next_static(request, path):
     """Next.jsの静的ファイルを配信"""
@@ -66,9 +78,8 @@ def serve_next_static(request, path):
     import os
     import mimetypes
     
-    # /out/_next フォルダからファイルを取得
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-    static_file_path = os.path.join(base_dir, 'out', '_next', path)
+    # 内部の static/_next フォルダからファイルを取得
+    static_file_path = os.path.join(os.path.dirname(__file__), 'static', '_next', path)
     
     if not os.path.exists(static_file_path):
         raise Http404(f"Static file not found: {path}")
@@ -100,13 +111,77 @@ def social_detail(request, social_id):
     from django.shortcuts import render
     return render(request, 'social/detail.html', {'social_id': social_id})
 
+def serve_manifest(request):
+    """PWA用manifest.json配信"""
+    from django.http import JsonResponse
+    manifest_data = {
+        "name": "biid ユーザーアプリ",
+        "short_name": "biid User",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#ffffff",
+        "theme_color": "#000000",
+        "icons": [
+            {
+                "src": "/static/icons/icon-192x192.png",
+                "sizes": "192x192",
+                "type": "image/png"
+            }
+        ]
+    }
+    return JsonResponse(manifest_data)
+
+def serve_config(request):
+    """設定ファイル配信"""
+    from django.http import JsonResponse
+    config_data = {
+        "api_endpoint": "/api",
+        "features": {
+            "social": True,
+            "points": True,
+            "gifts": True
+        }
+    }
+    return JsonResponse(config_data)
+
+def serve_next_data(request, path=None):
+    """Next.jsのデータファイル配信"""
+    from django.http import JsonResponse
+    # 空のデータを返す（Next.jsの静的エクスポート用）
+    return JsonResponse({})
+
+def serve_next_data_fixed(request):
+    """Next.jsのデータファイル配信（パスなし）"""
+    from django.http import JsonResponse
+    # 空のデータを返す（Next.jsの静的エクスポート用）
+    return JsonResponse({})
+
 def health(_request):
     """ヘルスチェック"""
     return JsonResponse({"status": "ok", "service": "user"})
 
 urlpatterns = [
+    # Next.jsデータファイル（具体的なパス - 優先順位高）
+    path('_next/data/pUNSGtetT1E1KfpW2r6R_/index.json', serve_next_data_fixed, name='next-data-index'),
+    path('_next/data/pUNSGtetT1E1KfpW2r6R_/user.json', serve_next_data_fixed, name='next-data-user'),
+    path('_next/data/pUNSGtetT1E1KfpW2r6R_/user/login.json', serve_next_data_fixed, name='next-data-user-login'),
+    path('_next/data/pUNSGtetT1E1KfpW2r6R_/user/social.json', serve_next_data_fixed, name='next-data-user-social'),
+    path('_next/data/pUNSGtetT1E1KfpW2r6R_/user/register.json', serve_next_data_fixed, name='next-data-user-register'),
+    path('_next/data/pUNSGtetT1E1KfpW2r6R_/user/map.json', serve_next_data_fixed, name='next-data-user-map'),
+    path('_next/data/pUNSGtetT1E1KfpW2r6R_/<path:path>', serve_next_data, name='next-data-catchall'),
+    
     # Next.js静的ファイル配信
     path('_next/<path:path>', serve_next_static, name='next-static'),
+    
+    # PWAとConfig
+    path('manifest.json', serve_manifest, name='manifest'),
+    path('config.json', serve_config, name='config'),
+    
+    # userルート追加
+    path('user', user_login, name='user-alt'),
+    path('user/', user_login, name='user-alt-slash'),
+    path('user.html', user_login, name='user-html'),
+    path('user/map', user_map, name='user-map-direct'),
     
     # ユーザー画面のルート（ログインページ）
     path('', user_login, name='user-root'),

@@ -15,8 +15,10 @@ from core.test_views import api_status, get_totp
 
 def store_dashboard(request):
     """店舗ダッシュボード"""
-    from django.shortcuts import render
-    return render(request, 'store/dashboard.html')
+    from django.http import FileResponse
+    import os
+    static_file = os.path.join(os.path.dirname(__file__), 'static', 'login.html')
+    return FileResponse(open(static_file, 'rb'), content_type='text/html')
 
 def store_charge(request):
     """ポイントチャージページ"""
@@ -63,6 +65,13 @@ def store_profile(request):
     from django.shortcuts import render
     return render(request, 'store/profile.html')
 
+def store_point_purchase(request):
+    """ポイント購入ページ"""
+    from django.http import FileResponse
+    import os
+    static_file = os.path.join(os.path.dirname(__file__), 'static', 'point-purchase.html')
+    return FileResponse(open(static_file, 'rb'), content_type='text/html')
+
 def store_login(request):
     """店舗ログインページ"""
     from django.http import FileResponse
@@ -76,9 +85,8 @@ def serve_next_static(request, path):
     import os
     import mimetypes
     
-    # /out/_next フォルダからファイルを取得
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-    static_file_path = os.path.join(base_dir, 'out', '_next', path)
+    # 内部の static/_next フォルダからファイルを取得
+    static_file_path = os.path.join(os.path.dirname(__file__), 'static', '_next', path)
     
     if not os.path.exists(static_file_path):
         raise Http404(f"Static file not found: {path}")
@@ -104,7 +112,7 @@ urlpatterns = [
     path('_next/<path:path>', serve_next_static, name='next-static'),
     
     # 店舗画面のルート（ログインページ）
-    path('', store_login, name='store-root'),
+    path('', store_dashboard, name='store-root'),
     path('dashboard/', store_dashboard, name='store-dashboard'),
     path('dashboard.html', store_dashboard, name='store-dashboard-html'),
     
@@ -127,6 +135,8 @@ urlpatterns = [
     path('promotions.html', store_promotions, name='store-promotions-html'),
     path('profile/', store_profile, name='store-profile'),
     path('profile.html', store_profile, name='store-profile-html'),
+    path('point-purchase/', store_point_purchase, name='store-point-purchase'),
+    path('point-purchase.html', store_point_purchase, name='store-point-purchase-html'),
     path('login/', store_login, name='store-login'),
     path('login.html', store_login, name='store-login-html'),
     

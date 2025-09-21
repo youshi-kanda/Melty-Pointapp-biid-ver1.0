@@ -21,4 +21,5 @@ urlpatterns = [
     
     # API
     path('api/status/', production_admin_views.api_status, name='api_status'),
+    path('api/point-pricing/', production_admin_views.point_pricing_settings, name='point_pricing_settings'),
 ]

@@ -12,3 +12,10 @@ Pillow>=10.0.0
 # PostgreSQL support
 psycopg2-binary>=2.9.0
 dj-database-url>=2.1.0
+
+# Redis support
+django-redis>=5.4.0
+redis>=5.0.0
+
+# Production server
+gunicorn>=21.2.0

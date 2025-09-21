@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 import logging
 
 from .models import Store, PointTransaction, User
@@ -265,5 +266,121 @@ def get_recent_transactions(request):
         logger.error(f"Get recent transactions failed: {str(e)}")
         return Response(
             {'error': '取引履歴取得に失敗しました'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def purchase_store_points(request):
+    """店舗ポイント購入処理"""
+    try:
+        # 権限チェック（店舗管理者のみ）
+        if request.user.role not in ['store', 'admin']:
+            return Response(
+                {'error': '権限がありません'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        point_amount = request.data.get('point_amount')
+        total_amount = request.data.get('total_amount')
+        
+        # バリデーション
+        if not point_amount or not total_amount:
+            return Response(
+                {'error': 'ポイント数と支払い金額が必要です'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            point_amount = int(point_amount)
+            total_amount = int(total_amount)
+        except (ValueError, TypeError):
+            return Response(
+                {'error': '有効な数値を入力してください'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if point_amount < 100 or point_amount > 50000:
+            return Response(
+                {'error': '購入ポイント数は100pt〜50,000ptの範囲で入力してください'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # FINCODE決済サービスを使用
+        from .fincode_service import fincode_service
+        
+        # 決済データ準備
+        payment_data = {
+            'order_id': f'STORE_POINT_{request.user.id}_{int(timezone.now().timestamp())}',
+            'amount': total_amount,
+            'currency': 'JPY',
+            'payment_method': 'card',
+            'customer_id': str(request.user.id),
+            'customer_name': request.user.username,
+            'customer_email': getattr(request.user, 'email', ''),
+            'description': f'{point_amount}ポイント購入（店舗向け）',
+            'return_url': request.build_absolute_uri('/payment/success/'),
+            'cancel_url': request.build_absolute_uri('/payment/cancel/'),
+            'notify_url': request.build_absolute_uri('/api/fincode/webhook/'),
+            'points_earned': point_amount,
+            'metadata': {
+                'purchase_type': 'store_points',
+                'store_id': getattr(request.user, 'store_id', None)
+            }
+        }
+        
+        # 決済開始
+        payment_result = fincode_service.initiate_payment(payment_data)
+        
+        if payment_result.get('success'):
+            return Response({
+                'success': True,
+                'payment_id': payment_result.get('payment_id'),
+                'redirect_url': payment_result.get('redirect_url'),
+                'order_id': payment_result.get('order_id'),
+                'point_amount': point_amount,
+                'total_amount': total_amount,
+                'message': 'ポイント購入を開始しました。決済画面にリダイレクトしてください。'
+            }, status=status.HTTP_201_CREATED)
+        else:
+            return Response(
+                {'error': 'ポイント購入処理に失敗しました'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+    except Exception as e:
+        logger.error(f"Store point purchase failed: {str(e)}")
+        return Response(
+            {'error': f'ポイント購入処理でエラーが発生しました: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_current_store_points(request):
+    """現在の店舗ポイント残高取得"""
+    try:
+        # 権限チェック（店舗管理者のみ）
+        if request.user.role not in ['store', 'admin']:
+            return Response(
+                {'error': '権限がありません'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # ユーザーのポイント残高を取得
+        points = getattr(request.user, 'point_balance', 0)
+        
+        return Response({
+            'points': points,
+            'user_id': request.user.id,
+            'username': request.user.username
+        })
+        
+    except Exception as e:
+        logger.error(f"Get current store points failed: {str(e)}")
+        return Response(
+            {'error': 'ポイント残高取得に失敗しました'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )

@@ -10,7 +10,7 @@ sys.path.append(str(BASE_DIR))
 from pointapp.settings import *
 
 # ユーザー専用設定の上書き
-DEBUG = os.getenv('USER_DEBUG', 'True').lower() == 'true'  # 開発時はTrue
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'  # 開発時はTrue
 
 # ユーザー用ホスト設定
 ALLOWED_HOSTS = os.getenv('USER_ALLOWED_HOSTS', 'app.biid.app,localhost,127.0.0.1').split(',')
@@ -24,9 +24,22 @@ STATICFILES_DIRS = [
 # テンプレート設定
 TEMPLATES[0]['DIRS'].append(Path(__file__).resolve().parent / 'templates')
 
+# カスタムミドルウェア
+class ForceHTTPMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        # 開発環境でHTTPS強制を防ぐ
+        if hasattr(response, '__setitem__'):
+            response['Strict-Transport-Security'] = 'max-age=0'
+        return response
+
 # ユーザー専用ミドルウェア
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'user_settings.ForceHTTPMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -70,6 +83,12 @@ else:
     SECURE_SSL_REDIRECT = False
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
+    
+    # 開発環境でのセキュリティヘッダー無効化
+    SECURE_HSTS_SECONDS = 0
+    SECURE_CONTENT_TYPE_NOSNIFF = False
+    SECURE_BROWSER_XSS_FILTER = False
+    SECURE_REFERRER_POLICY = None
 
 # ユーザー用ログ設定
 LOGGING['loggers']['user'] = {

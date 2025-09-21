@@ -37,6 +37,7 @@ def system_settings_dashboard(request):
 def general_settings(request):
     """
     一般設定の管理
+    対象: システム全体 + ユーザー向け表示情報
     """
     settings = SystemSettings.get_settings()
     
@@ -73,7 +74,8 @@ def general_settings(request):
 @require_http_methods(["GET", "POST"])
 def payment_settings(request):
     """
-    決済設定の管理
+    ポイント価格設定の管理
+    対象: 店舗向け(ポイント還元率・決済制限) + 決済端末向け(FINCODE統合) + ユーザー向け(有効期限)
     """
     settings = PaymentSettings.get_settings()
     
@@ -111,6 +113,7 @@ def payment_settings(request):
 def notification_settings(request):
     """
     通知設定の管理
+    対象: システム全体(SMTP基盤) + ユーザー向け(各種通知ON/OFF)
     """
     settings = NotificationSettings.get_settings()
     
@@ -154,6 +157,7 @@ def notification_settings(request):
 def security_settings(request):
     """
     セキュリティ設定の管理
+    対象: システム全体(ログイン制御・API制限) + 管理者・店舗向け(2FA設定)
     """
     settings = SecuritySettings.get_settings()
     
@@ -193,6 +197,7 @@ def security_settings(request):
 def rank_settings(request):
     """
     会員ランク設定の管理
+    対象: ユーザー向け(MELTY連携・初期ランク・ボーナスポイント)
     """
     melty_configs = MeltyRankConfiguration.objects.all()
     

@@ -11,4 +11,8 @@ urlpatterns = [
     
     # 取引履歴
     path('transactions/recent/', store_payment_views.get_recent_transactions, name='recent-transactions'),
+    
+    # 店舗ポイント購入
+    path('purchase-points/', store_payment_views.purchase_store_points, name='purchase-store-points'),
+    path('current-points/', store_payment_views.get_current_store_points, name='current-store-points'),
 ]

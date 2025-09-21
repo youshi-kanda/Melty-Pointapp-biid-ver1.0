@@ -136,17 +136,22 @@ WSGI_APPLICATION = 'pointapp.wsgi.application'
 # Database configuration with PostgreSQL support
 import os
 
-if os.getenv('USE_POSTGRESQL'):
+if config('USE_POSTGRESQL', default=False, cast=bool):
     # PostgreSQL configuration
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'biid_production',
-            'USER': os.getenv('DB_USER', os.getenv('USER')),
-            'PASSWORD': os.getenv('DB_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', 'localhost'),
-            'PORT': os.getenv('DB_PORT', '5432'),
-            'CONN_MAX_AGE': 600,
+            'NAME': config('DB_NAME', default='biid_production'),
+            'USER': config('DB_USER', default='biid_user'),
+            'PASSWORD': config('DB_PASSWORD', default=''),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='5432'),
+            'CONN_MAX_AGE': config('DB_CONN_MAX_AGE', default=600, cast=int),
+            'CONN_HEALTH_CHECKS': config('DB_CONN_HEALTH_CHECKS', default=True, cast=bool),
+            'OPTIONS': {
+                'MAX_CONNS': config('DB_MAX_CONNS', default=20, cast=int),
+                'connect_timeout': 10,
+            },
         }
     }
 else:
@@ -230,7 +235,7 @@ else:
         'x-terminal-request',
     ]
 
-JWT_SECRET_KEY = config('JWT_SECRET_KEY', default='your-jwt-secret-here')
+JWT_SECRET_KEY = config('JWT_SECRET_KEY', default='dev-jwt-key-change-in-production')
 JWT_ALGORITHM = config('JWT_ALGORITHM', default='HS256')
 
 # セキュリティ設定
@@ -291,13 +296,42 @@ LOGGING = {
     },
 }
 
-# キャッシュ設定（Redis推奨）
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
+# キャッシュ設定（Redis対応）
+if config('USE_REDIS', default=False, cast=bool):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': config('REDIS_URL', default='redis://localhost:6379/0'),
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                'CONNECTION_POOL_KWARGS': {
+                    'max_connections': config('REDIS_MAX_CONNECTIONS', default=50, cast=int),
+                    'retry_on_timeout': True,
+                    'socket_connect_timeout': 5,
+                    'socket_timeout': 5,
+                },
+                'SERIALIZER': 'django_redis.serializers.json.JSONSerializer',
+                'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+            },
+            'KEY_PREFIX': config('REDIS_KEY_PREFIX', default='biid_prod'),
+            'TIMEOUT': config('CACHE_TIMEOUT', default=300, cast=int),
+            'VERSION': 1,
+        }
     }
-}
+    
+    # セッションをRedisに保存
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+    SESSION_CACHE_ALIAS = 'default'
+    
+else:
+    # 開発環境用のローカルメモリキャッシュ
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'biid-dev-cache',
+            'TIMEOUT': 300,
+        }
+    }
 
 # URL末尾スラッシュ問題を解消
 APPEND_SLASH = False

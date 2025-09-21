@@ -10,7 +10,7 @@ sys.path.append(str(BASE_DIR))
 from pointapp.settings import *
 
 # 店舗専用設定の上書き
-DEBUG = os.getenv('STORE_DEBUG', 'True').lower() == 'true'  # 開発時はTrue
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 # 店舗用ホスト設定
 ALLOWED_HOSTS = os.getenv('STORE_ALLOWED_HOSTS', 'store.biid.app,localhost,127.0.0.1').split(',')

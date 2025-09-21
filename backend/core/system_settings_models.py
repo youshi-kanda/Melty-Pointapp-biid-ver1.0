@@ -12,39 +12,45 @@ import json
 class SystemSettings(models.Model):
     """
     システム全体の設定を管理するシングルトンモデル
+    対象: システム全体 + ユーザー向け表示情報
     """
-    # 基本設定
+    # 基本設定 [システム全体]
     site_name = models.CharField(
         max_length=100, 
         default="biid Point Management",
-        verbose_name="サイト名"
+        verbose_name="サイト名 [全インターフェース]",
+        help_text="全インターフェース（運営・店舗・ユーザー・決済端末）のタイトルに表示"
     )
     site_description = models.TextField(
         blank=True,
         default="革新的なポイント管理システム",
-        verbose_name="サイト説明"
+        verbose_name="サイト説明 [システム全体]",
+        help_text="システム全体のメタ情報として使用"
     )
     
-    # サポート情報
+    # サポート情報 [ユーザー向け]
     support_email = models.EmailField(
         default="support@biid.com",
         validators=[EmailValidator()],
-        verbose_name="サポートメール"
+        verbose_name="サポートメール [ユーザー向け]",
+        help_text="ユーザー画面でのサポート情報表示"
     )
     support_phone = models.CharField(
         max_length=20,
         default="03-1234-5678",
-        verbose_name="サポート電話"
+        verbose_name="サポート電話 [ユーザー向け]",
+        help_text="ユーザー画面でのサポート情報表示"
     )
     
-    # 運営エリア
+    # 運営エリア [ユーザー向け]
     operation_area = models.CharField(
         max_length=100,
         default="大阪（北新地・ミナミエリア）",
-        verbose_name="運営エリア"
+        verbose_name="運営エリア [ユーザー向け]",
+        help_text="ユーザーに対するサービスエリア表示"
     )
     
-    # タイムゾーン設定
+    # タイムゾーン設定 [システム全体]
     timezone = models.CharField(
         max_length=50,
         default="Asia/Tokyo",
@@ -53,24 +59,28 @@ class SystemSettings(models.Model):
             ('UTC', 'UTC'),
             ('Asia/Seoul', 'Asia/Seoul'),
         ],
-        verbose_name="タイムゾーン"
+        verbose_name="タイムゾーン [システム全体]",
+        help_text="全システムの時刻表示・処理に影響"
     )
     
-    # システム状態
+    # システム状態 [システム全体]
     maintenance_mode = models.BooleanField(
         default=False,
-        verbose_name="メンテナンスモード"
+        verbose_name="メンテナンスモード [システム全体]",
+        help_text="全システムアクセスを制御"
     )
     debug_mode = models.BooleanField(
         default=False,
-        verbose_name="デバッグモード"
+        verbose_name="デバッグモード [システム全体]",
+        help_text="システム全体のログレベル・エラー表示を制御"
     )
     
-    # メンテナンス情報
+    # メンテナンス情報 [ユーザー向け]
     maintenance_message = models.TextField(
         blank=True,
         default="現在システムメンテナンス中です。しばらくお待ちください。",
-        verbose_name="メンテナンスメッセージ"
+        verbose_name="メンテナンスメッセージ [ユーザー向け]",
+        help_text="ユーザー向けメンテナンス画面で表示"
     )
     maintenance_start_time = models.DateTimeField(
         null=True, blank=True,
@@ -90,8 +100,8 @@ class SystemSettings(models.Model):
     )
     
     class Meta:
-        verbose_name = "システム設定"
-        verbose_name_plural = "システム設定"
+        verbose_name = "一般設定 (システム全体+ユーザー向け)"
+        verbose_name_plural = "一般設定 (システム全体+ユーザー向け)"
         
     def __str__(self):
         return self.site_name
@@ -210,60 +220,70 @@ class NotificationSettings(models.Model):
     smtp_password = models.CharField(
         max_length=200,
         blank=True,
-        verbose_name="SMTPパスワード"
+        verbose_name="SMTPパスワード [システム全体]",
+        help_text="全システムからのメール送信基盤"
     )
     smtp_use_tls = models.BooleanField(
         default=True,
-        verbose_name="TLS使用"
+        verbose_name="TLS使用 [システム全体]",
+        help_text="全システムからのメール送信基盤"
     )
     
-    # 送信者情報
+    # 送信者情報 [システム全体]
     from_email = models.EmailField(
         default="noreply@biid.com",
-        verbose_name="送信元メールアドレス"
+        verbose_name="送信元メールアドレス [システム全体]",
+        help_text="全システムからのメール送信者情報"
     )
     from_name = models.CharField(
         max_length=100,
         default="BIID Point System",
-        verbose_name="送信者名"
+        verbose_name="送信者名 [システム全体]",
+        help_text="全システムからのメール送信者情報"
     )
     
-    # 通知設定
+    # 通知設定 [ユーザー向け]
     enable_welcome_email = models.BooleanField(
         default=True,
-        verbose_name="ウェルカムメール送信"
+        verbose_name="ウェルカムメール送信 [ユーザー向け]",
+        help_text="新規ユーザー登録時の自動メール"
     )
     enable_point_notification = models.BooleanField(
         default=True,
-        verbose_name="ポイント通知"
+        verbose_name="ポイント通知 [ユーザー向け]",
+        help_text="ユーザーのポイント付与・消費通知"
     )
     enable_gift_notification = models.BooleanField(
         default=True,
-        verbose_name="ギフト通知"
+        verbose_name="ギフト通知 [ユーザー向け]",
+        help_text="ギフト交換通知"
     )
     enable_promotion_email = models.BooleanField(
         default=True,
-        verbose_name="プロモーションメール"
+        verbose_name="プロモーションメール [ユーザー向け]",
+        help_text="プロモーション・キャンペーンメール"
     )
     
-    # バッチ送信設定
+    # バッチ送信設定 [システム全体]
     email_batch_size = models.IntegerField(
         default=100,
         validators=[MinValueValidator(1), MaxValueValidator(1000)],
-        verbose_name="メールバッチサイズ"
+        verbose_name="メールバッチサイズ [システム全体]",
+        help_text="システム全体のメール送信パフォーマンス制御"
     )
     email_rate_limit = models.IntegerField(
         default=60,
         validators=[MinValueValidator(1), MaxValueValidator(3600)],
-        verbose_name="メール送信間隔（秒）"
+        verbose_name="メール送信間隔 [システム全体]",
+        help_text="システム全体のメール送信パフォーマンス制御(秒)"
     )
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        verbose_name = "通知設定"
-        verbose_name_plural = "通知設定"
+        verbose_name = "通知設定 (システム全体+ユーザー向け)"
+        verbose_name_plural = "通知設定 (システム全体+ユーザー向け)"
     
     def __str__(self):
         return "通知設定"
@@ -280,66 +300,75 @@ class NotificationSettings(models.Model):
 
 class SecuritySettings(models.Model):
     """
-    セキュリティ関連の設定
+    セキュリティ設定
+    対象: システム全体(ログイン制御・API制限) + 管理者・店舗向け(2FA設定)
     """
-    # ログイン設定
+    # ログイン制御 [システム全体]
     max_login_attempts = models.IntegerField(
         default=5,
         validators=[MinValueValidator(1), MaxValueValidator(20)],
-        verbose_name="最大ログイン試行回数"
+        verbose_name="最大ログイン試行回数 [システム全体]",
+        help_text="全ユーザー種別のログインセキュリティ"
     )
     login_lockout_duration_minutes = models.IntegerField(
         default=30,
         validators=[MinValueValidator(1), MaxValueValidator(1440)],
-        verbose_name="ログインロック時間（分）"
+        verbose_name="ログインロック時間 [システム全体]",
+        help_text="全ユーザー種別のログインセキュリティ(分)"
     )
     
-    # セッション設定
+    # セッション設定 [システム全体]
     session_timeout_minutes = models.IntegerField(
         default=60,
         validators=[MinValueValidator(5), MaxValueValidator(720)],
-        verbose_name="セッションタイムアウト（分）"
+        verbose_name="セッションタイムアウト [システム全体]",
+        help_text="全インターフェースのセッション管理(分)"
     )
     
-    # API制限設定
+    # API制限設定 [システム全体]
     api_rate_limit_per_minute = models.IntegerField(
         default=100,
         validators=[MinValueValidator(1), MaxValueValidator(10000)],
-        verbose_name="API制限（回/分）"
+        verbose_name="API制限(分) [システム全体]",
+        help_text="全システムのAPI使用制限(回/分)"
     )
     api_rate_limit_per_hour = models.IntegerField(
         default=1000,
         validators=[MinValueValidator(10), MaxValueValidator(100000)],
-        verbose_name="API制限（回/時）"
+        verbose_name="API制限(時) [システム全体]",
+        help_text="全システムのAPI使用制限(回/時)"
     )
     
-    # IP制限
+    # IP制限 [システム全体]
     enable_ip_whitelist = models.BooleanField(
         default=False,
-        verbose_name="IP許可リスト有効"
+        verbose_name="IP許可リスト有効 [システム全体]",
+        help_text="システムアクセス制御"
     )
     allowed_ip_addresses = models.TextField(
         blank=True,
-        help_text="カンマ区切りでIPアドレスを入力",
-        verbose_name="許可IPアドレス"
+        help_text="システムアクセス制御 - カンマ区切りでIPアドレスを入力",
+        verbose_name="許可IPアドレス [システム全体]"
     )
     
-    # 2FA設定
+    # 2FA設定 [ユーザー種別別]
     enforce_2fa_for_admin = models.BooleanField(
         default=True,
-        verbose_name="管理者2FA必須"
+        verbose_name="管理者2FA必須 [管理者向け]",
+        help_text="運営管理画面ユーザー向け"
     )
     enforce_2fa_for_store = models.BooleanField(
         default=False,
-        verbose_name="店舗2FA必須"
+        verbose_name="店舗2FA必須 [店舗向け]",
+        help_text="店舗管理画面ユーザー向け"
     )
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        verbose_name = "セキュリティ設定"
-        verbose_name_plural = "セキュリティ設定"
+        verbose_name = "セキュリティ設定 (システム全体+管理者・店舗向け)"
+        verbose_name_plural = "セキュリティ設定 (システム全体+管理者・店舗向け)"
     
     def __str__(self):
         return "セキュリティ設定"

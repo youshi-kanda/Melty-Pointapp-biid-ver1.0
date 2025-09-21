@@ -10,7 +10,8 @@ sys.path.append(str(BASE_DIR))
 from pointapp.settings import *
 
 # 管理者専用設定の上書き
-DEBUG = True  # 開発時は強制的にTrue
+# 環境変数からDEBUG設定を取得（デフォルトはFalse）
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 # 管理者用ホスト設定
 ALLOWED_HOSTS = os.getenv('ADMIN_ALLOWED_HOSTS', 'admin.biid.app,localhost,127.0.0.1').split(',')

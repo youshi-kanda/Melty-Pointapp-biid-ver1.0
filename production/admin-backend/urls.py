@@ -27,9 +27,8 @@ def serve_next_static(request, path):
     import os
     import mimetypes
     
-    # /out/_next フォルダからファイルを取得
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-    static_file_path = os.path.join(base_dir, 'out', '_next', path)
+    # 内部の static/_next フォルダからファイルを取得
+    static_file_path = os.path.join(os.path.dirname(__file__), 'static', '_next', path)
     
     if not os.path.exists(static_file_path):
         raise Http404(f"Static file not found: {path}")
@@ -113,6 +112,7 @@ urlpatterns = [
     # API エンドポイント（管理者用）
     path('api/', include('core.urls')),
     path('api/admin/', include('core.urls')),  # 管理者専用API
+    path('', include('core.production_admin_urls')),  # 本番管理者URL
     path('api/status/', api_status, name='admin-api-status'),
     path('api/health/', health, name='admin-api-health'),
     path('api/get-totp/', get_totp, name='admin-get-totp'),
