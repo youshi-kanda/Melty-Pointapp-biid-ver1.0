@@ -38,12 +38,24 @@ jobs:
       contents: read
       packages: write
 
+  build-frontend:
+    uses: ./.github/workflows/build-frontend.yml
+    secrets: inherit
+
   summary:
-    needs: [build-admin, build-store, build-user, build-terminal]
+    needs: [build-admin, build-store, build-user, build-terminal, build-frontend]
     runs-on: ubuntu-latest
     steps:
       - name: Build Summary
         run: |
           echo "✅ All services built successfully!"
-          echo "📦 Images pushed to GitHub Container Registry"
-          echo "🔗 Registry: ghcr.io/${{ github.repository }}"
+          echo ""
+          echo "📦 Backend Images pushed to GitHub Container Registry:"
+          echo "   - Admin Backend: ghcr.io/${{ github.repository }}/admin-backend:latest"
+          echo "   - Store Backend: ghcr.io/${{ github.repository }}/store-backend:latest"
+          echo "   - User Backend: ghcr.io/${{ github.repository }}/user-backend:latest"
+          echo "   - Terminal Backend: ghcr.io/${{ github.repository }}/terminal-backend:latest"
+          echo ""
+          echo "🌐 Frontend: Next.js build completed"
+          echo ""
+          echo "🚀 Ready for deployment!"

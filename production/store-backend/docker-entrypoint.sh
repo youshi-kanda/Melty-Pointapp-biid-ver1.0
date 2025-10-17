@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+export PYTHONPATH="/app/backend:$PYTHONPATH"
+
 echo "🚀 BIID Store Backend Starting..."
 
 # データベース接続確認

@@ -1,32 +1,48 @@
 # GitHub Actions ワークフロー
 
-このディレクトリには、BIID Point Appの各サービスをビルド・テスト・デプロイするためのGitHub Actionsワークフローが含まれています。
+このディレクトリには、BIID Point Appの各サービス（バックエンド・フロントエンド）をビルド・テスト・デプロイするためのGitHub Actionsワークフローが含まれています。
 
 ## ワークフロー一覧
 
-### 個別サービスビルド
+### バックエンドサービス
 
 各サービスごとに独立したビルド・テスト・イメージプッシュを行います。
 
-- **build-admin-backend.yml** - 管理者バックエンド
-- **build-store-backend.yml** - 店舗バックエンド
-- **build-user-backend.yml** - ユーザーバックエンド
-- **build-terminal-backend.yml** - 決済端末バックエンド
+- **build-admin-backend.yml** - 管理者バックエンド (Django)
+- **build-store-backend.yml** - 店舗バックエンド (Django)
+- **build-user-backend.yml** - ユーザーバックエンド (Django)
+- **build-terminal-backend.yml** - 決済端末バックエンド (Django)
+
+### フロントエンドサービス
+
+- **build-frontend.yml** - フロントエンド (Next.js)
+  - TypeScript型チェック
+  - ESLintによる静的解析
+  - Next.jsビルド検証
+  - バンドルサイズ分析
+  - ビルド成果物のアーティファクト保存
 
 ### 統合ビルド
 
-- **build-all.yml** - 全サービスを一括ビルド
+- **build-all.yml** - 全サービス（バックエンド4つ + フロントエンド）を一括ビルド
 
 ## 自動実行トリガー
 
 各ワークフローは以下の条件で自動実行されます：
 
+### バックエンド
 1. `main`または`develop`ブランチへのpush
 2. 対象ファイルの変更時のみ（`backend/**`または`production/<service>/**`）
 3. プルリクエスト作成時
 
+### フロントエンド
+1. `main`または`develop`ブランチへのpush
+2. 対象ファイルの変更時（`pages/**`, `lib/**`, `package.json`等）
+3. プルリクエスト作成時
+
 ## 処理フロー
 
+### バックエンド
 1. **コードチェックアウト**
 2. **Python環境セットアップ** (3.9)
 3. **依存関係インストール**

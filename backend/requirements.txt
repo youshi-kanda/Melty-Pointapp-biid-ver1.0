@@ -8,6 +8,7 @@ pytest>=7.4.0
 pyotp>=2.9.0
 qrcode>=7.4.2
 Pillow>=10.0.0
+requests>=2.31.0
 
 # PostgreSQL support
 psycopg2-binary>=2.9.0

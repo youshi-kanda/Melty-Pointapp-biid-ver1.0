@@ -38,8 +38,8 @@ services:
   # === BIID バックエンドサービス ===
   admin-backend:
     build:
-      context: .
-      dockerfile: admin-backend/Dockerfile
+      context: ..
+      dockerfile: production/admin-backend/Dockerfile
     container_name: biid-admin-backend
     environment:
       - DEBUG=${DEBUG:-False}
@@ -64,8 +64,8 @@ services:
 
   store-backend:
     build:
-      context: .
-      dockerfile: store-backend/Dockerfile
+      context: ..
+      dockerfile: production/store-backend/Dockerfile
     container_name: biid-store-backend
     environment:
       - DEBUG=${DEBUG:-False}
@@ -90,8 +90,8 @@ services:
 
   user-backend:
     build:
-      context: .
-      dockerfile: user-backend/Dockerfile
+      context: ..
+      dockerfile: production/user-backend/Dockerfile
     container_name: biid-user-backend
     environment:
       - DEBUG=${DEBUG:-False}
@@ -116,8 +116,8 @@ services:
 
   terminal-backend:
     build:
-      context: .
-      dockerfile: terminal-backend/Dockerfile
+      context: ..
+      dockerfile: production/terminal-backend/Dockerfile
     container_name: biid-terminal-backend
     environment:
       - DEBUG=${DEBUG:-False}
@@ -139,6 +139,36 @@ services:
     networks:
       - biid-network
     restart: unless-stopped
+
+  # === フロントエンドサービス (Next.js) ===
+  frontend:
+    build:
+      context: ..
+      dockerfile: Dockerfile.frontend
+    container_name: biid-frontend
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_ADMIN_API_URL=http://admin-backend:8001
+      - NEXT_PUBLIC_STORE_API_URL=http://store-backend:8002
+      - NEXT_PUBLIC_USER_API_URL=http://user-backend:8003
+      - NEXT_PUBLIC_TERMINAL_API_URL=http://terminal-backend:8004
+      - DOCKER_BUILD=true
+    ports:
+      - "3000:3000"
+    depends_on:
+      - admin-backend
+      - store-backend
+      - user-backend
+      - terminal-backend
+    networks:
+      - biid-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   postgresql_data:
