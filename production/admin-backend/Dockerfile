@@ -15,12 +15,12 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
 # プロジェクトのPython依存関係をコピー・インストール
-COPY ../backend/requirements.txt requirements.txt
+COPY backend/requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # プロジェクト全体をコピー
-COPY ../backend /app/backend
-COPY . /app/admin-backend
+COPY backend /app/backend
+COPY production/admin-backend /app/admin-backend
 
 # 静的ファイルディレクトリ作成
 RUN mkdir -p /app/admin-backend/static /app/admin-backend/media
@@ -42,7 +42,7 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 EXPOSE 8001
 
 # エントリーポイントスクリプト
-COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+COPY production/admin-backend/docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
 # 起動コマンド

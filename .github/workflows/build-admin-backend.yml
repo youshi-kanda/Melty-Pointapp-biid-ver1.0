@@ -86,7 +86,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: docker/build-push-action@v5
         with:
-          context: ./production
+          context: .
           file: ./production/admin-backend/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}

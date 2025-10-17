@@ -11,11 +11,11 @@ RUN apt-get update && apt-get install -y \
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
-COPY ../backend/requirements.txt requirements.txt
+COPY backend/requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ../backend /app/backend
-COPY . /app/store-backend
+COPY backend /app/backend
+COPY production/store-backend /app/store-backend
 
 RUN mkdir -p /app/store-backend/static /app/store-backend/media /var/log/biid
 
@@ -28,7 +28,7 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 
 EXPOSE 8002
 
-COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+COPY production/store-backend/docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

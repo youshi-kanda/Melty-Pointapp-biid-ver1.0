@@ -5,18 +5,18 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y postgresql-client gettext && rm -rf /var/lib/apt/lists/*
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 
-COPY ../backend/requirements.txt requirements.txt
+COPY backend/requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ../backend /app/backend
-COPY . /app/terminal-backend
+COPY backend /app/backend
+COPY production/terminal-backend /app/terminal-backend
 RUN mkdir -p /app/terminal-backend/static /app/terminal-backend/media /var/log/biid
 
 WORKDIR /app/terminal-backend
 ENV DJANGO_SETTINGS_MODULE=terminal_settings
 
 EXPOSE 8004
-COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+COPY production/terminal-backend/docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
