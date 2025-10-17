@@ -41,7 +41,7 @@
     </nav>
 
     <div class="flex">
-        <!-- サイドバー -->
+        <!-- 左サイドバー -->
         <div class="w-64 bg-white shadow-sm min-h-screen">
             <nav class="mt-5 px-2">
                 <a href="/api/admin/management/" class="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
@@ -94,28 +94,28 @@
                     <div class="w-80 bg-white rounded-lg shadow mr-6">
                         <div class="p-6">
                             <nav class="space-y-2">
-                                <button onclick="showTab('system_infrastructure')" id="tab-system_infrastructure" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
-                                    <i class="fas fa-server mr-3 text-gray-400"></i>
-                                    システム基盤
+                                <button onclick="showTab('general')" id="tab-general" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                                    <i class="fas fa-cog mr-3 text-gray-400"></i>
+                                    一般設定
                                 </button>
-                                <button onclick="showTab('security')" id="tab-security" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
-                                    <i class="fas fa-shield-alt mr-3 text-gray-400"></i>
-                                    セキュリティ
-                                </button>
-                                <button onclick="showTab('external_integration')" id="tab-external_integration" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
-                                    <i class="fas fa-plug mr-3 text-gray-400"></i>
+                                <button onclick="showTab('payment_integration')" id="tab-payment_integration" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                                    <i class="fas fa-credit-card mr-3 text-gray-400"></i>
                                     決済・連携
                                 </button>
                                 <button onclick="showTab('notification')" id="tab-notification" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
-                                    <i class="fas fa-envelope mr-3 text-gray-400"></i>
-                                    通知・メール
+                                    <i class="fas fa-bell mr-3 text-gray-400"></i>
+                                    通知設定
                                 </button>
                                 <button onclick="showTab('business_operation')" id="tab-business_operation" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md bg-blue-100 text-blue-700 border-l-4 border-blue-500">
                                     <i class="fas fa-chart-line mr-3 text-blue-500"></i>
-                                    事業運営
+                                    運営設定
+                                </button>
+                                <button onclick="showTab('member_rank')" id="tab-member_rank" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                                    <i class="fas fa-crown mr-3 text-gray-400"></i>
+                                    会員ランク
                                 </button>
                                 <button onclick="showTab('user_experience')" id="tab-user_experience" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
-                                    <i class="fas fa-users mr-3 text-gray-400"></i>
+                                    <i class="fas fa-user-friends mr-3 text-gray-400"></i>
                                     ユーザー体験
                                 </button>
                             </nav>
@@ -124,92 +124,102 @@
 
                     <!-- 右側：設定内容 -->
                     <div class="flex-1">
-                        <!-- 事業運営設定（デフォルト表示） -->
+                        <!-- 運営設定（デフォルト表示） -->
                         <div id="content-business_operation" class="bg-white rounded-lg shadow">
                             <div class="px-6 py-4 border-b border-gray-200">
-                                <h3 class="text-lg font-medium text-gray-900">事業運営</h3>
+                                <h3 class="text-lg font-medium text-gray-900">運営設定</h3>
                             </div>
                             <div class="px-6 py-4">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">ポイント有効期限 (月)</label>
-                                        <input type="number" id="point_expiry_months" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="6">
+                                        <input type="number" name="point_expiry_months" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="6">
                                         <p class="text-xs text-gray-500 mt-1">ユーザーが保有するポイントの有効期限</p>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">基本ポイント単価 (円)</label>
-                                        <input type="number" id="point_unit_price" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="1.00">
+                                        <input type="number" name="point_unit_price" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="1.00">
                                         <p class="text-xs text-gray-500 mt-1">1ポイント当たりの円換算値</p>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">システム手数料率 (%)</label>
-                                        <input type="number" id="system_fee_rate" step="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="3.0">
+                                        <input type="number" name="system_fee_rate" step="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="3.0">
                                         <p class="text-xs text-gray-500 mt-1">システム利用料率</p>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">店舗デポジット必要額 (円)</label>
-                                        <input type="number" id="store_deposit_required" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="50000">
+                                        <input type="number" name="store_deposit_required" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="50000">
                                         <p class="text-xs text-gray-500 mt-1">新規店舗登録時の必要デポジット額</p>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">銀行振込手数料 (円)</label>
-                                        <input type="number" id="bank_transfer_fee" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="220">
+                                        <input type="number" name="bank_transfer_fee" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="220">
                                         <p class="text-xs text-gray-500 mt-1">店舗への払戻時の振込手数料</p>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">最小払戻金額 (円)</label>
-                                        <input type="number" id="minimum_cashout_amount" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="20000">
+                                        <input type="number" name="minimum_cashout_amount" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="20000">
                                         <p class="text-xs text-gray-500 mt-1">店舗払戻申請可能な最小金額</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">プロモーションメール送信料 (円)</label>
+                                        <input type="number" name="promo_email_fee" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="10">
+                                        <p class="text-xs text-gray-500 mt-1">店舗からユーザーへのメール送信あたりの料金</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">ポイント送金手数料率 (%)</label>
+                                        <input type="number" name="point_transfer_fee_rate" step="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="10">
+                                        <p class="text-xs text-gray-500 mt-1">ユーザー間ポイント送金時の手数料率</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- システム基盤設定 -->
-                        <div id="content-system_infrastructure" class="hidden bg-white rounded-lg shadow">
+                        <!-- 一般設定 -->
+                        <div id="content-general" class="hidden bg-white rounded-lg shadow">
                             <div class="px-6 py-4 border-b border-gray-200">
-                                <h3 class="text-lg font-medium text-gray-900">システム基盤</h3>
+                                <h3 class="text-lg font-medium text-gray-900">一般設定</h3>
                             </div>
                             <div class="px-6 py-4">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">サイト名</label>
-                                        <input type="text" id="site_name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="biid Point Management">
+                                        <input type="text" name="site_name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="{{ settings.general.site_name }}">
                                         <p class="text-xs text-gray-500 mt-1">システムの表示名</p>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">サポートメール</label>
-                                        <input type="email" id="support_email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="support@biid.com">
+                                        <input type="email" name="support_email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="{{ settings.general.support_email }}">
                                         <p class="text-xs text-gray-500 mt-1">問い合わせ用メールアドレス</p>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">サポート電話</label>
-                                        <input type="tel" id="support_phone" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="03-1234-5678">
+                                        <input type="tel" name="support_phone" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="{{ settings.general.support_phone }}">
                                         <p class="text-xs text-gray-500 mt-1">サポート電話番号</p>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">タイムゾーン</label>
-                                        <select id="timezone" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                                            <option value="Asia/Tokyo" selected>Asia/Tokyo</option>
-                                            <option value="UTC">UTC</option>
+                                        <select name="timezone" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="Asia/Tokyo" {% if settings.general.timezone == 'Asia/Tokyo' %}selected{% endif %}>Asia/Tokyo</option>
+                                            <option value="UTC" {% if settings.general.timezone == 'UTC' %}selected{% endif %}>UTC</option>
                                         </select>
                                     </div>
                                     <div class="col-span-2">
                                         <label class="block text-sm font-medium text-gray-700 mb-2">運営エリア</label>
-                                        <input type="text" id="operation_area" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="大阪（北新地・ミナミエリア）">
+                                        <input type="text" name="operation_area" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="{{ settings.general.operation_area }}">
                                     </div>
                                     <div class="col-span-2">
                                         <label class="block text-sm font-medium text-gray-700 mb-2">サイト説明</label>
-                                        <textarea id="site_description" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">革新的なポイント管理システム</textarea>
+                                        <textarea name="site_description" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">{{ settings.general.site_description }}</textarea>
                                     </div>
                                     <div class="col-span-2">
                                         <div class="flex items-center space-x-6">
                                             <div class="flex items-center">
-                                                <input type="checkbox" id="maintenance_mode" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                                <input type="checkbox" name="maintenance_mode" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" {% if settings.general.maintenance_mode %}checked{% endif %}>
                                                 <label for="maintenance_mode" class="ml-2 block text-sm text-gray-900">メンテナンスモード</label>
                                             </div>
                                             <div class="flex items-center">
-                                                <input type="checkbox" id="debug_mode" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                                <input type="checkbox" name="debug_mode" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" {% if settings.general.debug_mode %}checked{% endif %}>
                                                 <label for="debug_mode" class="ml-2 block text-sm text-gray-900">デバッグモード</label>
                                             </div>
                                         </div>
@@ -218,47 +228,8 @@
                             </div>
                         </div>
 
-                        <!-- セキュリティ設定 -->
-                        <div id="content-security" class="hidden bg-white rounded-lg shadow">
-                            <div class="px-6 py-4 border-b border-gray-200">
-                                <h3 class="text-lg font-medium text-gray-900">セキュリティ</h3>
-                            </div>
-                            <div class="px-6 py-4">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">最大ログイン試行回数</label>
-                                        <input type="number" id="max_login_attempts" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="5">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">セッションタイムアウト (分)</label>
-                                        <input type="number" id="session_timeout_minutes" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="60">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">ロックアウト時間 (分)</label>
-                                        <input type="number" id="login_lockout_duration_minutes" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="30">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">API制限 (分あたり)</label>
-                                        <input type="number" id="api_rate_limit_per_minute" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="100">
-                                    </div>
-                                    <div class="col-span-2">
-                                        <div class="flex items-center space-x-6">
-                                            <div class="flex items-center">
-                                                <input type="checkbox" id="enable_ip_whitelist" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                                <label for="enable_ip_whitelist" class="ml-2 block text-sm text-gray-900">IP制限を有効化</label>
-                                            </div>
-                                            <div class="flex items-center">
-                                                <input type="checkbox" id="enforce_2fa_for_admin" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                                                <label for="enforce_2fa_for_admin" class="ml-2 block text-sm text-gray-900">管理者2FA強制</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- 決済・連携設定 -->
-                        <div id="content-external_integration" class="hidden bg-white rounded-lg shadow">
+                        <div id="content-payment_integration" class="hidden bg-white rounded-lg shadow">
                             <div class="px-6 py-4 border-b border-gray-200">
                                 <h3 class="text-lg font-medium text-gray-900">決済・連携</h3>
                             </div>
@@ -266,23 +237,23 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">FINCODE API Key</label>
-                                        <input type="password" id="fincode_api_key" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="APIキーを入力">
+                                        <input type="password" name="fincode_api_key" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="APIキーを入力">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">決済タイムアウト (秒)</label>
-                                        <input type="number" id="payment_timeout_seconds" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="300">
+                                        <input type="number" name="payment_timeout_seconds" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="{{ settings.payment.payment_timeout_seconds }}">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">最大決済額 (円)</label>
-                                        <input type="number" id="max_payment_amount" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="500000">
+                                        <input type="number" name="max_payment_amount" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="{{ settings.payment.max_payment_amount }}">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">最小決済額 (円)</label>
-                                        <input type="number" id="min_payment_amount" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="100">
+                                        <input type="number" name="min_payment_amount" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="{{ settings.payment.min_payment_amount }}">
                                     </div>
                                     <div class="col-span-2">
                                         <div class="flex items-center">
-                                            <input type="checkbox" id="fincode_is_production" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                            <input type="checkbox" name="fincode_is_production" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" {% if settings.payment.fincode_is_production %}checked{% endif %}>
                                             <label for="fincode_is_production" class="ml-2 block text-sm text-gray-900">FINCODE本番環境</label>
                                         </div>
                                     </div>
@@ -290,37 +261,37 @@
                             </div>
                         </div>
 
-                        <!-- 通知・メール設定 -->
+                        <!-- 通知設定 -->
                         <div id="content-notification" class="hidden bg-white rounded-lg shadow">
                             <div class="px-6 py-4 border-b border-gray-200">
-                                <h3 class="text-lg font-medium text-gray-900">通知・メール</h3>
+                                <h3 class="text-lg font-medium text-gray-900">通知設定</h3>
                             </div>
                             <div class="px-6 py-4">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">SMTPホスト</label>
-                                        <input type="text" id="smtp_host" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="smtp.gmail.com">
+                                        <input type="text" name="smtp_host" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="{{ settings.notification.smtp_host }}">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">SMTPポート</label>
-                                        <input type="number" id="smtp_port" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="587">
+                                        <input type="number" name="smtp_port" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="{{ settings.notification.smtp_port }}">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">送信者メール</label>
-                                        <input type="email" id="from_email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="noreply@biid.com">
+                                        <input type="email" name="from_email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="{{ settings.notification.from_email }}">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">送信者名</label>
-                                        <input type="text" id="from_name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="BIID Point System">
+                                        <input type="text" name="from_name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="{{ settings.notification.from_name }}">
                                     </div>
                                     <div class="col-span-2">
                                         <div class="grid grid-cols-2 gap-4">
                                             <div class="flex items-center">
-                                                <input type="checkbox" id="enable_welcome_email" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                                                <input type="checkbox" name="enable_welcome_email" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" {% if settings.notification.enable_welcome_email %}checked{% endif %}>
                                                 <label for="enable_welcome_email" class="ml-2 block text-sm text-gray-900">ウェルカムメール</label>
                                             </div>
                                             <div class="flex items-center">
-                                                <input type="checkbox" id="enable_point_notification" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                                                <input type="checkbox" name="enable_point_notification" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" {% if settings.notification.enable_point_notification %}checked{% endif %}>
                                                 <label for="enable_point_notification" class="ml-2 block text-sm text-gray-900">ポイント通知</label>
                                             </div>
                                         </div>
@@ -329,7 +300,34 @@
                             </div>
                         </div>
 
-                        <!-- ユーザー体験設定 -->
+                        <!-- 会員ランク -->
+                        <div id="content-member_rank" class="hidden bg-white rounded-lg shadow">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h3 class="text-lg font-medium text-gray-900">会員ランク</h3>
+                            </div>
+                            <div class="px-6 py-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">一般会員最低利用額 (円)</label>
+                                        <input type="number" name="regular_member_threshold" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="10000">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">VIP会員最低利用額 (円)</label>
+                                        <input type="number" name="vip_member_threshold" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="100000">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">プレミアム会員特典率 (%)</label>
+                                        <input type="number" name="premium_member_bonus_rate" step="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="5.0">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">VIP会員特典率 (%)</label>
+                                        <input type="number" name="vip_member_bonus_rate" step="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="10.0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ユーザー体験 -->
                         <div id="content-user_experience" class="hidden bg-white rounded-lg shadow">
                             <div class="px-6 py-4 border-b border-gray-200">
                                 <h3 class="text-lg font-medium text-gray-900">ユーザー体験</h3>
@@ -338,35 +336,35 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">ユーザーサポートメール</label>
-                                        <input type="email" id="user_support_email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="support@biid.jp">
+                                        <input type="email" name="user_support_email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="support@biid.jp">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">ウェルカムボーナス (pt)</label>
-                                        <input type="number" id="welcome_bonus_points" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="1000">
+                                        <input type="number" name="welcome_bonus_points" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="1000">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">MELTY会員種別</label>
-                                        <select id="melty_membership_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                        <select name="melty_membership_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                             <option value="free">MELTY無料会員</option>
                                             <option value="premium">MELTYプレミアム会員</option>
                                         </select>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">最大日次ポイント送金</label>
-                                        <input type="number" id="max_daily_point_transfer" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="10000">
+                                        <input type="number" name="max_daily_point_transfer" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="10000">
                                     </div>
                                     <div class="col-span-2">
                                         <div class="grid grid-cols-3 gap-4">
                                             <div class="flex items-center">
-                                                <input type="checkbox" id="enable_social_features" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                                                <input type="checkbox" name="enable_social_features" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
                                                 <label for="enable_social_features" class="ml-2 block text-sm text-gray-900">ソーシャル機能</label>
                                             </div>
                                             <div class="flex items-center">
-                                                <input type="checkbox" id="enable_gift_exchange" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                                                <input type="checkbox" name="enable_gift_exchange" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
                                                 <label for="enable_gift_exchange" class="ml-2 block text-sm text-gray-900">ギフト交換</label>
                                             </div>
                                             <div class="flex items-center">
-                                                <input type="checkbox" id="enable_point_transfer" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                                <input type="checkbox" name="enable_point_transfer" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                                                 <label for="enable_point_transfer" class="ml-2 block text-sm text-gray-900">ポイント送金</label>
                                             </div>
                                         </div>
@@ -384,7 +382,7 @@
         // 6カテゴリタブ切り替え機能
         function showTab(tabName) {
             // 全てのタブコンテンツを非表示にする
-            const categories = ['system_infrastructure', 'security', 'external_integration', 'notification', 'business_operation', 'user_experience'];
+            const categories = ['general', 'payment_integration', 'notification', 'business_operation', 'member_rank', 'user_experience'];
             categories.forEach(name => {
                 const content = document.getElementById('content-' + name);
                 const tab = document.getElementById('tab-' + name);
@@ -429,14 +427,37 @@
                 return;
             }
             
-            // API連携（実装予定）
-            console.log('Saving settings for category:', activeCategory, settings);
-            alert(`${getCategoryDisplayName(activeCategory)}の設定を保存しました`);
+            // Django CSRF対応でPOST送信
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            formData.append('setting_type', activeCategory);
+            
+            // 設定データを追加
+            for (const [key, value] of Object.entries(settings)) {
+                formData.append(key, value);
+            }
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(`${getCategoryDisplayName(activeCategory)}の設定を保存しました`);
+                } else {
+                    alert('設定の保存に失敗しました: ' + (data.message || ''));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('設定の保存に失敗しました');
+            });
         }
         
         // 現在のアクティブなタブを取得
         function getCurrentActiveTab() {
-            const categories = ['system_infrastructure', 'security', 'external_integration', 'notification', 'business_operation', 'user_experience'];
+            const categories = ['general', 'payment_integration', 'notification', 'business_operation', 'member_rank', 'user_experience'];
             for (const category of categories) {
                 const tab = document.getElementById('tab-' + category);
                 if (tab && tab.classList.contains('text-blue-700')) {
@@ -454,13 +475,13 @@
             
             const inputs = container.querySelectorAll('input, select, textarea');
             inputs.forEach(input => {
-                if (input.id) {
+                if (input.name) {
                     if (input.type === 'checkbox') {
-                        settings[input.id] = input.checked;
+                        settings[input.name] = input.checked;
                     } else if (input.type === 'number') {
-                        settings[input.id] = input.value ? parseFloat(input.value) : null;
+                        settings[input.name] = input.value ? parseFloat(input.value) : null;
                     } else {
-                        settings[input.id] = input.value;
+                        settings[input.name] = input.value;
                     }
                 }
             });
@@ -471,11 +492,11 @@
         // カテゴリ名の表示名を取得
         function getCategoryDisplayName(category) {
             const names = {
-                'system_infrastructure': 'システム基盤設定',
-                'security': 'セキュリティ設定', 
-                'external_integration': '決済・連携設定',
-                'notification': '通知・メール設定',
-                'business_operation': '事業運営設定',
+                'general': '一般設定',
+                'payment_integration': '決済・連携設定',
+                'notification': '通知設定',
+                'business_operation': '運営設定',
+                'member_rank': '会員ランク設定',
                 'user_experience': 'ユーザー体験設定'
             };
             return names[category] || category;
@@ -483,7 +504,7 @@
 
         // ページ初期化処理
         document.addEventListener('DOMContentLoaded', function() {
-            // デフォルトタブ（事業運営設定）をアクティブにする
+            // デフォルトタブ（運営設定）をアクティブにする
             showTab('business_operation');
         });
     </script>

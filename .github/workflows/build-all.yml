@@ -1,0 +1,33 @@
+name: Build All Services
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-admin:
+    uses: ./.github/workflows/build-admin-backend.yml
+    secrets: inherit
+
+  build-store:
+    uses: ./.github/workflows/build-store-backend.yml
+    secrets: inherit
+
+  build-user:
+    uses: ./.github/workflows/build-user-backend.yml
+    secrets: inherit
+
+  build-terminal:
+    uses: ./.github/workflows/build-terminal-backend.yml
+    secrets: inherit
+
+  summary:
+    needs: [build-admin, build-store, build-user, build-terminal]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build Summary
+        run: |
+          echo "✅ All services built successfully!"
+          echo "📦 Images pushed to GitHub Container Registry"
+          echo "🔗 Registry: ghcr.io/${{ github.repository }}"

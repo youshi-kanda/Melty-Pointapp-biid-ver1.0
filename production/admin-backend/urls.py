@@ -71,9 +71,11 @@ def admin_reports(request):
     return render(request, 'admin/reports.html')
 
 def admin_settings(request):
-    """設定ページ"""
-    from django.shortcuts import render
-    return render(request, 'admin/settings.html')
+    """設定ページ（5カテゴリ統合版）"""
+    from django.http import FileResponse
+    import os
+    static_file = os.path.join(os.path.dirname(__file__), 'static', 'settings.html')
+    return FileResponse(open(static_file, 'rb'), content_type='text/html')
 
 def admin_features(request):
     """機能管理ページ"""
@@ -111,8 +113,11 @@ urlpatterns = [
     
     # API エンドポイント（管理者用）
     path('api/', include('core.urls')),
-    path('api/admin/', include('core.urls')),  # 管理者専用API
     path('', include('core.production_admin_urls')),  # 本番管理者URL
+    
+    # 新5カテゴリ統合システム設定API
+    path('api/admin/', include('core.system_settings_urls_new')),  # 5カテゴリ設定API
+    
     path('api/status/', api_status, name='admin-api-status'),
     path('api/health/', health, name='admin-api-health'),
     path('api/get-totp/', get_totp, name='admin-get-totp'),

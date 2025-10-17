@@ -136,22 +136,28 @@ def system_settings_view(request):
         if setting_type == 'general':
             # 一般設定の更新
             messages.success(request, '一般設定を更新しました。')
-        elif setting_type == 'payment':
-            # 決済設定の更新
-            messages.success(request, '決済設定を更新しました。')
+        elif setting_type == 'payment_integration':
+            # 決済・連携設定の更新
+            messages.success(request, '決済・連携設定を更新しました。')
         elif setting_type == 'notification':
             # 通知設定の更新
             messages.success(request, '通知設定を更新しました。')
-        elif setting_type == 'security':
-            # セキュリティ設定の更新
-            messages.success(request, 'セキュリティ設定を更新しました。')
+        elif setting_type == 'business_operation':
+            # 運営設定の更新
+            messages.success(request, '運営設定を更新しました。')
+        elif setting_type == 'member_rank':
+            # 会員ランク設定の更新
+            messages.success(request, '会員ランク設定を更新しました。')
+        elif setting_type == 'user_experience':
+            # ユーザー体験設定の更新
+            messages.success(request, 'ユーザー体験設定を更新しました。')
         
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'status': 'success', 'message': '設定を更新しました。'})
         
         return redirect('production_admin:system_settings')
     
-    # 現在の設定値を取得
+    # 現在の設定値を取得（6カテゴリ対応）
     settings = {
         'general': {
             'site_name': 'biid Point Management',
@@ -185,15 +191,30 @@ def system_settings_view(request):
             'email_batch_size': 100,
             'email_rate_limit': 60,
         },
-        'security': {
-            'max_login_attempts': 5,
-            'login_lockout_duration_minutes': 30,
-            'session_timeout_minutes': 60,
-            'api_rate_limit_per_minute': 100,
-            'api_rate_limit_per_hour': 1000,
-            'enable_ip_whitelist': False,
-            'enforce_2fa_for_admin': True,
-            'enforce_2fa_for_store': False,
+        'business_operation': {
+            'point_expiry_months': 6,
+            'point_unit_price': 1.00,
+            'system_fee_rate': 3.0,
+            'store_deposit_required': 50000,
+            'bank_transfer_fee': 220,
+            'minimum_cashout_amount': 20000,
+            'promo_email_fee': 10,
+            'point_transfer_fee_rate': 10,
+        },
+        'member_rank': {
+            'regular_member_threshold': 10000,
+            'vip_member_threshold': 100000,
+            'premium_member_bonus_rate': 5.0,
+            'vip_member_bonus_rate': 10.0,
+        },
+        'user_experience': {
+            'user_support_email': 'support@biid.jp',
+            'welcome_bonus_points': 1000,
+            'melty_membership_type': 'free',
+            'max_daily_point_transfer': 10000,
+            'enable_social_features': True,
+            'enable_gift_exchange': True,
+            'enable_point_transfer': False,
         }
     }
     

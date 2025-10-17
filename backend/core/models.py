@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from django.db.models import Sum
+from django.core.validators import MinValueValidator, MaxValueValidator, EmailValidator
 
 
 class User(AbstractUser):
@@ -1145,6 +1146,732 @@ class StoreWebhookKey(models.Model):
         """Webhookキーを生成"""
         import secrets
         return secrets.token_hex(32)
+
+
+# ============================================
+# 新5カテゴリ統合設定モデル - 本番運用仕様
+# ============================================
+
+class SystemInfrastructureSettings(models.Model):
+    """🏗️ システム基盤設定"""
+    site_name = models.CharField(
+        max_length=100, 
+        default="BIID Point Management System",
+        verbose_name="システム名",
+        help_text="全インターフェース共通のシステム名称"
+    )
+    site_description = models.TextField(
+        blank=True,
+        default="エンタープライズ級ポイント管理プラットフォーム",
+        verbose_name="システム説明",
+        help_text="システム概要・メタ情報"
+    )
+    system_version = models.CharField(
+        max_length=20,
+        default="2.0.0",
+        verbose_name="システムバージョン",
+        help_text="現在運用中のシステムバージョン"
+    )
+    system_support_email = models.EmailField(
+        default="admin@biid-system.com",
+        validators=[EmailValidator()],
+        verbose_name="システム管理者メール",
+        help_text="システム管理・技術サポート用連絡先"
+    )
+    emergency_contact = models.CharField(
+        max_length=50,
+        default="080-1234-5678",
+        verbose_name="緊急連絡先",
+        help_text="システム障害時の緊急連絡先"
+    )
+    organization_name = models.CharField(
+        max_length=100,
+        default="BIID Systems Inc.",
+        verbose_name="運営組織名",
+        help_text="システム運営組織の正式名称"
+    )
+    operation_region = models.CharField(
+        max_length=100,
+        default="関西域（大阪・京都・神戸）",
+        verbose_name="運営地域",
+        help_text="システム運営対象地域"
+    )
+    timezone = models.CharField(
+        max_length=50,
+        choices=[
+            ('Asia/Tokyo', 'Asia/Tokyo'),
+            ('UTC', 'UTC'),
+            ('Asia/Seoul', 'Asia/Seoul')
+        ],
+        default='Asia/Tokyo',
+        verbose_name="タイムゾーン",
+        help_text="全システムの時刻表示・処理に影響"
+    )
+    maintenance_mode = models.BooleanField(
+        default=False,
+        verbose_name="メンテナンスモード",
+        help_text="全システムアクセスを制御"
+    )
+    debug_mode = models.BooleanField(
+        default=False,
+        verbose_name="デバッグモード",
+        help_text="システム全体のログレベル・エラー表示を制御"
+    )
+    maintenance_message = models.TextField(
+        blank=True,
+        default="現在システムメンテナンス中です。しばらくお待ちください。",
+        verbose_name="メンテナンスメッセージ",
+        help_text="メンテナンス画面で表示されるメッセージ"
+    )
+    maintenance_start_time = models.DateTimeField(null=True, blank=True, verbose_name="メンテナンス開始時刻")
+    maintenance_end_time = models.DateTimeField(null=True, blank=True, verbose_name="メンテナンス終了予定時刻")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="更新者")
+
+    @classmethod
+    def get_settings(cls):
+        settings, created = cls.objects.get_or_create(pk=1)
+        return settings
+
+    def get_system_info(self):
+        return {
+            'site_name': self.site_name,
+            'version': self.system_version,
+            'maintenance_mode': self.maintenance_mode,
+            'debug_mode': self.debug_mode,
+            'region': self.operation_region
+        }
+
+    class Meta:
+        verbose_name = "🏗️ システム基盤設定"
+        verbose_name_plural = "🏗️ システム基盤設定"
+        db_table = 'core_system_infrastructure_settings'
+
+
+class SecuritySettings(models.Model):
+    """🔒 セキュリティ設定"""
+    max_login_attempts = models.IntegerField(
+        default=5,
+        validators=[MinValueValidator(3), MaxValueValidator(20)],
+        verbose_name="最大ログイン試行回数",
+        help_text="アカウントロック前の最大ログイン試行回数"
+    )
+    login_lockout_duration_minutes = models.IntegerField(
+        default=30,
+        validators=[MinValueValidator(5), MaxValueValidator(1440)],
+        verbose_name="ロック時間（分）",
+        help_text="アカウントロック時間"
+    )
+    session_timeout_minutes = models.IntegerField(
+        default=60,
+        validators=[MinValueValidator(5), MaxValueValidator(480)],
+        verbose_name="セッション有効時間（分）",
+        help_text="ログインセッションの有効時間"
+    )
+    api_rate_limit_per_minute = models.IntegerField(
+        default=100,
+        validators=[MinValueValidator(10), MaxValueValidator(1000)],
+        verbose_name="API制限/分",
+        help_text="1分間あたりのAPI呼出制限"
+    )
+    api_rate_limit_per_hour = models.IntegerField(
+        default=1000,
+        validators=[MinValueValidator(100), MaxValueValidator(10000)],
+        verbose_name="API制限/時",
+        help_text="1時間あたりのAPI呼出制限"
+    )
+    enable_ip_whitelist = models.BooleanField(
+        default=False,
+        verbose_name="IP制限有効",
+        help_text="管理者ログインのIP制限機能"
+    )
+    allowed_ip_addresses = models.TextField(
+        blank=True,
+        verbose_name="許可IPアドレス",
+        help_text="許可IP（カンマ区切り、CIDR対応）"
+    )
+    enforce_2fa_for_admin = models.BooleanField(
+        default=True,
+        verbose_name="管理者2FA強制",
+        help_text="管理者への2FA強制"
+    )
+    enforce_2fa_for_store = models.BooleanField(
+        default=False,
+        verbose_name="店舗2FA強制",
+        help_text="店舗管理者への2FA強制"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @classmethod
+    def get_settings(cls):
+        settings, created = cls.objects.get_or_create(pk=1)
+        return settings
+
+    def get_security_policy(self):
+        return {
+            'max_attempts': self.max_login_attempts,
+            'lockout_duration': self.login_lockout_duration_minutes,
+            'session_timeout': self.session_timeout_minutes,
+            '2fa_required': self.enforce_2fa_for_admin,
+            'ip_restriction': self.enable_ip_whitelist
+        }
+
+    class Meta:
+        verbose_name = "🔒 セキュリティ設定"
+        verbose_name_plural = "🔒 セキュリティ設定"
+        db_table = 'core_security_settings'
+
+
+class ExternalIntegrationSettings(models.Model):
+    """🔗 決済・外部連携設定"""
+    # FINCODE設定
+    fincode_api_key = models.CharField(
+        max_length=200,
+        default="",
+        verbose_name="FINCODE APIキー",
+        help_text="本番環境用APIキー（要暗号化保存）"
+    )
+    fincode_secret_key = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="FINCODE シークレットキー",
+        help_text="本番環境用シークレットキー（要暗号化保存）"
+    )
+    fincode_shop_id = models.CharField(
+        max_length=100,
+        default="",
+        verbose_name="FINCODE ショップID",
+        help_text="契約ショップID"
+    )
+    fincode_is_production = models.BooleanField(
+        default=True,
+        verbose_name="FINCODE 本番環境",
+        help_text="本番運用時はTrue必須"
+    )
+    fincode_webhook_url = models.URLField(
+        blank=True,
+        verbose_name="FINCODE Webhook URL",
+        help_text="決済結果通知受信URL"
+    )
+    fincode_connection_timeout = models.IntegerField(
+        default=30,
+        validators=[MinValueValidator(5), MaxValueValidator(120)],
+        verbose_name="FINCODE接続タイムアウト（秒）",
+        help_text="API通信タイムアウト設定"
+    )
+    
+    # MELTY連携設定
+    melty_api_base_url = models.URLField(
+        default="https://api.melty-system.com/v2/",
+        verbose_name="MELTY API ベースURL",
+        help_text="MELTY連携API接続先"
+    )
+    melty_api_key = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="MELTY APIキー",
+        help_text="MELTY連携認証キー（要暗号化保存）"
+    )
+    melty_connection_enabled = models.BooleanField(
+        default=True,
+        verbose_name="MELTY連携有効",
+        help_text="MELTY システムとの連携機能"
+    )
+    melty_sync_interval_minutes = models.IntegerField(
+        default=60,
+        validators=[MinValueValidator(5), MaxValueValidator(1440)],
+        verbose_name="MELTY同期間隔（分）",
+        help_text="会員情報同期間隔"
+    )
+    
+    # 外部API共通設定
+    external_api_retry_count = models.IntegerField(
+        default=3,
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        verbose_name="外部API再試行回数",
+        help_text="通信失敗時の自動再試行回数"
+    )
+    external_api_timeout_seconds = models.IntegerField(
+        default=30,
+        validators=[MinValueValidator(5), MaxValueValidator(300)],
+        verbose_name="外部API全般タイムアウト（秒）",
+        help_text="外部システム通信タイムアウト"
+    )
+    payment_timeout_seconds = models.IntegerField(
+        default=300,
+        validators=[MinValueValidator(60), MaxValueValidator(1800)],
+        verbose_name="決済タイムアウト（秒）",
+        help_text="決済処理全体のタイムアウト"
+    )
+    max_payment_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=1000000.00,
+        validators=[MinValueValidator(1), MaxValueValidator(10000000.00)],
+        verbose_name="最大決済金額（円）",
+        help_text="1回の決済での上限金額"
+    )
+    min_payment_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=100.00,
+        validators=[MinValueValidator(1), MaxValueValidator(100000.00)],
+        verbose_name="最小決済金額（円）",
+        help_text="1回の決済での下限金額"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @classmethod
+    def get_settings(cls):
+        settings, created = cls.objects.get_or_create(pk=1)
+        return settings
+
+    def get_fincode_config(self):
+        return {
+            'api_key': self.fincode_api_key,
+            'shop_id': self.fincode_shop_id,
+            'is_production': self.fincode_is_production,
+            'timeout': self.fincode_connection_timeout
+        }
+
+    def is_production_ready(self):
+        return bool(self.fincode_api_key and self.fincode_shop_id and self.fincode_is_production)
+
+    class Meta:
+        verbose_name = "🔗 決済・外部連携設定"
+        verbose_name_plural = "🔗 決済・外部連携設定"
+        db_table = 'core_external_integration_settings'
+
+
+class NotificationSettings(models.Model):
+    """📧 通知・メール設定"""
+    # SMTP設定
+    smtp_host = models.CharField(
+        max_length=255,
+        default="smtp.sendgrid.net",
+        verbose_name="SMTPホスト",
+        help_text="メール送信サーバーのホスト名"
+    )
+    smtp_port = models.IntegerField(
+        default=587,
+        validators=[MinValueValidator(1), MaxValueValidator(65535)],
+        verbose_name="SMTPポート",
+        help_text="SMTP接続ポート（TLS: 587, SSL: 465）"
+    )
+    smtp_username = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="SMTPユーザー名",
+        help_text="SMTP認証用ユーザー名"
+    )
+    smtp_password = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="SMTPパスワード",
+        help_text="SMTP認証用パスワード（要暗号化保存）"
+    )
+    smtp_use_tls = models.BooleanField(
+        default=True,
+        verbose_name="TLS使用",
+        help_text="STARTTLS使用（推奨）"
+    )
+    smtp_use_ssl = models.BooleanField(
+        default=False,
+        verbose_name="SSL使用",
+        help_text="SSL直接接続（TLSと排他）"
+    )
+    from_email = models.EmailField(
+        default="no-reply@biid-system.com",
+        validators=[EmailValidator()],
+        verbose_name="送信者メール",
+        help_text="送信者メールアドレス"
+    )
+    from_name = models.CharField(
+        max_length=100,
+        default="BIID Point System",
+        verbose_name="送信者名",
+        help_text="送信者名"
+    )
+    reply_to_email = models.EmailField(
+        blank=True,
+        validators=[EmailValidator()],
+        verbose_name="返信先メールアドレス",
+        help_text="ユーザーが返信する際の宛先（空白時はfrom_emailを使用）"
+    )
+    
+    # 通知設定
+    enable_welcome_email = models.BooleanField(
+        default=True,
+        verbose_name="ウェルカムメール",
+        help_text="新規ユーザー登録完了メール"
+    )
+    enable_point_notification = models.BooleanField(
+        default=True,
+        verbose_name="ポイント通知",
+        help_text="ポイント付与・消費・有効期限通知"
+    )
+    enable_gift_notification = models.BooleanField(
+        default=True,
+        verbose_name="ギフト通知",
+        help_text="ギフト交換・受取り・期限通知"
+    )
+    enable_promotion_email = models.BooleanField(
+        default=True,
+        verbose_name="プロモーションメール",
+        help_text="店舗からのプロモーション・キャンペーン通知"
+    )
+    enable_security_notification = models.BooleanField(
+        default=True,
+        verbose_name="セキュリティ通知",
+        help_text="ログイン・パスワード変更・2FA設定通知"
+    )
+    enable_transaction_notification = models.BooleanField(
+        default=True,
+        verbose_name="取引通知",
+        help_text="決済・送金・チャージ完了通知"
+    )
+    
+    # 配信制御設定
+    email_batch_size = models.IntegerField(
+        default=100,
+        validators=[MinValueValidator(1), MaxValueValidator(1000)],
+        verbose_name="バッチ送信数",
+        help_text="一度に送信するメール数"
+    )
+    email_rate_limit_per_hour = models.IntegerField(
+        default=1000,
+        validators=[MinValueValidator(10), MaxValueValidator(10000)],
+        verbose_name="時間あたり送信制限",
+        help_text="1時間あたりの最大メール送信数"
+    )
+    email_queue_retry_count = models.IntegerField(
+        default=3,
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        verbose_name="送信再試行回数",
+        help_text="メール送信失敗時の再試行回数"
+    )
+    email_queue_retry_delay_minutes = models.IntegerField(
+        default=5,
+        validators=[MinValueValidator(1), MaxValueValidator(60)],
+        verbose_name="再試行間隔（分）",
+        help_text="メール送信再試行の間隔"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @classmethod
+    def get_settings(cls):
+        settings, created = cls.objects.get_or_create(pk=1)
+        return settings
+
+    def get_smtp_config(self):
+        return {
+            'host': self.smtp_host,
+            'port': self.smtp_port,
+            'username': self.smtp_username,
+            'password': self.smtp_password,
+            'use_tls': self.smtp_use_tls,
+            'use_ssl': self.smtp_use_ssl,
+            'from_email': self.from_email,
+            'from_name': self.from_name
+        }
+
+    class Meta:
+        verbose_name = "📧 通知・メール設定"
+        verbose_name_plural = "📧 通知・メール設定"
+        db_table = 'core_notification_settings'
+
+
+class BusinessOperationSettings(models.Model):
+    """💼 事業運営設定"""
+    # ポイントシステム基本設定
+    default_point_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=1.0,
+        validators=[MinValueValidator(0.1), MaxValueValidator(10.0)],
+        verbose_name="基本ポイント還元率（%）",
+        help_text="標準的なポイント付与率"
+    )
+    point_expiry_months = models.IntegerField(
+        default=12,
+        validators=[MinValueValidator(1), MaxValueValidator(60)],
+        verbose_name="ポイント有効期限（月）",
+        help_text="付与ポイントの有効期限"
+    )
+    max_point_balance = models.DecimalField(
+        max_digits=12,
+        decimal_places=0,
+        default=1000000,
+        validators=[MinValueValidator(10000), MaxValueValidator(10000000)],
+        verbose_name="最大ポイント保有数",
+        help_text="1ユーザーあたりの最大保有ポイント"
+    )
+    
+    # 店舗関連設定
+    store_deposit_required = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=100000.00,
+        validators=[MinValueValidator(10000), MaxValueValidator(10000000)],
+        verbose_name="店舗デポジット必要額（円）",
+        help_text="店舗開始時に必要なデポジット金額"
+    )
+    store_minimum_transaction = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=50000.00,
+        validators=[MinValueValidator(1000), MaxValueValidator(1000000)],
+        verbose_name="店舗最小決済額（円）",
+        help_text="店舗での最小決済金額"
+    )
+    store_refund_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=95.0,
+        validators=[MinValueValidator(50.0), MaxValueValidator(100.0)],
+        verbose_name="店舗払戻還元率（%）",
+        help_text="店舗への払戻時の還元率"
+    )
+    
+    # 手数料設定
+    system_fee_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=3.0,
+        validators=[MinValueValidator(0.1), MaxValueValidator(20.0)],
+        verbose_name="システム手数料率（%）",
+        help_text="システム利用料率"
+    )
+    payment_processing_fee = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=300.00,
+        validators=[MinValueValidator(0), MaxValueValidator(10000)],
+        verbose_name="決済処理手数料（円）",
+        help_text="1件あたりの決済処理手数料"
+    )
+    transfer_fee = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=200.00,
+        validators=[MinValueValidator(0), MaxValueValidator(5000)],
+        verbose_name="送金手数料（円）",
+        help_text="ポイント送金時の手数料"
+    )
+    bank_transfer_fee = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=330.00,
+        validators=[MinValueValidator(0), MaxValueValidator(2000)],
+        verbose_name="銀行振込手数料（円）",
+        help_text="銀行振込時の手数料"
+    )
+    promotion_email_cost = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=15.00,
+        validators=[MinValueValidator(1), MaxValueValidator(1000)],
+        verbose_name="プロモーションメール送信料（円）",
+        help_text="1通あたりのプロモーションメール送信コスト"
+    )
+    minimum_cashout_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=30000.00,
+        validators=[MinValueValidator(1000), MaxValueValidator(1000000)],
+        verbose_name="最小出金額（円）",
+        help_text="現金化可能な最小金額"
+    )
+    
+    # ポイント価格設定
+    point_unit_price = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=1.00,
+        validators=[MinValueValidator(0.5), MaxValueValidator(5.0)],
+        verbose_name="基本ポイント単価（円）",
+        help_text="1ポイントあたりの基本価格"
+    )
+    tax_rate = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        default=10.00,
+        validators=[MinValueValidator(0), MaxValueValidator(30)],
+        verbose_name="消費税率（%）",
+        help_text="ポイント購入時の消費税率"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @classmethod
+    def get_settings(cls):
+        settings, created = cls.objects.get_or_create(pk=1)
+        return settings
+
+    def get_fee_structure(self):
+        return {
+            'system_fee_rate': float(self.system_fee_rate),
+            'payment_processing_fee': float(self.payment_processing_fee),
+            'transfer_fee': float(self.transfer_fee),
+            'bank_transfer_fee': float(self.bank_transfer_fee),
+            'point_unit_price': float(self.point_unit_price),
+            'tax_rate': float(self.tax_rate)
+        }
+
+    class Meta:
+        verbose_name = "💼 事業運営設定"
+        verbose_name_plural = "💼 事業運営設定"
+        db_table = 'core_business_operation_settings'
+
+
+class UserExperienceSettings(models.Model):
+    """👤 ユーザー体験設定"""
+    # ユーザーサポート設定
+    user_support_email = models.EmailField(
+        default="support@biid-user.com",
+        validators=[EmailValidator()],
+        verbose_name="ユーザーサポートメール",
+        help_text="ユーザー向けサポート連絡先"
+    )
+    user_support_phone = models.CharField(
+        max_length=20,
+        default="0120-456-789",
+        verbose_name="ユーザーサポート電話",
+        help_text="ユーザー向けサポート電話番号（フリーダイヤル推奨）"
+    )
+    service_area_description = models.CharField(
+        max_length=200,
+        default="関西域（大阪・京都・神戸）を中心としたプレミアムエリア",
+        verbose_name="サービスエリア説明",
+        help_text="ユーザー向けサービス提供エリアの説明"
+    )
+    
+    # MELTY連携・ランク設定
+    melty_membership_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('standard', 'スタンダード会員'),
+            ('premium', 'プレミアム会員'),
+            ('vip', 'VIP会員'),
+            ('platinum', 'プラチナ会員')
+        ],
+        default='standard',
+        verbose_name="MELTY会員種別",
+        help_text="デフォルトのMELTY会員レベル"
+    )
+    biid_initial_rank = models.CharField(
+        max_length=20,
+        choices=[
+            ('bronze', 'ブロンズ'),
+            ('silver', 'シルバー'),
+            ('gold', 'ゴールド'),
+            ('platinum', 'プラチナ')
+        ],
+        default='bronze',
+        verbose_name="BIID初期ランク",
+        help_text="新規ユーザーの初期ランク"
+    )
+    
+    # ボーナス・インセンティブ設定
+    welcome_bonus_points = models.IntegerField(
+        default=1000,
+        validators=[MinValueValidator(0), MaxValueValidator(10000)],
+        verbose_name="ウェルカムボーナスポイント",
+        help_text="新規登録時の付与ポイント"
+    )
+    referral_bonus_points = models.IntegerField(
+        default=500,
+        validators=[MinValueValidator(0), MaxValueValidator(5000)],
+        verbose_name="紹介ボーナスポイント",
+        help_text="友達紹介時の付与ポイント"
+    )
+    
+    # 機能有効化設定
+    enable_social_features = models.BooleanField(
+        default=True,
+        verbose_name="ソーシャル機能有効",
+        help_text="友達機能・投稿・レビューなどのソーシャル機能"
+    )
+    enable_gift_exchange = models.BooleanField(
+        default=True,
+        verbose_name="ギフト交換機能",
+        help_text="ユーザー間でのギフト交換機能"
+    )
+    enable_point_transfer = models.BooleanField(
+        default=True,
+        verbose_name="ポイント送金機能",
+        help_text="ユーザー間でのポイント送金機能"
+    )
+    max_daily_point_transfer = models.IntegerField(
+        default=10000,
+        validators=[MinValueValidator(100), MaxValueValidator(100000)],
+        verbose_name="1日最大送金ポイント数",
+        help_text="ユーザーが1日に送金可能な最大ポイント"
+    )
+    
+    # UI・UX設定
+    default_theme = models.CharField(
+        max_length=20,
+        choices=[
+            ('light', 'ライトテーマ'),
+            ('dark', 'ダークテーマ'),
+            ('auto', '自動切り替え')
+        ],
+        default='light',
+        verbose_name="デフォルトテーマ",
+        help_text="ユーザー画面のデフォルトテーマ"
+    )
+    enable_push_notifications = models.BooleanField(
+        default=True,
+        verbose_name="プッシュ通知",
+        help_text="モバイルアプリでのプッシュ通知機能"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @classmethod
+    def get_settings(cls):
+        settings, created = cls.objects.get_or_create(pk=1)
+        return settings
+
+    def get_user_support_info(self):
+        return {
+            'email': self.user_support_email,
+            'phone': self.user_support_phone,
+            'service_area': self.service_area_description
+        }
+
+    def get_melty_integration_config(self):
+        return {
+            'membership_type': self.melty_membership_type,
+            'initial_rank': self.biid_initial_rank,
+            'welcome_bonus': self.welcome_bonus_points,
+            'referral_bonus': self.referral_bonus_points
+        }
+
+    def get_feature_flags(self):
+        return {
+            'social_features': self.enable_social_features,
+            'gift_exchange': self.enable_gift_exchange,
+            'point_transfer': self.enable_point_transfer,
+            'push_notifications': self.enable_push_notifications,
+            'max_daily_transfer': self.max_daily_point_transfer
+        }
+
+    class Meta:
+        verbose_name = "👤 ユーザー体験設定"
+        verbose_name_plural = "👤 ユーザー体験設定"
+        db_table = 'core_user_experience_settings'
     
     def is_ip_allowed(self, ip_address):
         """IPアドレスが許可されているかチェック"""
