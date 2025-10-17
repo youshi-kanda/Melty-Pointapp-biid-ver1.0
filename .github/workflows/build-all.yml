@@ -5,22 +5,38 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-admin:
     uses: ./.github/workflows/build-admin-backend.yml
     secrets: inherit
+    permissions:
+      contents: read
+      packages: write
 
   build-store:
     uses: ./.github/workflows/build-store-backend.yml
     secrets: inherit
+    permissions:
+      contents: read
+      packages: write
 
   build-user:
     uses: ./.github/workflows/build-user-backend.yml
     secrets: inherit
+    permissions:
+      contents: read
+      packages: write
 
   build-terminal:
     uses: ./.github/workflows/build-terminal-backend.yml
     secrets: inherit
+    permissions:
+      contents: read
+      packages: write
 
   summary:
     needs: [build-admin, build-store, build-user, build-terminal]
