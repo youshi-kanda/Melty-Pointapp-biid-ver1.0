@@ -65,6 +65,7 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
+          BUILD_TARGET: docker
 
       - name: 📊 Display build info
         run: |

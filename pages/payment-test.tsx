@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Link from 'next/link'
 import { PaymentAPI } from '../lib/api-config'
 
 export default function PaymentTest() {
@@ -163,8 +164,8 @@ export default function PaymentTest() {
       </div>
       
       <p style={{ marginTop: '20px', color: '#6b7280', fontSize: '14px' }}>
-        <a href="/">← ホームに戻る</a> | 
-        <a href="/terminal-simple.html" style={{ marginLeft: '10px' }}>端末画面へ</a>
+        <Link href="/">← ホームに戻る</Link> | 
+        <Link href="/terminal-simple" style={{ marginLeft: '10px' }}>端末画面へ</Link>
       </p>
     </div>
   )
