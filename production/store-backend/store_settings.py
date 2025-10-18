@@ -51,12 +51,10 @@ else:
 CORS_ALLOW_CREDENTIALS = True
 
 # 店舗専用セキュリティ設定
+# Fly.ioではプロキシでSSL終端されるため、SECURE_SSL_REDIRECTは無効化
+SECURE_SSL_REDIRECT = False
+
 if not DEBUG:
-    # 適度なHTTPS設定
-    SECURE_SSL_REDIRECT = True
-    SECURE_HSTS_SECONDS = 86400  # 24時間
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    
     # セキュアクッキー
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -68,7 +66,6 @@ if not DEBUG:
     SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 else:
     # 開発環境ではHTTP許可
-    SECURE_SSL_REDIRECT = False
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
 
