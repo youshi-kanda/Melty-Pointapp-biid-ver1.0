@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
 from django.views.generic import TemplateView
@@ -87,6 +88,9 @@ def health(_request):
     return JsonResponse({"status": "ok", "service": "admin"})
 
 urlpatterns = [
+    # Django Admin（最優先）
+    path('admin/', admin.site.urls),
+    
     # Next.js静的ファイル配信
     path('_next/<path:path>', serve_next_static, name='next-static'),
     
