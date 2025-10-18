@@ -149,7 +149,6 @@ if config('USE_POSTGRESQL', default=False, cast=bool):
             'CONN_MAX_AGE': config('DB_CONN_MAX_AGE', default=600, cast=int),
             'CONN_HEALTH_CHECKS': config('DB_CONN_HEALTH_CHECKS', default=True, cast=bool),
             'OPTIONS': {
-                'MAX_CONNS': config('DB_MAX_CONNS', default=20, cast=int),
                 'connect_timeout': 10,
             },
         }

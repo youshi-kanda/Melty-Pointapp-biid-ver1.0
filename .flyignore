@@ -1,0 +1,35 @@
+# Fly.io ignore patterns
+# admin-backendのデプロイに不要なファイルを除外
+
+.git
+.github
+.gitignore
+*.md
+node_modules
+__pycache__
+*.pyc
+*.pyo
+.DS_Store
+.env
+.env.*
+!.env.production.example
+
+# 他のバックエンドサービスは除外（admin-backend以外）
+production/store-backend
+production/user-backend
+production/terminal-backend
+
+# フロントエンド関連
+pages
+public
+components
+styles
+.next
+out
+
+# 開発環境ファイル
+client-mockups
+client-delivery-temp
+backups
+logs
+*.log

@@ -14,6 +14,9 @@ const nextConfig = {
     unoptimized: true, // Cloudflare PagesとDocker両方で画像最適化を無効化
   },
   
+  // 静的エクスポート時はtrailingSlashを有効化
+  ...(isCloudflare ? { trailingSlash: true } : {}),
+  
   // 環境に応じた出力設定
   // Cloudflare Pages: 静的エクスポート
   // Docker: スタンドアロン (Node.jsサーバー)

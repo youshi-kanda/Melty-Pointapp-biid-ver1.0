@@ -1,0 +1,54 @@
+# Fly.io configuration for Admin Backend
+# BIID Point App - 運営管理サービス
+
+app = "biid-admin"
+primary_region = "nrt"  # Tokyo (Narita)
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8000"
+  DEBUG = "False"
+  USE_POSTGRESQL = "True"
+  USE_REDIS = "True"
+  ALLOWED_HOSTS = ".fly.dev,admin.biid.app"
+  SECURE_SSL_REDIRECT = "False"
+  SESSION_COOKIE_SECURE = "False"
+  CSRF_COOKIE_SECURE = "False"
+
+[[services]]
+  internal_port = 8001
+  protocol = "tcp"
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+  # ヘルスチェックを一時的に無効化（起動確認のため）
+  # [[services.tcp_checks]]
+  #   interval = "15s"
+  #   timeout = "2s"
+  #   grace_period = "10s"
+
+  # [[services.http_checks]]
+  #   interval = "30s"
+  #   timeout = "5s"
+  #   grace_period = "10s"
+  #   method = "get"
+  #   path = "/health/"
+  #   protocol = "http"
+
+[mounts]
+  source = "admin_data"
+  destination = "/data"
