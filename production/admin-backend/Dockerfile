@@ -47,4 +47,4 @@ RUN chmod +x /app/docker-entrypoint.sh
 
 # 起動コマンド
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
-CMD ["gunicorn", "--bind", "0.0.0.0:8001", "--workers", "3", "--timeout", "120", "admin_settings.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8001", "--workers", "3", "--timeout", "120", "--chdir", "/app/backend", "--env", "DJANGO_SETTINGS_MODULE=admin_settings", "pointapp.wsgi:application"]
