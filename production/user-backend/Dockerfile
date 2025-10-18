@@ -10,7 +10,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend /app/backend
 COPY production/user-backend /app/user-backend
-RUN mkdir -p /app/user-backend/static /app/user-backend/media /var/log/biid
+
+# 静的HTMLファイルを確実にコピー（既にstatic/に存在するものを保持）
+RUN mkdir -p /app/user-backend/media /var/log/biid
 
 WORKDIR /app/user-backend
 ENV DJANGO_SETTINGS_MODULE=user_settings

@@ -17,7 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend /app/backend
 COPY production/store-backend /app/store-backend
 
-RUN mkdir -p /app/store-backend/static /app/store-backend/media /var/log/biid
+# 静的HTMLファイルを確実にコピー（既にstatic/に存在するものを保持）
+RUN mkdir -p /app/store-backend/media /var/log/biid
 
 WORKDIR /app/store-backend
 

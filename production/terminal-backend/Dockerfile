@@ -10,7 +10,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend /app/backend
 COPY production/terminal-backend /app/terminal-backend
-RUN mkdir -p /app/terminal-backend/static /app/terminal-backend/media /var/log/biid
+
+# 静的HTMLファイルを確実にコピー（既にstatic/に存在するものを保持）
+RUN mkdir -p /app/terminal-backend/media /var/log/biid
 
 WORKDIR /app/terminal-backend
 ENV DJANGO_SETTINGS_MODULE=terminal_settings
