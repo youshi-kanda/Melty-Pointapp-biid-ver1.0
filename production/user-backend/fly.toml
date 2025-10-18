@@ -1,0 +1,40 @@
+# Fly.io configuration for User Backend
+# BIID Point App - ユーザーサービス
+
+app = "biid-user"
+primary_region = "nrt"  # Tokyo (Narita)
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8003"
+  DEBUG = "False"
+  USE_POSTGRESQL = "True"
+  USE_REDIS = "True"
+  USER_ALLOWED_HOSTS = ".fly.dev,.flycast,app.biid.app,biid-user.fly.dev"
+  SECURE_SSL_REDIRECT = "False"
+  SESSION_COOKIE_SECURE = "False"
+  CSRF_COOKIE_SECURE = "False"
+
+[[services]]
+  internal_port = 8003
+  protocol = "tcp"
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+[mounts]
+  source = "user_data"
+  destination = "/data"

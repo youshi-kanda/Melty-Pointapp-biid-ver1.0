@@ -1,0 +1,40 @@
+# Fly.io configuration for Terminal Backend
+# BIID Point App - 決済端末サービス
+
+app = "biid-terminal"
+primary_region = "nrt"  # Tokyo (Narita)
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8004"
+  DEBUG = "False"
+  USE_POSTGRESQL = "True"
+  USE_REDIS = "True"
+  TERMINAL_ALLOWED_HOSTS = ".fly.dev,.flycast,terminal.biid.app,biid-terminal.fly.dev"
+  SECURE_SSL_REDIRECT = "False"
+  SESSION_COOKIE_SECURE = "False"
+  CSRF_COOKIE_SECURE = "False"
+
+[[services]]
+  internal_port = 8004
+  protocol = "tcp"
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+[mounts]
+  source = "terminal_data"
+  destination = "/data"
