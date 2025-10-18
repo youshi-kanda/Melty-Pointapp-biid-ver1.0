@@ -17,6 +17,7 @@ ALLOWED_HOSTS = os.getenv('STORE_ALLOWED_HOSTS', 'store.biid.app,localhost,127.0
 
 # 静的ファイル設定（店舗画面専用）
 STATIC_URL = '/static/'
+STATIC_ROOT = Path(__file__).resolve().parent / 'staticfiles'
 STATICFILES_DIRS = [
     Path(__file__).resolve().parent / 'static',
 ]

@@ -32,4 +32,4 @@ COPY production/store-backend/docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
-CMD ["gunicorn", "--bind", "0.0.0.0:8002", "--workers", "3", "--timeout", "120", "store_settings.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8002", "--workers", "3", "--timeout", "120", "--chdir", "/app/backend", "--env", "DJANGO_SETTINGS_MODULE=store_settings", "pointapp.wsgi:application"]

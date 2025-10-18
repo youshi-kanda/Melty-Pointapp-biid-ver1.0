@@ -17,6 +17,7 @@ ALLOWED_HOSTS = os.getenv('USER_ALLOWED_HOSTS', 'app.biid.app,localhost,127.0.0.
 
 # 静的ファイル設定（ユーザー画面専用）
 STATIC_URL = '/static/'
+STATIC_ROOT = Path(__file__).resolve().parent / 'staticfiles'
 STATICFILES_DIRS = [
     Path(__file__).resolve().parent / 'static',
 ]

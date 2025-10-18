@@ -17,6 +17,7 @@ ALLOWED_HOSTS = os.getenv('TERMINAL_ALLOWED_HOSTS', 'terminal.biid.app,localhost
 
 # 静的ファイル設定（決済端末画面専用）
 STATIC_URL = '/static/'
+STATIC_ROOT = Path(__file__).resolve().parent / 'staticfiles'
 STATICFILES_DIRS = [
     Path(__file__).resolve().parent / 'static',
 ]

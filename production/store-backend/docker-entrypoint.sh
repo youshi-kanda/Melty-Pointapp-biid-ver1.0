@@ -5,6 +5,20 @@ export PYTHONPATH="/app/backend:$PYTHONPATH"
 
 echo "🚀 BIID Store Backend Starting..."
 
+# DATABASE_URLから個別の環境変数を解析（存在しない場合のみ）
+if [ -n "$DATABASE_URL" ] && [ -z "$DB_HOST" ]; then
+    echo "📝 Parsing DATABASE_URL..."
+    export DB_USER=$(echo $DATABASE_URL | sed -n 's/.*:\/\/\([^:]*\):.*/\1/p')
+    export DB_PASSWORD=$(echo $DATABASE_URL | sed -n 's/.*:\/\/[^:]*:\([^@]*\)@.*/\1/p')
+    export DB_HOST=$(echo $DATABASE_URL | sed -n 's/.*@\([^:]*\):.*/\1/p')
+    export DB_PORT=$(echo $DATABASE_URL | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
+    export DB_NAME=$(echo $DATABASE_URL | sed -n 's/.*\/\([^?]*\).*/\1/p')
+    echo "   DB_HOST=$DB_HOST"
+    echo "   DB_PORT=$DB_PORT"
+    echo "   DB_NAME=$DB_NAME"
+    echo "   DB_USER=$DB_USER"
+fi
+
 # データベース接続確認
 echo "⏳ Waiting for database..."
 while ! python -c "

@@ -20,4 +20,4 @@ COPY production/terminal-backend/docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
-CMD ["gunicorn", "--bind", "0.0.0.0:8004", "--workers", "3", "terminal_settings.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8004", "--workers", "3", "--timeout", "120", "--chdir", "/app/backend", "--env", "DJANGO_SETTINGS_MODULE=terminal_settings", "pointapp.wsgi:application"]
