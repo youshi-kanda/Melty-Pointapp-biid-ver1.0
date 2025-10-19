@@ -70,23 +70,30 @@ class ServiceAreaViewSet(viewsets.ReadOnlyModelViewSet):
         
         if is_valid and area_code:
             area_info = AreaValidator.get_area_info(area_code)
-            response_data.update({
-                'area_name': area_info.get('name'),
-                'area_name_en': area_info.get('name_en'),
-                'message': f'{area_info.get("name")}エリア内の位置です。'
-            })
+            if area_info:
+                response_data.update({
+                    'area_name': area_info.get('name'),
+                    'area_name_en': area_info.get('name_en'),
+                    'message': f'{area_info.get("name")}エリア内の位置です。'
+                })
+            else:
+                response_data['message'] = 'エリア情報の取得に失敗しました。'
         else:
             response_data['message'] = 'サービス提供エリア外の位置です。'
             
             # 最寄りのエリアを提案
-            nearest = AreaValidator.get_nearest_area(lat, lon)
-            if nearest:
-                response_data['nearest_area'] = {
-                    'area_code': nearest['code'],
-                    'area_name': nearest['name'],
-                    'distance_km': float(nearest['distance_km'])
-                }
-                response_data['message'] += f" 最寄りは{nearest['name']}（約{nearest['distance_km']:.1f}km）です。"
+            try:
+                nearest = AreaValidator.get_nearest_area(lat, lon)
+                if nearest:
+                    response_data['nearest_area'] = {
+                        'area_code': nearest.get('code'),
+                        'area_name': nearest.get('name'),
+                        'distance_km': float(nearest.get('distance_km', 0))
+                    }
+                    response_data['message'] += f" 最寄りは{nearest.get('name')}（約{nearest.get('distance_km', 0):.1f}km）です。"
+            except Exception as e:
+                # 最寄りエリア取得エラーは無視（メッセージはそのまま）
+                pass
         
         return Response(response_data)
     
