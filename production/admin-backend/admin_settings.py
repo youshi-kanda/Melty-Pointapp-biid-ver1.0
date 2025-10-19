@@ -78,6 +78,15 @@ else:
 SECURE_SSL_REDIRECT = False
 USE_TLS = False
 
+# キャッシュ設定（Redis不使用、ローカルメモリキャッシュ）
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'biid-admin-cache',
+        'TIMEOUT': 300,
+    }
+}
+
 # 管理者用ログ設定
 LOGGING['loggers']['admin'] = {
     'handlers': ['security_file', 'file'],
