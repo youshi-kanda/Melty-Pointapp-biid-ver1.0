@@ -8,6 +8,11 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-producti
 
 DEBUG = config('DEBUG', default=False, cast=bool)
 
+# アプリケーション名設定
+APP_NAME = 'Melty+'
+APP_NAME_JA = 'メルティプラス'
+APP_NAME_FULL = 'Melty+ (メルティプラス)'
+
 # 本番環境用ホスト設定
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,testserver', cast=lambda v: [s.strip() for s in v.split(',')])
 

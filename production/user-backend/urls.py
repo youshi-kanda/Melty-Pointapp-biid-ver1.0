@@ -115,16 +115,22 @@ def serve_manifest(request):
     """PWA用manifest.json配信"""
     from django.http import JsonResponse
     manifest_data = {
-        "name": "biid ユーザーアプリ",
-        "short_name": "biid User",
+        "name": "Melty+ (メルティプラス)",
+        "short_name": "Melty+",
         "start_url": "/",
         "display": "standalone",
         "background_color": "#ffffff",
-        "theme_color": "#000000",
+        "theme_color": "#4F46E5",
+        "description": "大阪ミナミ・北新地で使えるポイント＆ギフトアプリ",
         "icons": [
             {
                 "src": "/static/icons/icon-192x192.png",
                 "sizes": "192x192",
+                "type": "image/png"
+            },
+            {
+                "src": "/static/icons/icon-512x512.png",
+                "sizes": "512x512",
                 "type": "image/png"
             }
         ]
@@ -189,7 +195,11 @@ def serve_next_data_fixed(request):
 
 def health(_request):
     """ヘルスチェック"""
-    return JsonResponse({"status": "ok", "service": "user"})
+    return JsonResponse({
+        "status": "ok", 
+        "service": "melty-plus-user",
+        "app_name": "Melty+"
+    })
 
 urlpatterns = [
     # Next.jsデータファイル（具体的なパス - 優先順位高）

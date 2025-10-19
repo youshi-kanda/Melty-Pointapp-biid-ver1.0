@@ -105,7 +105,11 @@ def serve_next_static(request, path):
 
 def health(_request):
     """ヘルスチェック"""
-    return JsonResponse({"status": "ok", "service": "store"})
+    return JsonResponse({
+        "status": "ok", 
+        "service": "melty-plus-store",
+        "app_name": "Melty+ 店舗管理"
+    })
 
 urlpatterns = [
     # Next.js静的ファイル配信

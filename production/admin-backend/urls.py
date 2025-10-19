@@ -85,7 +85,11 @@ def admin_features(request):
 
 def health(_request):
     """ヘルスチェック"""
-    return JsonResponse({"status": "ok", "service": "admin"})
+    return JsonResponse({
+        "status": "ok", 
+        "service": "melty-plus-admin",
+        "app_name": "Melty+ 管理画面"
+    })
 
 urlpatterns = [
     # Django Admin（最優先）

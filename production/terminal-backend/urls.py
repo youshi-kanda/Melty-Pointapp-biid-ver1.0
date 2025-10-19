@@ -76,7 +76,11 @@ def terminal_test(request):
 
 def health(_request):
     """ヘルスチェック"""
-    return JsonResponse({"status": "ok", "service": "terminal"})
+    return JsonResponse({
+        "status": "ok", 
+        "service": "melty-plus-terminal",
+        "app_name": "Melty+ 決済端末"
+    })
 
 urlpatterns = [
     # Next.js静的ファイル配信

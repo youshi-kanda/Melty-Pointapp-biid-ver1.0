@@ -33,7 +33,7 @@ export default function Home() {
       fontFamily: 'system-ui, sans-serif'
     }}>
       <div style={{ textAlign: 'center' }}>
-        <h1>BIID Point App</h1>
+        <h1>Melty+ (メルティプラス)</h1>
         <p>Loading terminal interface...</p>
         <p><a href="/terminal-simple.html">Click here if not redirected</a></p>
       </div>

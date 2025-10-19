@@ -27,7 +27,7 @@ export default function App({ Component, pageProps }: AppProps) {
     // React Strict Mode での重複実行を防ぐ
     const isDev = process.env.NODE_ENV === 'development'
     if (isDev) {
-      console.log('BIID Point App - Development Mode')
+      console.log('Melty+ (メルティプラス) - Development Mode')
     }
   }, [])
 

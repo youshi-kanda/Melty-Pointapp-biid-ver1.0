@@ -1,8 +1,8 @@
 // API設定 - 環境に応じた設定切り替え
 export const API_CONFIG = {
-  // ベースURL（環境に応じて切り替え）
+  // ベースURL(環境に応じて切り替え)
   BASE_URL: process.env.NODE_ENV === 'production' 
-    ? 'https://api.biid-point.com'  // 本番環境
+    ? 'https://api.biid-point.com'  // 本番環境 (ドメインはそのまま維持)
     : 'http://localhost:8000',      // 開発環境
   
   // APIエンドポイント
