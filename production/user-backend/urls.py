@@ -120,7 +120,7 @@ def serve_manifest(request):
         "start_url": "/",
         "display": "standalone",
         "background_color": "#ffffff",
-        "theme_color": "#4F46E5",
+        "theme_color": "#ec4899",
         "description": "大阪ミナミ・北新地で使えるポイント＆ギフトアプリ",
         "icons": [
             {
