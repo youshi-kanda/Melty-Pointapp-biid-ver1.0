@@ -91,9 +91,19 @@ def health(_request):
         "app_name": "Melty+ 管理画面"
     })
 
+def serve_manifest(_request):
+    """PWA manifest.jsonを配信"""
+    from django.http import FileResponse
+    import os
+    manifest_file = os.path.join(os.path.dirname(__file__), 'static', 'manifest.json')
+    return FileResponse(open(manifest_file, 'rb'), content_type='application/manifest+json')
+
 urlpatterns = [
-    # Django Admin（最優先）
+    # Django Admin(最優先)
     path('admin/', admin.site.urls),
+    
+    # PWA Manifest
+    path('manifest.json', serve_manifest, name='manifest'),
     
     # Next.js静的ファイル配信
     path('_next/<path:path>', serve_next_static, name='next-static'),

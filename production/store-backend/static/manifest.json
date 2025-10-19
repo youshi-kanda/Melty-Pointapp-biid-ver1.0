@@ -1,0 +1,26 @@
+{
+  "name": "Melty+ 店舗管理",
+  "short_name": "Melty+ Store",
+  "description": "Melty+ ポイントシステム 加盟店管理画面",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4F46E5",
+  "icons": [
+    {
+      "src": "/static/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "orientation": "portrait-primary",
+  "categories": ["business"],
+  "scope": "/"
+}
