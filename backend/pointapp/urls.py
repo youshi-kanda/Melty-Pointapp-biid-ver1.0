@@ -15,6 +15,7 @@ urlpatterns = [
     path('api/ec/', include('core.ec_point_urls')),  # EC購入ポイント付与システムAPI
     path('api/deposit/', include('core.deposit_urls')),  # デポジット管理API
     path('api/partner/', include('core.partner_urls')),
+    path('api/area/', include('core.area_urls')),  # エリア管理API（大阪エリア限定機能）
     path('api/fincode/', include('core.fincode_urls')),  # FINCODE決済API（統一）
     # 互換目的：POSTのAPPEND_SLASHが効かないケースのため両方受ける
     path('api/fincode/payment/initiate', fincode_views.initiate_payment, name='fincode_initiate_no_slash'),

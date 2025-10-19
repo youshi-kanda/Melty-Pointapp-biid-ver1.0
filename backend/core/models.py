@@ -5,6 +5,44 @@ from django.db.models import Sum
 from django.core.validators import MinValueValidator, MaxValueValidator, EmailValidator
 
 
+class ServiceArea(models.Model):
+    """サービス提供エリアのマスタ"""
+    area_code = models.CharField(max_length=20, unique=True, help_text="エリアコード（例: minami, kitashinchi）")
+    area_name = models.CharField(max_length=100, help_text="エリア名（日本語）")
+    area_name_en = models.CharField(max_length=100, blank=True, help_text="エリア名（英語）")
+    
+    # 境界座標（矩形で定義）
+    boundary_north = models.DecimalField(max_digits=10, decimal_places=7, help_text="北端の緯度")
+    boundary_south = models.DecimalField(max_digits=10, decimal_places=7, help_text="南端の緯度")
+    boundary_east = models.DecimalField(max_digits=10, decimal_places=7, help_text="東端の経度")
+    boundary_west = models.DecimalField(max_digits=10, decimal_places=7, help_text="西端の経度")
+    
+    # 中心座標（地図表示用）
+    center_latitude = models.DecimalField(max_digits=10, decimal_places=7, help_text="中心の緯度")
+    center_longitude = models.DecimalField(max_digits=10, decimal_places=7, help_text="中心の経度")
+    
+    # ステータス
+    is_active = models.BooleanField(default=True, help_text="このエリアが有効かどうか")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'service_areas'
+        verbose_name = 'サービスエリア'
+        verbose_name_plural = 'サービスエリア'
+        ordering = ['area_code']
+    
+    def __str__(self):
+        return f"{self.area_name} ({self.area_code})"
+    
+    def contains_point(self, latitude, longitude):
+        """指定された座標がこのエリア内にあるかチェック"""
+        return (
+            self.boundary_south <= latitude <= self.boundary_north and
+            self.boundary_west <= longitude <= self.boundary_east
+        )
+
+
 class User(AbstractUser):
     ROLE_CHOICES = [
         ('customer', 'Customer'),
@@ -379,6 +417,21 @@ class Store(models.Model):
     
     # エリア展開制限機能（ForeignKey関係に変更）
     area = models.ForeignKey('Area', on_delete=models.PROTECT, null=True, blank=True, related_name='stores')
+    
+    # サービスエリア関連フィールド（大阪エリア限定機能）
+    service_area = models.ForeignKey(
+        'ServiceArea', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='area_stores',
+        help_text="サービス提供エリア（ミナミ、北新地等）"
+    )
+    area_code = models.CharField(max_length=20, blank=True, help_text="エリアコード")
+    prefecture = models.CharField(max_length=50, blank=True, help_text="都道府県")
+    city = models.CharField(max_length=100, blank=True, help_text="市区町村")
+    district = models.CharField(max_length=100, blank=True, help_text="地区名")
+    is_area_verified = models.BooleanField(default=False, help_text="エリア検証済みフラグ")
     
     # デポジットポイント前払い機能
     deposit_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
