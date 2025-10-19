@@ -88,6 +88,15 @@ else:
     SECURE_BROWSER_XSS_FILTER = False
     SECURE_REFERRER_POLICY = None
 
+# キャッシュ設定（Redis不使用、ローカルメモリキャッシュ）
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'biid-user-cache',
+        'TIMEOUT': 300,
+    }
+}
+
 # ユーザー用ログ設定
 LOGGING['loggers']['user'] = {
     'handlers': ['file', 'console'],

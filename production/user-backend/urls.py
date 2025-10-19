@@ -131,6 +131,37 @@ def serve_manifest(request):
     }
     return JsonResponse(manifest_data)
 
+def serve_icon(request, size):
+    """PWA用アイコン配信（ダミー）"""
+    from django.http import HttpResponse
+    from io import BytesIO
+    try:
+        from PIL import Image, ImageDraw
+        
+        # ダミーアイコンを生成
+        img_size = int(size.split('x')[0]) if 'x' in size else 192
+        img = Image.new('RGB', (img_size, img_size), color='#4F46E5')
+        draw = ImageDraw.Draw(img)
+        
+        # 簡単なロゴ風デザイン
+        margin = img_size // 4
+        draw.rectangle([margin, margin, img_size-margin, img_size-margin], fill='white')
+        
+        # PNG形式で出力
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
+        buffer.seek(0)
+        
+        return HttpResponse(buffer.getvalue(), content_type='image/png')
+    except ImportError:
+        # Pillowがない場合は404
+        from django.http import HttpResponseNotFound
+        return HttpResponseNotFound('Icon generation requires Pillow')
+
+def serve_favicon(request):
+    """favicon.ico配信"""
+    return serve_icon(request, '32x32')
+
 def serve_config(request):
     """設定ファイル配信"""
     from django.http import JsonResponse
@@ -175,7 +206,10 @@ urlpatterns = [
     
     # PWAとConfig
     path('manifest.json', serve_manifest, name='manifest'),
+    path('static/manifest.json', serve_manifest, name='manifest-static'),  # 静的パスからもアクセス可能に
     path('config.json', serve_config, name='config'),
+    path('favicon.ico', serve_favicon, name='favicon'),
+    path('static/icons/icon-<str:size>.png', serve_icon, name='pwa-icon'),
     
     # userルート追加
     path('user', user_login, name='user-alt'),
