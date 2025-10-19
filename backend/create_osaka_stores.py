@@ -2,7 +2,14 @@
 大阪エリア（ミナミ・北新地）の初期店舗データ作成スクリプト
 
 使用方法:
+    # ローカル環境
     python create_osaka_stores.py
+    
+    # Fly.io環境（Admin Backend）
+    python create_osaka_stores.py --settings=admin_settings
+    
+    # Fly.io環境（Store Backend）
+    python create_osaka_stores.py --settings=store_settings
 """
 import os
 import sys
@@ -10,7 +17,18 @@ import django
 
 # Django設定
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pointapp.settings')
+
+# 設定モジュールの決定（コマンドライン引数または環境変数）
+settings_module = 'pointapp.settings'
+for arg in sys.argv:
+    if arg.startswith('--settings='):
+        settings_module = arg.split('=')[1]
+        break
+
+if 'DJANGO_SETTINGS_MODULE' in os.environ and settings_module == 'pointapp.settings':
+    settings_module = os.environ['DJANGO_SETTINGS_MODULE']
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
 django.setup()
 
 from core.models import Store, ServiceArea
