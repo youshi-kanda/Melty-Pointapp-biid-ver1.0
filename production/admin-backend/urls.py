@@ -119,6 +119,9 @@ urlpatterns = [
     path('api/', include('core.urls')),
     path('', include('core.production_admin_urls')),  # 本番管理者URL
     
+    # エリア管理API
+    path('api/area/', include('core.area_urls')),
+    
     # 新5カテゴリ統合システム設定API
     path('api/admin/', include('core.system_settings_urls_new')),  # 5カテゴリ設定API
     
