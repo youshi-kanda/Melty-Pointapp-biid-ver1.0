@@ -71,9 +71,9 @@ class ServiceAreaViewSet(viewsets.ReadOnlyModelViewSet):
         if is_valid and area_code:
             area_info = AreaValidator.get_area_info(area_code)
             response_data.update({
-                'area_name': area_info.get('area_name'),
-                'area_name_en': area_info.get('area_name_en'),
-                'message': f'{area_info.get("area_name")}エリア内の位置です。'
+                'area_name': area_info.get('name'),
+                'area_name_en': area_info.get('name_en'),
+                'message': f'{area_info.get("name")}エリア内の位置です。'
             })
         else:
             response_data['message'] = 'サービス提供エリア外の位置です。'
@@ -82,11 +82,11 @@ class ServiceAreaViewSet(viewsets.ReadOnlyModelViewSet):
             nearest = AreaValidator.get_nearest_area(lat, lon)
             if nearest:
                 response_data['nearest_area'] = {
-                    'area_code': nearest['area_code'],
-                    'area_name': nearest['area_name'],
+                    'area_code': nearest['code'],
+                    'area_name': nearest['name'],
                     'distance_km': float(nearest['distance_km'])
                 }
-                response_data['message'] += f" 最寄りは{nearest['area_name']}（約{nearest['distance_km']:.1f}km）です。"
+                response_data['message'] += f" 最寄りは{nearest['name']}（約{nearest['distance_km']:.1f}km）です。"
         
         return Response(response_data)
     
