@@ -1,6 +1,7 @@
 import type { AppProps } from 'next/app'
 import { useEffect } from 'react'
 import { setupGlobalErrorHandling } from '../lib/error-handler'
+import '../styles/globals.css'
 
 // Console エラーを防ぐためのグローバル設定
 if (typeof window !== 'undefined') {
