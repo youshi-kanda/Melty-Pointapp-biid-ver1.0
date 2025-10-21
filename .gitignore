@@ -44,6 +44,9 @@ user-deploy/
 # Archives
 *.zip
 
+# Backups
+backups/
+
 # IDE
 .vscode/
 .idea/
