@@ -13,25 +13,31 @@
     "dev-backend": "cd backend && python manage.py runserver 8000",
     "start-dev": "node start-dev.js"
   },
-  "keywords": ["point-system", "payment", "django", "nextjs", "biid"],
+  "keywords": [
+    "point-system",
+    "payment",
+    "django",
+    "nextjs",
+    "biid"
+  ],
   "author": "BIID Development Team",
   "license": "MIT",
   "dependencies": {
-    "next": "^14.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "@next/font": "^14.0.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "typescript": "^5.2.0",
-    "tailwindcss": "^3.3.0",
     "autoprefixer": "^10.4.0",
-    "postcss": "^8.4.0",
     "eslint": "^8.0.0",
-    "eslint-config-next": "^14.0.0"
+    "eslint-config-next": "^14.0.0",
+    "lucide-react": "^0.546.0",
+    "next": "^14.0.0",
+    "postcss": "^8.4.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5.2.0"
   },
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/youshi-kanda/biid-pointapp-salute.git"
