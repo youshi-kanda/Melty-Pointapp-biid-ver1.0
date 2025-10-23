@@ -188,7 +188,7 @@ export default function StoresPage() {
         />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100">
         {/* ヘッダー */}
         <header className="bg-white shadow-lg">
           <div className="max-w-7xl mx-auto px-4 py-4">
@@ -201,7 +201,7 @@ export default function StoresPage() {
                   <Home className="w-5 h-5 text-gray-600" />
                 </button>
                 <div className="flex items-center space-x-2 sm:space-x-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-md">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-pink-500 to-rose-500 rounded-xl flex items-center justify-center shadow-md">
                     <MapPin className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
                   </div>
                   <div>
@@ -243,7 +243,7 @@ export default function StoresPage() {
                   onClick={() => setSelectedCategory(null)}
                   className={`p-3 rounded-lg text-center transition-all ${
                     selectedCategory === null
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                      ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -256,7 +256,7 @@ export default function StoresPage() {
                     onClick={() => setSelectedCategory(cat.id)}
                     className={`p-3 rounded-lg text-center transition-all ${
                       selectedCategory === cat.id
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                        ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
@@ -375,7 +375,7 @@ export default function StoresPage() {
                       <div className="flex space-x-3">
                         <button
                           onClick={() => router.push(`/user/stores/${store.id}`)}
-                          className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 shadow-md"
+                          className="flex-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 shadow-md"
                         >
                           詳細を見る
                         </button>

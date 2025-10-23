@@ -139,7 +139,7 @@ export default function SecurityPage() {
         />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100">
         {/* ヘッダー */}
         <div className="bg-white shadow-lg">
           <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6">
@@ -152,7 +152,7 @@ export default function SecurityPage() {
                   <ArrowLeft className="w-5 h-5 text-gray-600" />
                 </button>
                 <div className="flex items-center space-x-2 sm:space-x-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-md">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-pink-500 to-rose-500 rounded-xl flex items-center justify-center shadow-md">
                     <Shield className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
                   </div>
                   <div>
@@ -275,7 +275,7 @@ export default function SecurityPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 rounded-lg font-medium hover:from-indigo-600 hover:to-purple-600 transition-all disabled:opacity-50"
+                className="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white py-3 rounded-lg font-medium hover:from-pink-600 hover:to-rose-600 transition-all disabled:opacity-50"
               >
                 {isLoading ? '変更中...' : 'パスワードを変更'}
               </button>
