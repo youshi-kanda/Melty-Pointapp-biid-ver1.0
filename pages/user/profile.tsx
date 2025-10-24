@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
+import { QRCodeSVG } from 'qrcode.react'
 import { 
   ArrowLeft, 
   User, 
@@ -15,7 +16,8 @@ import {
   Star,
   Gift,
   CreditCard,
-  TrendingUp
+  TrendingUp,
+  QrCode
 } from 'lucide-react'
 
 export default function ProfilePage() {
@@ -23,6 +25,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<any>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [showQRCode, setShowQRCode] = useState(false)
   const [stats, setStats] = useState({
     totalPoints: 48800,
     monthlyEarned: 2850,
@@ -217,7 +220,14 @@ export default function ProfilePage() {
           </div>
 
           {/* アクションボタン */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <button
+              onClick={() => setShowQRCode(true)}
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center space-x-2"
+            >
+              <QrCode className="w-5 h-5" />
+              <span>QRコード表示</span>
+            </button>
             <button
               onClick={() => router.push('/user/points')}
               className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
@@ -232,6 +242,53 @@ export default function ProfilePage() {
             </button>
           </div>
         </div>
+
+        {/* QRコードモーダル */}
+        {showQRCode && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full mb-4">
+                  <QrCode className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">会員QRコード</h2>
+                <p className="text-sm text-gray-600">
+                  決済端末でこのQRコードをスキャンしてください
+                </p>
+              </div>
+
+              {/* QRコード表示 */}
+              <div className="bg-white p-6 rounded-xl border-4 border-gray-100 mb-6 flex items-center justify-center">
+                <QRCodeSVG
+                  value={`USER:${user?.id}`}
+                  size={240}
+                  level="H"
+                  includeMargin={true}
+                />
+              </div>
+
+              {/* ユーザー情報 */}
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-600">会員ID</span>
+                  <span className="text-lg font-bold text-gray-900">{user?.id}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">会員名</span>
+                  <span className="text-lg font-bold text-gray-900">{user?.lastName} {user?.firstName}</span>
+                </div>
+              </div>
+
+              {/* 閉じるボタン */}
+              <button
+                onClick={() => setShowQRCode(false)}
+                className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-6 rounded-lg transition-colors"
+              >
+                閉じる
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   )

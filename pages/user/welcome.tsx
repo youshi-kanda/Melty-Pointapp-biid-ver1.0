@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
+import { QRCodeSVG } from 'qrcode.react'
+import { QrCode, X } from 'lucide-react'
 
 export default function WelcomePage() {
   const router = useRouter()
   const [userName, setUserName] = useState('ユーザー')
+  const [userId, setUserId] = useState('USER001')
+  const [showQRCode, setShowQRCode] = useState(false)
 
   const menuItems = [
     {
@@ -86,6 +90,17 @@ export default function WelcomePage() {
             <p className="text-gray-600">今日も素敵な一日を！</p>
           </div>
 
+          {/* QRコード表示ボタン */}
+          <div className="mb-6">
+            <button
+              onClick={() => setShowQRCode(true)}
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center space-x-3"
+            >
+              <QrCode className="w-6 h-6" />
+              <span>会員QRコードを表示</span>
+            </button>
+          </div>
+
           {/* メインメニューカード */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {menuItems.map((item, index) => (
@@ -155,6 +170,69 @@ export default function WelcomePage() {
             </div>
           </div>
         </main>
+
+        {/* QRコードモーダル */}
+        {showQRCode && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8 relative animate-fade-in">
+              {/* 閉じるボタン */}
+              <button
+                onClick={() => setShowQRCode(false)}
+                className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl mb-4 shadow-lg">
+                  <QrCode className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">会員QRコード</h2>
+                <p className="text-sm text-gray-600">
+                  決済端末でこのQRコードをスキャンしてください
+                </p>
+              </div>
+
+              {/* QRコード表示 */}
+              <div className="bg-white p-6 rounded-2xl border-4 border-blue-100 mb-6 flex items-center justify-center shadow-inner">
+                <QRCodeSVG
+                  value={`USER:${userId}`}
+                  size={240}
+                  level="H"
+                  includeMargin={true}
+                  fgColor="#2563eb"
+                />
+              </div>
+
+              {/* ユーザー情報 */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-4 mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-600">会員ID</span>
+                  <span className="text-lg font-bold text-gray-900">{userId}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">会員名</span>
+                  <span className="text-lg font-bold text-gray-900">{userName}</span>
+                </div>
+              </div>
+
+              {/* 説明 */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
+                <p className="text-xs text-yellow-800">
+                  💡 このQRコードは決済時に店舗の端末で読み取ります。他の人には見せないでください。
+                </p>
+              </div>
+
+              {/* 閉じるボタン */}
+              <button
+                onClick={() => setShowQRCode(false)}
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg"
+              >
+                閉じる
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   )
