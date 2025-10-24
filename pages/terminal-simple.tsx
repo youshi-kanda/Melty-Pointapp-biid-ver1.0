@@ -72,7 +72,7 @@ export default function TerminalSimple() {
             <div className="flex items-center gap-2 sm:gap-3">
               <Store size={24} className="sm:w-7 sm:h-7" />
               <div>
-                <h1 className="text-base sm:text-xl font-bold">Melty+ 決済端末</h1>
+                <h1 className="text-base sm:text-xl font-bold">Melty+ Terminal</h1>
                 <p className="text-xs sm:text-sm text-blue-100">会員認証</p>
               </div>
             </div>
