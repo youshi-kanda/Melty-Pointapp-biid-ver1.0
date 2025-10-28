@@ -46,6 +46,16 @@ user-deploy/
 
 # Backups
 backups/
+production/*/static.backup_*/
+
+# Production static files (ビルド成果物)
+production/admin-backend/static/
+production/store-backend/static/
+production/terminal-backend/static/
+production/user-backend/static/
+
+# Keep .gitkeep files in static directories
+!production/*/static/.gitkeep
 
 # IDE
 .vscode/
