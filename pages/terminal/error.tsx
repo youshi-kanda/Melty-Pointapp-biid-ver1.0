@@ -46,11 +46,11 @@ export default function TerminalError() {
   };
 
   const handleRetry = () => {
-    router.back();
+    router.push('/terminal/');
   };
 
   const handleHome = () => {
-    router.push('/terminal-simple');
+    router.push('/terminal/');
   };
 
   const handleContactSupport = () => {

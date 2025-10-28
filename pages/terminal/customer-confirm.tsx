@@ -40,7 +40,7 @@ export default function CustomerConfirm() {
   };
 
   const handleCancel = () => {
-    router.push('/terminal-simple');
+    router.push('/terminal/');
   };
 
   if (loading) {

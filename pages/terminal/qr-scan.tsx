@@ -165,11 +165,8 @@ export default function QRScan() {
   };
 
   const handleCancel = () => {
-    stopScanner();
-    router.push('/terminal-simple');
-  };
-
-  const handleManualInput = () => {
+    router.push('/terminal/');
+  };  const handleManualInput = () => {
     stopScanner();
     router.push('/terminal/manual-input');
   };

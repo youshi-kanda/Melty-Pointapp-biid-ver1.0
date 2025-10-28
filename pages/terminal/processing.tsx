@@ -51,7 +51,7 @@ export default function Processing() {
   };
 
   const handleCancel = () => {
-    router.push('/terminal-simple');
+    router.push('/terminal/');
   };
 
   return (

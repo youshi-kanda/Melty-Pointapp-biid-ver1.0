@@ -38,7 +38,7 @@ export default function NFCReader() {
   }, [status, router]);
 
   const handleCancel = () => {
-    router.push('/terminal-simple');
+    router.push('/terminal/');
   };
 
   return (

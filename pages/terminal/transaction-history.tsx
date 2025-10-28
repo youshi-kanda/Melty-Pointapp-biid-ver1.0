@@ -137,7 +137,7 @@ export default function TransactionHistory() {
   };
 
   const handleBack = () => {
-    router.push('/terminal-simple');
+    router.push('/terminal/');
   };
 
   return (

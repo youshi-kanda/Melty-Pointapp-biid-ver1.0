@@ -34,7 +34,7 @@ export default function PointsComplete() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          router.push('/terminal-simple');
+          router.push('/terminal/');
           return 0;
         }
         return prev - 1;
@@ -45,7 +45,7 @@ export default function PointsComplete() {
   }, [router]);
 
   const handleBackToHome = () => {
-    router.push('/terminal-simple');
+    router.push('/terminal/');
   };
 
   return (

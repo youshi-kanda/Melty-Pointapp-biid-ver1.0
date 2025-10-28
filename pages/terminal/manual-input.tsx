@@ -44,7 +44,7 @@ export default function ManualInput() {
   };
 
   const handleCancel = () => {
-    router.push('/terminal-simple');
+    router.push('/terminal/');
   };
 
   return (

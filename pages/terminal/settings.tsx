@@ -27,7 +27,7 @@ export default function TerminalSettings() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleBack = () => {
-    router.push('/terminal-simple');
+    router.push('/terminal/');
   };
 
   const handleLogout = () => {

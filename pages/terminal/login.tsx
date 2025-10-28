@@ -12,7 +12,7 @@ export default function TerminalLogin() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     // デモ用: 認証後にメイン画面へ
-    router.push('/terminal-simple');
+    router.push('/terminal/');
   };
 
   return (

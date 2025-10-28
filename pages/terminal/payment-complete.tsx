@@ -30,7 +30,7 @@ export default function PaymentComplete() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          router.push('/terminal-simple');
+          router.push('/terminal/');
           return 0;
         }
         return prev - 1;
@@ -45,7 +45,7 @@ export default function PaymentComplete() {
   };
 
   const handleBackToHome = () => {
-    router.push('/terminal-simple');
+    router.push('/terminal/');
   };
 
   return (
