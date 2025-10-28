@@ -82,7 +82,7 @@ export default function TransactionsManagement() {
   return (
     <>
       <Head>
-        <title>取引管理 - BIID 管理</title>
+        <title>取引管理 - Melty+ 管理</title>
       </Head>
 
       <div className="flex min-h-screen bg-gray-50">

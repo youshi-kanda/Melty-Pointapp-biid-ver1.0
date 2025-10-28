@@ -133,7 +133,7 @@ export default function UsersManagement() {
   return (
     <>
       <Head>
-        <title>ユーザー管理 - BIID 管理</title>
+        <title>ユーザー管理 - Melty+ 管理</title>
       </Head>
 
       <div className="flex min-h-screen bg-gray-50">

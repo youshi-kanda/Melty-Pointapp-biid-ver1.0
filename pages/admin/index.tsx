@@ -118,7 +118,7 @@ export default function AdminDashboard() {
   return (
     <>
       <Head>
-        <title>ダッシュボード - BIID 管理</title>
+        <title>ダッシュボード - Melty+ 管理</title>
       </Head>
 
       <div className="flex min-h-screen bg-gray-50">

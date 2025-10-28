@@ -152,7 +152,7 @@ export default function StoresManagement() {
   return (
     <>
       <Head>
-        <title>店舗管理 - BIID 管理</title>
+        <title>店舗管理 - Melty+ 管理</title>
       </Head>
 
       <div className="flex min-h-screen bg-gray-50">

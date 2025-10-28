@@ -36,7 +36,7 @@ export default function AdminLogin() {
   return (
     <>
       <Head>
-        <title>管理者ログイン - BIID</title>
+        <title>管理者ログイン - Melty+ 管理</title>
       </Head>
 
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 p-4">
@@ -44,7 +44,7 @@ export default function AdminLogin() {
           {/* ロゴ */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-              BIID 管理
+              Melty+ 管理
             </h1>
             <p className="text-gray-500 text-sm">システム管理者ログイン</p>
           </div>
@@ -98,7 +98,7 @@ export default function AdminLogin() {
 
           {/* フッター情報 */}
           <div className="mt-8 text-center text-xs text-gray-500">
-            <p>BIID Admin Panel v1.0.0</p>
+            <p>Melty+ Admin Panel v1.0.0</p>
           </div>
         </div>
       </div>

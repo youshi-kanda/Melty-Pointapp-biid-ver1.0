@@ -26,7 +26,7 @@ export default function SystemSettings() {
   return (
     <>
       <Head>
-        <title>システム設定 - BIID 管理</title>
+        <title>システム設定 - Melty+ 管理</title>
       </Head>
 
       <div className="flex min-h-screen bg-gray-50">
@@ -71,23 +71,23 @@ export default function SystemSettings() {
                 {activeTab === 'basic' && (
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        システム名
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                        サービス名
                       </label>
                       <input
                         type="text"
-                        defaultValue="BIID"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        defaultValue="Melty+"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
                         サービスURL
                       </label>
                       <input
-                        type="text"
-                        defaultValue="https://biid.example.com"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        type="url"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        defaultValue="https://meltyplus.example.com"
                       />
                     </div>
                     <div>
@@ -210,7 +210,7 @@ export default function SystemSettings() {
                       </label>
                       <input
                         type="email"
-                        defaultValue="admin@biid.example.com"
+                        defaultValue="admin@meltyplus.example.com"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       />
                     </div>

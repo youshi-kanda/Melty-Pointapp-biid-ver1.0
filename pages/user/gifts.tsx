@@ -261,12 +261,12 @@ export default function GiftsPage() {
                   <Home className="w-5 h-5 text-gray-600" />
                 </button>
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-rose-500 rounded-xl flex items-center justify-center shadow-md">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-lg">
                     <Gift className="w-5 h-5 text-white" />
                   </div>
                   <div>
                     <span className="text-base sm:text-xl md:text-2xl font-light text-pink-600" style={{fontFamily: 'Dancing Script, cursive'}}>
-                      biid Store
+                      Melty+ Store
                     </span>
                     <span className="text-xs sm:text-sm text-pink-500 block -mt-1">Gifts</span>
                   </div>

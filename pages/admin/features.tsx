@@ -102,7 +102,7 @@ export default function FeaturesManagement() {
   return (
     <>
       <Head>
-        <title>機能管理 - BIID 管理</title>
+        <title>機能管理 - Melty+ 管理</title>
       </Head>
 
       <div className="flex min-h-screen bg-gray-50">

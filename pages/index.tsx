@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 
 export default function Home() {
   const router = useRouter()
@@ -8,12 +9,12 @@ export default function Home() {
     // 安全なリダイレクト処理（Invariant エラーを防ぐ）
     const redirectToTerminal = () => {
       try {
-        router.replace('/terminal-simple')
+        router.replace('/terminal/login')
       } catch (error) {
         console.warn('Navigation error:', error)
         // フォールバック: 直接 window.location を使用
         if (typeof window !== 'undefined') {
-          window.location.href = '/terminal-simple.html'
+          window.location.href = '/terminal/login'
         }
       }
     }
@@ -35,7 +36,7 @@ export default function Home() {
       <div style={{ textAlign: 'center' }}>
         <h1>Melty+ (メルティプラス)</h1>
         <p>Loading terminal interface...</p>
-        <p><a href="/terminal-simple.html">Click here if not redirected</a></p>
+        <p><Link href="/terminal/login">Click here if not redirected</Link></p>
       </div>
     </div>
   )

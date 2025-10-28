@@ -16,7 +16,7 @@ export default function ReportsManagement() {
   return (
     <>
       <Head>
-        <title>レポート - BIID 管理</title>
+        <title>レポート - Melty+ 管理</title>
       </Head>
 
       <div className="flex min-h-screen bg-gray-50">
