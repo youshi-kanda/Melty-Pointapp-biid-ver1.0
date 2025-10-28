@@ -49,6 +49,19 @@ def serve_next_static(request, path):
     
     return FileResponse(open(static_file_path, 'rb'), content_type=content_type)
 
+def serve_terminal_page(request, page='index'):
+    """Next.jsでビルドされた決済端末ページを配信"""
+    from django.http import FileResponse, Http404
+    import os
+    
+    # terminal/{page}.html を static/terminal/ から取得
+    static_file_path = os.path.join(os.path.dirname(__file__), 'static', 'terminal', f'{page}.html')
+    
+    if not os.path.exists(static_file_path):
+        raise Http404(f"Terminal page not found: {page}")
+    
+    return FileResponse(open(static_file_path, 'rb'), content_type='text/html')
+
 def terminal_payment(request):
     """決済処理ページ"""
     from django.shortcuts import render
@@ -95,6 +108,21 @@ urlpatterns = [
     
     # Next.js静的ファイル配信
     path('_next/<path:path>', serve_next_static, name='next-static'),
+    
+    # Next.jsでビルドされた決済端末ページ
+    path('terminal/', lambda r: serve_terminal_page(r, 'index'), name='terminal-index'),
+    path('terminal/login/', lambda r: serve_terminal_page(r, 'login'), name='terminal-nextjs-login'),
+    path('terminal/nfc/', lambda r: serve_terminal_page(r, 'nfc'), name='terminal-nextjs-nfc'),
+    path('terminal/amount-input/', lambda r: serve_terminal_page(r, 'amount-input'), name='terminal-amount-input'),
+    path('terminal/customer-confirm/', lambda r: serve_terminal_page(r, 'customer-confirm'), name='terminal-customer-confirm'),
+    path('terminal/payment-confirm/', lambda r: serve_terminal_page(r, 'payment-confirm'), name='terminal-payment-confirm'),
+    path('terminal/payment-complete/', lambda r: serve_terminal_page(r, 'payment-complete'), name='terminal-payment-complete'),
+    path('terminal/points-input/', lambda r: serve_terminal_page(r, 'points-input'), name='terminal-points-input'),
+    path('terminal/points-complete/', lambda r: serve_terminal_page(r, 'points-complete'), name='terminal-points-complete'),
+    path('terminal/processing/', lambda r: serve_terminal_page(r, 'processing'), name='terminal-processing'),
+    path('terminal/error/', lambda r: serve_terminal_page(r, 'error'), name='terminal-error'),
+    path('terminal/manual-input/', lambda r: serve_terminal_page(r, 'manual-input'), name='terminal-manual-input'),
+    path('terminal/transaction-history/', lambda r: serve_terminal_page(r, 'transaction-history'), name='terminal-transaction-history'),
     
     # 決済端末画面のルート（ログインページ）
     path('', terminal_login, name='terminal-root'),
