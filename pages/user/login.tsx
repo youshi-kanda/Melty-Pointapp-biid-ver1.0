@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 
 export default function LoginPage() {
@@ -123,9 +124,9 @@ export default function LoginPage() {
               </a>
               <div className="text-sm text-gray-600">
                 アカウントをお持ちでない方は{' '}
-                <a href="/user/register" className="text-primary-600 hover:text-primary-700 font-medium">
+                <Link href="/user/register" className="text-primary-600 hover:text-primary-700 font-medium">
                   新規登録
-                </a>
+                </Link>
               </div>
             </div>
           </div>
