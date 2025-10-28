@@ -54,11 +54,14 @@ def serve_terminal_page(request, page='index'):
     from django.http import FileResponse, Http404
     import os
     
-    # terminal/{page}.html を static/terminal/ から取得
-    static_file_path = os.path.join(os.path.dirname(__file__), 'static', 'terminal', f'{page}.html')
+    # terminal/{page}/index.html を static/terminal/ から取得
+    static_file_path = os.path.join(os.path.dirname(__file__), 'static', 'terminal', page, 'index.html')
     
     if not os.path.exists(static_file_path):
-        raise Http404(f"Terminal page not found: {page}")
+        # フォールバック: terminal/{page}.html も試す
+        static_file_path = os.path.join(os.path.dirname(__file__), 'static', 'terminal', f'{page}.html')
+        if not os.path.exists(static_file_path):
+            raise Http404(f"Terminal page not found: {page}")
     
     return FileResponse(open(static_file_path, 'rb'), content_type='text/html')
 
