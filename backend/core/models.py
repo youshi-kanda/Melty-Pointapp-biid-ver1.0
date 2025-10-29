@@ -243,6 +243,62 @@ class User(AbstractUser):
         help_text="List of unlocked social skin themes"
     )
     
+    # ========================================
+    # 新規登録フォーム10項目対応 (2025-10-29追加)
+    # MELTY_ACCOUNT_INTEGRATION_SPEC.md準拠
+    # ========================================
+    phone = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,  # 既存ユーザーのため一時的にnull許可
+        blank=True,
+        help_text='電話番号 (090-1234-5678形式)'
+    )
+    phone_verified = models.BooleanField(
+        default=False,
+        help_text='SMS認証済みフラグ'
+    )
+    
+    work_region = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text='勤務地域 (47都道府県)'
+    )
+    
+    industry = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text='業種 (11選択肢)'
+    )
+    
+    employment_type = models.CharField(
+        max_length=50,
+        choices=[('専業', '専業'), ('副業', '副業')],
+        blank=True,
+        help_text='働き方'
+    )
+    
+    # ========================================
+    # Melty連携拡張 (双方向同期対応)
+    # ========================================
+    melty_sync_enabled = models.BooleanField(
+        default=False,
+        help_text='Meltyアプリとの双方向同期有効フラグ'
+    )
+    # melty_linked_at は新規追加 (既存のmelty_connected_atと併用)
+    # 将来的にmelty_connected_atは非推奨とし、melty_linked_atに統一予定
+    # melty_user_id, melty_email, is_melty_linked は既存フィールド利用
+    
+    # birth_date → birthday エイリアス (フロントエンド互換性)
+    @property
+    def birthday(self):
+        """birth_dateのエイリアス"""
+        return self.birth_date
+    
+    @birthday.setter
+    def birthday(self, value):
+        self.birth_date = value
+    
     def __str__(self):
         return f"{self.username} ({self.member_id}) - {self.role}"
     
@@ -366,6 +422,40 @@ class User(AbstractUser):
             import logging
             logger = logging.getLogger(__name__)
             logger.error(f"Rank update failed for user {self.username}: {str(e)}")
+
+
+class Industry(models.Model):
+    """
+    業種マスタテーブル
+    MELTY_ACCOUNT_INTEGRATION_SPEC.md準拠
+    """
+    code = models.CharField(
+        max_length=50,
+        unique=True,
+        help_text='業種コード (例: nightwork_cabaret)'
+    )
+    name = models.CharField(
+        max_length=200,
+        help_text='表示名 (例: ナイトワーク(キャバクラ・クラブ等))'
+    )
+    category = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text='カテゴリ (例: nightwork)'
+    )
+    display_order = models.IntegerField(
+        default=0,
+        help_text='表示順序'
+    )
+    
+    class Meta:
+        db_table = 'industries'
+        verbose_name = '業種'
+        verbose_name_plural = '業種'
+        ordering = ['display_order']
+    
+    def __str__(self):
+        return self.name
 
 
 class Store(models.Model):
