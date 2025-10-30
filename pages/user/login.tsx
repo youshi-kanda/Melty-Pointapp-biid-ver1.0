@@ -2,9 +2,12 @@ import { useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/router'
 import { Mail, Lock, Eye, EyeOff, Cherry } from 'lucide-react'
+import { getApiUrl } from '@/lib/api-config'
 
 export default function LoginPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('user@example.com')
   const [password, setPassword] = useState('userpass123')
   const [showPassword, setShowPassword] = useState(false)
@@ -17,15 +20,40 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      // TODO: API連携
-      console.log('Login attempt:', { email })
-      
-      // 開発環境: ログイン成功後にマップ画面へ遷移
-      setTimeout(() => {
-        window.location.href = '/user/map/'
-      }, 500)
+      const response = await fetch(`${getApiUrl()}/auth/login/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: email,
+          password: password,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.access) {
+        // JWTトークンを保存
+        localStorage.setItem('auth_token', data.access)
+        if (data.refresh) {
+          localStorage.setItem('refresh_token', data.refresh)
+        }
+
+        // ユーザー情報を保存
+        if (data.user) {
+          localStorage.setItem('user_info', JSON.stringify(data.user))
+        }
+
+        // ダッシュボードへリダイレクト
+        router.push('/user')
+      } else {
+        setError(data.error || 'ログインに失敗しました。メールアドレスとパスワードを確認してください。')
+        setIsLoading(false)
+      }
     } catch (err) {
-      setError('ログインに失敗しました')
+      console.error('Login error:', err)
+      setError('ログイン中にエラーが発生しました。もう一度お試しください。')
       setIsLoading(false)
     }
   }
@@ -76,6 +104,13 @@ export default function LoginPage() {
 
               {/* ログインフォーム */}
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* エラーメッセージ */}
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl">
+                    <p className="text-sm">{error}</p>
+                  </div>
+                )}
+
                 {/* メールアドレス */}
                 <div>
                   <label className="block text-base font-semibold text-gray-700 mb-3">
@@ -131,7 +166,7 @@ export default function LoginPage() {
                   disabled={isLoading}
                   className="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-semibold py-4 rounded-2xl hover:from-pink-600 hover:to-rose-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg text-lg"
                 >
-                  ログイン
+                  {isLoading ? 'ログイン中...' : 'ログイン'}
                 </button>
               </form>
 
