@@ -260,19 +260,19 @@ urlpatterns = [
     # Next.js静的ファイル配信
     path('_next/<path:path>', serve_next_static, name='next-static'),
     
-    # Publicファイル（画像、ロゴなど）
+    # PWAとConfig（faviconを先に定義）
+    path('favicon.ico', serve_favicon, name='favicon'),
+    path('manifest.json', serve_manifest, name='manifest'),
+    path('static/manifest.json', serve_manifest, name='manifest-static'),
+    path('config.json', serve_config, name='config'),
+    path('static/icons/icon-<str:size>.png', serve_icon, name='pwa-icon'),
+    
+    # Publicファイル（画像、ロゴなど - faviconの後に配置）
     path('melty-logo.jpg', lambda request: serve_public_file(request, 'melty-logo.jpg'), name='melty-logo'),
     path('<str:filename>.jpg', serve_public_file, name='public-jpg'),
     path('<str:filename>.png', serve_public_file, name='public-png'),
     path('<str:filename>.svg', serve_public_file, name='public-svg'),
     path('<str:filename>.ico', serve_public_file, name='public-ico'),
-    
-    # PWAとConfig
-    path('manifest.json', serve_manifest, name='manifest'),
-    path('static/manifest.json', serve_manifest, name='manifest-static'),
-    path('config.json', serve_config, name='config'),
-    path('favicon.ico', serve_favicon, name='favicon'),
-    path('static/icons/icon-<str:size>.png', serve_icon, name='pwa-icon'),
     
     # API エンドポイント
     path('api/', include('core.urls')),
