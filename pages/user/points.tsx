@@ -343,7 +343,7 @@ export default function PointsPage() {
           {/* アクションボタン */}
           <div className="mt-6 sm:mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
-              onClick={() => router.push('/user/gifts/exchange')}
+              onClick={() => router.push('/user/gifts')}
               className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
             >
               ギフトと交換する
