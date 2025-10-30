@@ -23,7 +23,6 @@ class Migration(migrations.Migration):
                 ('display_order', models.IntegerField(default=0, help_text='表示順序')),
             ],
             options={
-                'db_table': 'industries',
                 'verbose_name': '業種',
                 'verbose_name_plural': '業種',
                 'ordering': ['display_order'],
@@ -33,7 +32,7 @@ class Migration(migrations.Migration):
         # Insert master data (11 industries)
         migrations.RunSQL(
             sql="""
-                INSERT INTO industries (id, code, name, category, display_order) VALUES
+                INSERT INTO core_industry (id, code, name, category, display_order) VALUES
                 (1, 'nightwork_cabaret', 'ナイトワーク(キャバクラ・クラブ等)', 'nightwork', 1),
                 (2, 'nightwork_girls_bar', 'ナイトワーク(ガールズバー・スナック等)', 'nightwork', 2),
                 (3, 'nightwork_host', 'ナイトワーク(ホスト・ボーイズバー等)', 'nightwork', 3),
@@ -46,6 +45,6 @@ class Migration(migrations.Migration):
                 (10, 'student', '学生・アルバイト', 'student', 10),
                 (11, 'other', 'その他', 'other', 11);
             """,
-            reverse_sql="DELETE FROM industries;"
+            reverse_sql="DELETE FROM core_industry;"
         ),
     ]

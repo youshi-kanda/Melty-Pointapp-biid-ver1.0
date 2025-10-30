@@ -449,7 +449,6 @@ class Industry(models.Model):
     )
     
     class Meta:
-        db_table = 'industries'
         verbose_name = '業種'
         verbose_name_plural = '業種'
         ordering = ['display_order']
