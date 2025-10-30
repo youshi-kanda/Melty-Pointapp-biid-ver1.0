@@ -1,130 +1,392 @@
-import { useState, useEffect } from 'react'
-import Head from 'next/head'
-import { useRouter } from 'next/router'
+import { useEffect, useRef } from 'react';
+import Image from 'next/image';
+import Head from 'next/head';
+import UserLayout from '@/components/user/Layout';
+import { Heart, Search, MapPin, Star, Phone, Globe, Filter, Navigation, Zap, Cigarette } from 'lucide-react';
+
+// Google Maps APIキー（環境変数から取得、なければデモ用のキー）
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8';
 
 export default function MapPage() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<google.maps.Map | null>(null);
 
   useEffect(() => {
-    // 初期化処理
-    setTimeout(() => setIsLoading(false), 500)
-  }, [])
+    // Google Maps APIスクリプトをロード
+    const loadGoogleMapsScript = () => {
+      if (typeof window.google !== 'undefined') {
+        initMap();
+        return;
+      }
 
-  const handleHomeClick = () => {
-    router.push('/user/welcome')
-  }
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      script.onload = initMap;
+      document.head.appendChild(script);
+    };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent"></div>
-          <p className="mt-4 text-gray-600 font-soft">読み込み中...</p>
-        </div>
-      </div>
-    )
-  }
+    const initMap = () => {
+      if (!mapRef.current) return;
+
+      // 大阪ミナミ（心斎橋）の座標
+      const center = { lat: 34.6718, lng: 135.5023 };
+
+      const map = new google.maps.Map(mapRef.current, {
+        center: center,
+        zoom: 15,
+        styles: [
+          {
+            featureType: 'poi',
+            elementType: 'labels',
+            stylers: [{ visibility: 'off' }]
+          }
+        ],
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: true,
+      });
+
+      mapInstanceRef.current = map;
+
+      // サンプル店舗マーカー
+      const stores = [
+        { name: 'オーガニック カフェ リーフ', position: { lat: 34.6728, lng: 135.5033 } },
+        { name: 'ナチュラル ビューティー ガーデン', position: { lat: 34.6708, lng: 135.5013 } },
+        { name: 'エコ フレンドリー ストア', position: { lat: 34.6738, lng: 135.5043 } },
+        { name: 'アロマテラピー ライフ', position: { lat: 34.6698, lng: 135.5003 } },
+        { name: 'ヘルシー ライフスタイル カフェ', position: { lat: 34.6748, lng: 135.5053 } },
+      ];
+
+      stores.forEach(store => {
+        const marker = new google.maps.Marker({
+          position: store.position,
+          map: map,
+          title: store.name,
+          icon: {
+            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 32 40">
+                <path fill="#EC4899" d="M16 0C7.163 0 0 7.163 0 16c0 12 16 24 16 24s16-12 16-24c0-8.837-7.163-16-16-16z"/>
+                <circle cx="16" cy="16" r="6" fill="white"/>
+              </svg>
+            `),
+            scaledSize: new google.maps.Size(32, 40),
+            anchor: new google.maps.Point(16, 40),
+          }
+        });
+
+        const infoWindow = new google.maps.InfoWindow({
+          content: `<div style="padding: 8px; font-weight: bold; color: #1f2937;">${store.name}</div>`
+        });
+
+        marker.addListener('click', () => {
+          infoWindow.open(map, marker);
+        });
+      });
+    };
+
+    loadGoogleMapsScript();
+  }, []);
 
   return (
     <>
       <Head>
-        <title>Melty+ (メルティプラス) - マップ</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>店舗マップ - Melty+</title>
       </Head>
+      <UserLayout title="店舗マップ - Melty+">
+      <div className="px-4 py-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5 lg:gap-6">
+            {/* Left Sidebar - Search Filters (Desktop only) */}
+            <div className="hidden md:block md:col-span-1 lg:col-span-1 space-y-4 md:order-1">
+              <div className="bg-white rounded-3xl shadow-xl p-6 border border-gray-200">
+                <h3 className="font-bold text-xl text-gray-800 mb-6 flex items-center space-x-2">
+                  <Filter className="w-6 h-6 text-pink-600" />
+                  <span>検索条件</span>
+                </h3>
 
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-        {/* ヘッダー */}
-        <header className="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-primary-200/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              {/* ロゴ */}
-              <div className="flex items-center">
-                <h1 className="text-2xl font-cutie font-bold bg-gradient-to-r from-primary-500 to-pink-500 bg-clip-text text-transparent">
-                  Melty+
-                </h1>
+                {/* Get Location Button */}
+                <div className="mb-6">
+                  <button className="w-full flex items-center justify-center space-x-2 px-6 py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl hover:from-pink-600 hover:to-rose-600 disabled:opacity-50 transition-all duration-200 font-bold shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <Navigation className="w-5 h-5" />
+                    <span>現在地を取得</span>
+                  </button>
+                </div>
+
+                {/* Search Input */}
+                <div className="mb-6">
+                  <div className="relative">
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <input
+                      type="text"
+                      placeholder="店舗名で検索"
+                      className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-gray-50 transition-all duration-200 text-gray-800 placeholder-gray-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Search Range */}
+                <div className="mb-6">
+                  <label className="block text-base font-bold text-gray-800 mb-3">検索範囲</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button className="px-4 py-3 text-sm rounded-2xl border transition-all duration-200 font-bold shadow-sm bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 hover:shadow-md">500m</button>
+                    <button className="px-4 py-3 text-sm rounded-2xl border transition-all duration-200 font-bold shadow-sm bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 hover:shadow-md">1km</button>
+                    <button className="px-4 py-3 text-sm rounded-2xl border transition-all duration-200 font-bold shadow-lg bg-pink-500 text-white border-pink-500 transform scale-105">3km</button>
+                    <button className="px-4 py-3 text-sm rounded-2xl border transition-all duration-200 font-bold shadow-sm bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 hover:shadow-md">5km</button>
+                  </div>
+                </div>
+
+                {/* Categories */}
+                <div className="mb-6">
+                  <label className="block text-base font-bold text-gray-800 mb-3">カテゴリー</label>
+                  <div className="space-y-1">
+                    {['レストラン・飲食店', '小売・ショッピング', 'サービス・美容', 'エンターテイメント', '医療・健康', '教育・学習'].map((category) => (
+                      <label key={category} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200">
+                        <input type="checkbox" className="w-4 h-4 text-pink-500 border-gray-300 rounded focus:ring-pink-500 focus:ring-offset-0 bg-white" />
+                        <span className="text-sm text-gray-700 font-medium">{category}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Additional Filters */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-base font-bold text-gray-800 mb-3">評価</label>
+                    <select className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-gray-50 transition-all duration-200 text-gray-800 font-medium">
+                      <option>指定なし</option>
+                      <option>★4.0以上</option>
+                      <option>★3.0以上</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-base font-bold text-gray-800 mb-3">営業状況</label>
+                    <select className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-gray-50 transition-all duration-200 text-gray-800 font-medium">
+                      <option>指定なし</option>
+                      <option>営業中</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-base font-bold text-gray-800 mb-3">価格帯</label>
+                    <select className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-gray-50 transition-all duration-200 text-gray-800 font-medium">
+                      <option>指定なし</option>
+                      <option>~1000円</option>
+                      <option>1000~3000円</option>
+                      <option>3000円~</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-base font-bold text-gray-800 mb-3">アクセシビリティ</label>
+                    <div className="space-y-1">
+                      {['車椅子対応', '駐車場あり', 'Wi-Fi完備', '喫煙可', '充電ポートあり'].map((feature) => (
+                        <label key={feature} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200">
+                          <input type="checkbox" className="w-4 h-4 text-pink-500 border-gray-300 rounded focus:ring-pink-500 focus:ring-offset-0 bg-white" />
+                          <span className="text-sm text-gray-700 font-medium">{feature}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side - Map and Store List */}
+            <div className="col-span-1 md:col-span-2 lg:col-span-3 space-y-6 md:order-2 order-1">
+              {/* Map Container */}
+              <div className="bg-gradient-to-br from-white via-pink-50 to-rose-50 rounded-3xl shadow-xl border border-pink-200">
+                <div className="p-4 border-b border-pink-200">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-lg text-pink-800 flex items-center space-x-2">
+                      <MapPin className="w-5 h-5 text-pink-600" />
+                      <span>近くの加盟店</span>
+                    </h3>
+                    <span className="text-xs text-pink-600 bg-pink-100 px-3 py-1.5 rounded-full font-medium shadow-sm">5件</span>
+                  </div>
+                </div>
+                <div className="h-64 sm:h-72 md:h-80 lg:h-96 p-2">
+                  <div ref={mapRef} style={{ width: '100%', height: '100%', borderRadius: '12px', overflow: 'hidden', position: 'relative' }} />
+                </div>
               </div>
 
-              {/* ホームボタン（右上） */}
-              <button
-                onClick={handleHomeClick}
-                className="flex items-center space-x-2 bg-gradient-to-r from-primary-500 to-pink-500 text-white px-4 py-2 rounded-full hover:from-primary-600 hover:to-pink-600 transition-all transform hover:scale-105 active:scale-95 shadow-md"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-                <span className="font-medium">ホーム</span>
+              {/* Store List */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-xl text-gray-800">店舗一覧</h3>
+                  <span className="text-sm text-pink-600 bg-pink-100 px-4 py-2 rounded-full font-medium shadow-sm">5件</span>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Store Card 1 */}
+                  <StoreCard
+                    name="オーガニック カフェ リーフ"
+                    category="レストラン・飲食店"
+                    rating={4.8}
+                    reviews={203}
+                    distance="0.4km"
+                    address="東京都世田谷区三軒茶屋1-2-3"
+                    points="450pt (9%還元)"
+                    status="営業中"
+                    features={['充電可']}
+                    imageId="2001"
+                  />
+
+                  {/* Store Card 2 */}
+                  <StoreCard
+                    name="ナチュラル ビューティー ガーデン"
+                    category="サービス・美容"
+                    rating={4.9}
+                    reviews={156}
+                    distance="0.6km"
+                    address="東京都世田谷区下北沢2-4-5"
+                    points="680pt (12%還元)"
+                    status="営業中"
+                    features={['充電可']}
+                    imageId="202"
+                  />
+
+                  {/* Store Card 3 */}
+                  <StoreCard
+                    name="エコ フレンドリー ストア"
+                    category="小売・ショッピング"
+                    rating={4.7}
+                    reviews={89}
+                    distance="0.9km"
+                    address="東京都世田谷区代沢1-6-7"
+                    points="320pt (7%還元)"
+                    status="営業中"
+                    features={[]}
+                    imageId="303"
+                  />
+
+                  {/* Store Card 4 */}
+                  <StoreCard
+                    name="アロマテラピー ライフ"
+                    category="サービス・美容"
+                    rating={4.6}
+                    reviews={124}
+                    distance="1.1km"
+                    address="東京都世田谷区太子堂3-4-5"
+                    points="410pt (8%還元)"
+                    status="間もなく閉店"
+                    features={['喫煙可', '充電可']}
+                    imageId="204"
+                  />
+
+                  {/* Store Card 5 */}
+                  <StoreCard
+                    name="ヘルシー ライフスタイル カフェ"
+                    category="レストラン・飲食店"
+                    rating={4.5}
+                    reviews={98}
+                    distance="1.3km"
+                    address="東京都世田谷区池尻2-6-8"
+                    points="290pt (6%還元)"
+                    status="営業中"
+                    features={[]}
+                    imageId="3005"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+      </div>
+      </UserLayout>
+    </>
+  );
+}interface StoreCardProps {
+  name: string;
+  category: string;
+  rating: number;
+  reviews: number;
+  distance: string;
+  address: string;
+  points: string;
+  status: string;
+  features: string[];
+  imageId: string;
+}
+
+function StoreCard({ name, category, rating, reviews, distance, address, points, status, features, imageId }: StoreCardProps) {
+  const isOpen = status === '営業中';
+  const isClosingSoon = status === '間もなく閉店';
+
+  return (
+    <div className="bg-white rounded-3xl shadow-lg border border-gray-200 p-4 sm:p-6 hover:shadow-xl transition-all duration-200 cursor-pointer">
+      <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="flex-1 min-w-0 w-full sm:w-auto">
+          <div className="flex items-start justify-between">
+            <div>
+              <h4 className="font-bold text-gray-900 text-base mb-1">{name}</h4>
+              <p className="text-sm text-gray-600">{category}</p>
+            </div>
+            <div className="text-right">
+              <div className="flex items-center space-x-1">
+                <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                <span className="text-sm font-medium text-gray-800">{rating}</span>
+                <span className="text-sm text-gray-600">({reviews})</span>
+              </div>
+              <div className="flex items-center space-x-1 mt-1">
+                <MapPin className="w-4 h-4 text-gray-400" />
+                <span className="text-sm text-gray-600">{distance}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-3 flex items-center space-x-2 sm:space-x-3 flex-wrap">
+            <span className={`text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 sm:py-2 rounded-full shadow-sm ${
+              isOpen ? 'bg-gradient-to-r from-pink-100 to-rose-200 text-pink-800' :
+              isClosingSoon ? 'bg-gradient-to-r from-rose-100 to-pink-200 text-rose-800' :
+              'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800'
+            }`}>
+              {status}
+            </span>
+            {features.map((feature) => {
+              const Icon = feature === '充電可' ? Zap : Cigarette;
+              const colorClass = feature === '充電可' ? 
+                'bg-gradient-to-r from-pink-100 to-rose-200 text-pink-700' : 
+                'bg-gradient-to-r from-rose-100 to-pink-200 text-rose-700';
+              return (
+                <div key={feature} className={`flex items-center space-x-1 px-2 sm:px-3 py-1 sm:py-2 rounded-full shadow-sm ${colorClass}`}>
+                  <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="text-xs font-bold">{feature}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <p className="text-sm text-gray-600 mt-2">{address}</p>
+
+          <div className="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+            <span className="text-xs sm:text-sm font-bold text-pink-700 bg-pink-100 px-2 sm:px-3 py-1 rounded-full">
+              獲得ポイント: {points}
+            </span>
+            <div className="flex items-center space-x-2">
+              <button className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+              </button>
+              <button className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+              </button>
+              <button className="p-2 hover:bg-gray-100 rounded-xl transition-colors" title="お気に入りに追加">
+                <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
               </button>
             </div>
           </div>
-        </header>
+        </div>
 
-        {/* メインコンテンツ */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-6">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">店舗マップ</h2>
-            <p className="text-gray-600">お近くの加盟店を探す</p>
+        <div className="w-full sm:w-32 md:w-40 h-32 sm:h-32 md:h-40 bg-gray-100 rounded-2xl overflow-hidden flex-shrink-0 relative">
+          <Image 
+            src={`https://picsum.photos/160/160?random=${imageId}`}
+            alt={name}
+            width={160}
+            height={160}
+            className="w-full h-full object-cover opacity-60"
+          />
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span className="text-white text-lg font-bold opacity-30 select-none transform rotate-12">SAMPLE</span>
           </div>
-
-          {/* マップエリア */}
-          <div className="bg-white rounded-3xl shadow-soft overflow-hidden border border-primary-200/30">
-            <div className="aspect-video bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-              <div className="text-center p-8">
-                <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-md">
-                  <svg className="w-8 h-8 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <p className="text-lg font-semibold text-gray-700 mb-2">マップ機能</p>
-                <p className="text-sm text-gray-500">加盟店の位置情報を表示</p>
-              </div>
-            </div>
-
-            {/* マップコントロール */}
-            <div className="p-4 bg-gray-50 border-t border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="flex space-x-2">
-                  <button className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-700 transition-colors">
-                    現在地
-                  </button>
-                  <button className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-700 transition-colors">
-                    検索
-                  </button>
-                </div>
-                <div className="text-sm text-gray-600">
-                  <span className="font-semibold">128</span> 件の店舗
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 店舗リスト */}
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all p-5 border border-gray-100 cursor-pointer transform hover:scale-[1.02]"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-bold text-lg text-gray-800">店舗名 {i}</h3>
-                  <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-                    営業中
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600 mb-2">東京都渋谷区〇〇 1-2-3</p>
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  徒歩 {i * 2} 分
-                </div>
-              </div>
-            ))}
-          </div>
-        </main>
+        </div>
       </div>
-    </>
-  )
+    </div>
+  );
 }
