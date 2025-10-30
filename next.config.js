@@ -11,7 +11,13 @@ const nextConfig = {
   
   // 画像最適化設定
   images: {
-    unoptimized: true, // Cloudflare PagesとDocker両方で画像最適化を無効化
+    unoptimized: isCloudflare, // Cloudflare Pagesでのみ無効化、Docker/ローカルでは最適化有効
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
+    ],
   },
   
   // 静的エクスポート時はtrailingSlashを有効化

@@ -10,43 +10,165 @@ import {
   TrendingUp, 
   Gift, 
   ArrowUpRight, 
-  ArrowDownRight 
+  ArrowDownRight,
+  AlertCircle
 } from 'lucide-react'
+import { getApiUrl } from '@/lib/api-config'
+
+interface PointTransaction {
+  id: number
+  points: number
+  transaction_type: string
+  description: string
+  created_at: string
+  store?: {
+    name: string
+  }
+  balance_after: number
+}
+
+interface PointStats {
+  current_points: number
+  monthly_earned: number
+  monthly_spent: number
+  total_earned: number
+}
 
 export default function PointsPage() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [currentPoints, setCurrentPoints] = useState(0)
-  const [pointsHistory, setPointsHistory] = useState<any[]>([])
+  const [pointsHistory, setPointsHistory] = useState<PointTransaction[]>([])
+  const [stats, setStats] = useState<PointStats>({
+    current_points: 0,
+    monthly_earned: 0,
+    monthly_spent: 0,
+    total_earned: 0
+  })
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // TODO: 認証チェック
-    // if (!AuthService.isAuthenticated()) {
-    //   router.push('/login')
-    //   return
-    // }
-    // setUser(AuthService.getUser())
     loadPointsData()
   }, [router])
 
   const loadPointsData = async () => {
     try {
-      // TODO: API連携
-      // const data = await PointsAPI.getPointsHistory()
-      // setPointsHistory(data.results || [])
-      setCurrentPoints(48800)
+      setIsLoading(true)
+      setError(null)
+
+      // JWTトークンを取得
+      const token = localStorage.getItem('auth_token')
+      if (!token) {
+        router.push('/user/login')
+        return
+      }
+
+      let userPointBalance = 0
+
+      // プロフィールAPIから現在のポイント残高を取得
+      const profileResponse = await fetch(`${getApiUrl()}/user/profile/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json()
+        userPointBalance = profileData.point_balance || 0
+        setCurrentPoints(userPointBalance)
+        setUser(profileData)
+      }
+
+      // ポイント履歴を取得
+      const historyResponse = await fetch(`${getApiUrl()}/points/history/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (historyResponse.ok) {
+        const historyData = await historyResponse.json()
+        const transactions = historyData.transactions || []
+        setPointsHistory(transactions.slice(0, 10)) // 最新10件
+
+        // 統計を計算
+        calculateStats(transactions, userPointBalance)
+      }
     } catch (error) {
       console.error('Failed to load points data:', error)
+      setError('ポイントデータの読み込みに失敗しました')
     } finally {
       setIsLoading(false)
     }
   }
 
+  const calculateStats = (transactions: PointTransaction[], currentBalance: number) => {
+    const now = new Date()
+    const currentMonth = now.getMonth()
+    const currentYear = now.getFullYear()
+
+    let monthlyEarned = 0
+    let monthlySpent = 0
+    let totalEarned = 0
+
+    transactions.forEach((tx) => {
+      const txDate = new Date(tx.created_at)
+      const isCurrentMonth = txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear
+
+      if (tx.points > 0) {
+        totalEarned += tx.points
+        if (isCurrentMonth) {
+          monthlyEarned += tx.points
+        }
+      } else if (tx.points < 0) {
+        if (isCurrentMonth) {
+          monthlySpent += Math.abs(tx.points)
+        }
+      }
+    })
+
+    setStats({
+      current_points: currentBalance,
+      monthly_earned: monthlyEarned,
+      monthly_spent: monthlySpent,
+      total_earned: totalEarned
+    })
+  }
+
+  const getTransactionIcon = (type: string) => {
+    const isPositive = ['grant', 'bonus', 'transfer_in', 'refund'].includes(type)
+    return isPositive ? ArrowUpRight : ArrowDownRight
+  }
+
+  const getTransactionColor = (type: string) => {
+    const isPositive = ['grant', 'bonus', 'transfer_in', 'refund'].includes(type)
+    return isPositive ? 'pink' : 'rose'
+  }
+
+  const getTransactionLabel = (type: string): string => {
+    const labels: Record<string, string> = {
+      'grant': 'ポイント付与',
+      'payment': 'ポイント決済',
+      'refund': 'ポイント返金',
+      'transfer_in': 'ポイント受取',
+      'transfer_out': 'ポイント送付',
+      'expire': 'ポイント失効',
+      'bonus': 'ボーナスポイント',
+      'correction': '調整',
+    }
+    return labels[type] || type
+  }
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-500"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-pink-100 via-rose-100 to-pink-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-pink-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">読み込み中...</p>
+        </div>
       </div>
     )
   }
@@ -103,6 +225,17 @@ export default function PointsPage() {
 
         {/* メインコンテンツ */}
         <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+          {/* エラー表示 */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-start space-x-3">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-red-800 font-medium">エラーが発生しました</p>
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
+            </div>
+          )}
+
           {/* ポイント残高カード */}
           <div className="bg-white rounded-xl shadow-sm border p-6 mb-6 sm:mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
@@ -114,7 +247,7 @@ export default function PointsPage() {
                 </div>
               </div>
               <div className="text-center sm:text-right">
-                <p className="text-3xl sm:text-4xl font-bold text-pink-600">{currentPoints.toLocaleString()}</p>
+                <p className="text-3xl sm:text-4xl font-bold text-pink-600">{stats.current_points.toLocaleString()}</p>
                 <p className="text-sm text-gray-500">ポイント</p>
               </div>
             </div>
@@ -126,7 +259,7 @@ export default function PointsPage() {
               <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-pink-400 to-rose-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                 <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">2,850</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">{stats.monthly_earned.toLocaleString()}</h3>
               <p className="text-sm sm:text-base text-gray-600">今月獲得</p>
             </div>
 
@@ -134,7 +267,7 @@ export default function PointsPage() {
               <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-rose-400 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                 <Gift className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">1,200</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">{stats.monthly_spent.toLocaleString()}</h3>
               <p className="text-sm sm:text-base text-gray-600">今月利用</p>
             </div>
 
@@ -142,7 +275,7 @@ export default function PointsPage() {
               <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-pink-500 to-rose-600 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                 <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">125,450</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">{stats.total_earned.toLocaleString()}</h3>
               <p className="text-sm sm:text-base text-gray-600">総獲得</p>
             </div>
           </div>
@@ -152,38 +285,59 @@ export default function PointsPage() {
             <div className="p-4 sm:p-6 border-b">
               <h2 className="text-lg font-semibold text-gray-900">ポイント履歴</h2>
             </div>
-            <div className="divide-y">
-              {[
-                { id: '1', type: 'earn', amount: 500, description: '購入ポイント', date: '2025-01-12', store: 'カフェドゥ ビート' },
-                { id: '2', type: 'spend', amount: -1200, description: 'ギフト交換', date: '2025-01-11', store: 'Amazonギフト券' },
-                { id: '3', type: 'earn', amount: 300, description: 'ボーナスポイント', date: '2025-01-10', store: 'レストラン バンビーノ' },
-              ].map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between space-y-3 sm:space-y-0 hover:bg-gray-50"
-                >
-                  <div className="flex items-center space-x-3 sm:space-x-4">
-                    <div className={`p-2 rounded-lg ${transaction.type === 'earn' ? 'bg-pink-100' : 'bg-rose-100'}`}>
-                      {transaction.type === 'earn' ? (
-                        <ArrowUpRight className="text-pink-600 w-5 h-5" />
-                      ) : (
-                        <ArrowDownRight className="text-rose-600 w-5 h-5" />
-                      )}
+            {pointsHistory.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                <Star className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <p>ポイント履歴がありません</p>
+              </div>
+            ) : (
+              <div className="divide-y">
+                {pointsHistory.map((transaction) => {
+                  const Icon = getTransactionIcon(transaction.transaction_type)
+                  const color = getTransactionColor(transaction.transaction_type)
+                  const isPositive = transaction.points > 0
+
+                  return (
+                    <div
+                      key={transaction.id}
+                      className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between space-y-3 sm:space-y-0 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center space-x-3 sm:space-x-4">
+                        <div className={`p-2 rounded-lg ${isPositive ? 'bg-pink-100' : 'bg-rose-100'}`}>
+                          <Icon className={`${isPositive ? 'text-pink-600' : 'text-rose-600'} w-5 h-5`} />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm sm:text-base">
+                            {getTransactionLabel(transaction.transaction_type)}
+                          </p>
+                          <p className="text-xs sm:text-sm text-gray-600">{transaction.description}</p>
+                          {transaction.store && (
+                            <p className="text-xs text-gray-500 mt-0.5">{transaction.store.name}</p>
+                          )}
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            {new Date(transaction.created_at).toLocaleDateString('ja-JP', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-center sm:text-right">
+                        <p className={`text-base sm:text-lg font-semibold ${isPositive ? 'text-pink-600' : 'text-rose-600'}`}>
+                          {isPositive ? '+' : ''}{transaction.points.toLocaleString()}pt
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          残高: {transaction.balance_after.toLocaleString()}pt
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-gray-900 text-sm sm:text-base">{transaction.description}</p>
-                      <p className="text-xs sm:text-sm text-gray-600">{transaction.store}</p>
-                      <p className="text-xs text-gray-400">{transaction.date}</p>
-                    </div>
-                  </div>
-                  <div className="text-center sm:text-right">
-                    <p className={`text-base sm:text-lg font-semibold ${transaction.type === 'earn' ? 'text-pink-600' : 'text-rose-600'}`}>
-                      {transaction.type === 'earn' ? '+' : ''}{transaction.amount.toLocaleString()}pt
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
           {/* アクションボタン */}

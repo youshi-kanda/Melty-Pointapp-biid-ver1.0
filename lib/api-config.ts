@@ -41,6 +41,24 @@ export const API_CONFIG = {
   }
 }
 
+// APIベースURLを取得するヘルパー関数
+export function getApiUrl(): string {
+  if (typeof window !== 'undefined') {
+    // クライアントサイドの場合
+    const hostname = window.location.hostname
+    if (hostname === 'biid-user.pages.dev' || hostname.includes('biid-user')) {
+      return 'https://biid-user.fly.dev/api'
+    }
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:8001/api'
+    }
+  }
+  // サーバーサイド or デフォルト
+  return process.env.NODE_ENV === 'production' 
+    ? 'https://biid-user.fly.dev/api'
+    : 'http://localhost:8001/api'
+}
+
 // APIクライアント関数（エラーハンドリング強化版）
 export async function apiCall(endpoint: string, options: RequestInit = {}) {
   const url = `${API_CONFIG.BASE_URL}${endpoint}`

@@ -20,10 +20,15 @@ def terminal_main(request):
 
 def terminal_login(request):
     """決済端末ログインページ"""
-    from django.http import FileResponse
+    from django.http import FileResponse, HttpResponse
     import os
     static_file = os.path.join(os.path.dirname(__file__), 'static', 'login.html')
-    return FileResponse(open(static_file, 'rb'), content_type='text/html')
+    response = FileResponse(open(static_file, 'rb'), content_type='text/html')
+    # キャッシュを無効化
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 def serve_next_static(request, path):
     """Next.jsの静的ファイルを配信"""
@@ -51,7 +56,7 @@ def serve_next_static(request, path):
 
 def serve_terminal_page(request, page='index'):
     """Next.jsでビルドされた決済端末ページを配信"""
-    from django.http import FileResponse, Http404
+    from django.http import FileResponse, Http404, HttpResponse
     import os
     
     # terminal/{page}/index.html を static/terminal/ から取得
@@ -63,7 +68,12 @@ def serve_terminal_page(request, page='index'):
         if not os.path.exists(static_file_path):
             raise Http404(f"Terminal page not found: {page}")
     
-    return FileResponse(open(static_file_path, 'rb'), content_type='text/html')
+    response = FileResponse(open(static_file_path, 'rb'), content_type='text/html')
+    # キャッシュを無効化
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 def terminal_payment(request):
     """決済処理ページ"""
@@ -116,15 +126,20 @@ urlpatterns = [
     path('terminal/', lambda r: serve_terminal_page(r, 'index'), name='terminal-index'),
     path('terminal/login/', lambda r: serve_terminal_page(r, 'login'), name='terminal-nextjs-login'),
     path('terminal/nfc/', lambda r: serve_terminal_page(r, 'nfc'), name='terminal-nextjs-nfc'),
-    path('terminal/amount-input/', lambda r: serve_terminal_page(r, 'amount-input'), name='terminal-amount-input'),
+    path('terminal/qr-scan/', lambda r: serve_terminal_page(r, 'qr-scan'), name='terminal-qr-scan'),
+    path('terminal/manual-input/', lambda r: serve_terminal_page(r, 'manual-input'), name='terminal-manual-input'),
     path('terminal/customer-confirm/', lambda r: serve_terminal_page(r, 'customer-confirm'), name='terminal-customer-confirm'),
+    path('terminal/amount-input/', lambda r: serve_terminal_page(r, 'amount-input'), name='terminal-amount-input'),
+    path('terminal/payment/', lambda r: serve_terminal_page(r, 'payment'), name='terminal-payment'),
     path('terminal/payment-confirm/', lambda r: serve_terminal_page(r, 'payment-confirm'), name='terminal-payment-confirm'),
+    path('terminal/processing/', lambda r: serve_terminal_page(r, 'processing'), name='terminal-processing'),
     path('terminal/payment-complete/', lambda r: serve_terminal_page(r, 'payment-complete'), name='terminal-payment-complete'),
+    path('terminal/points/', lambda r: serve_terminal_page(r, 'points'), name='terminal-points'),
     path('terminal/points-input/', lambda r: serve_terminal_page(r, 'points-input'), name='terminal-points-input'),
     path('terminal/points-complete/', lambda r: serve_terminal_page(r, 'points-complete'), name='terminal-points-complete'),
-    path('terminal/processing/', lambda r: serve_terminal_page(r, 'processing'), name='terminal-processing'),
     path('terminal/error/', lambda r: serve_terminal_page(r, 'error'), name='terminal-error'),
-    path('terminal/manual-input/', lambda r: serve_terminal_page(r, 'manual-input'), name='terminal-manual-input'),
+    path('terminal/settings/', lambda r: serve_terminal_page(r, 'settings'), name='terminal-settings'),
+    path('terminal/history/', lambda r: serve_terminal_page(r, 'history'), name='terminal-history'),
     path('terminal/transaction-history/', lambda r: serve_terminal_page(r, 'transaction-history'), name='terminal-transaction-history'),
     
     # 決済端末画面のルート（ログインページ）

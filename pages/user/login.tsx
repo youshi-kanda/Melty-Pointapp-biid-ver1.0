@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
-import { useRouter } from 'next/router'
+import Image from 'next/image'
+import { Mail, Lock, Eye, EyeOff, Cherry } from 'lucide-react'
 
 export default function LoginPage() {
-  const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('user@example.com')
+  const [password, setPassword] = useState('userpass123')
+  const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -21,7 +22,7 @@ export default function LoginPage() {
       
       // 開発環境: ログイン成功後にマップ画面へ遷移
       setTimeout(() => {
-        router.push('/user/map')
+        window.location.href = '/user/map/'
       }, 500)
     } catch (err) {
       setError('ログインに失敗しました')
@@ -42,98 +43,109 @@ export default function LoginPage() {
         />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          {/* ロゴ */}
-          <div className="text-center mb-8">
-            <h1 className="text-5xl font-cutie font-bold bg-gradient-to-r from-primary-500 to-pink-500 bg-clip-text text-transparent mb-2">
-              Melty+
-            </h1>
-            <p className="text-gray-600 font-soft text-sm">メルティプラス</p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-white">
+        {/* アニメーション背景 */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-32 left-4 md:top-20 md:left-20 w-16 h-16 md:w-20 md:h-20 bg-pink-200 rounded-full opacity-40 animate-pulse"></div>
+          <div className="absolute top-48 right-4 md:top-40 md:right-20 w-12 h-12 md:w-16 md:h-16 bg-rose-200 rounded-full opacity-30 animate-bounce"></div>
+          <div className="absolute bottom-32 left-8 md:bottom-20 md:left-20 w-20 h-20 md:w-24 md:h-24 bg-pink-100 rounded-full opacity-20 animate-ping"></div>
+          <div className="absolute bottom-48 right-6 md:bottom-40 md:right-10 w-10 h-10 md:w-12 md:h-12 bg-rose-300 rounded-full opacity-40 animate-pulse"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-gradient-to-r from-pink-100 to-rose-100 rounded-full opacity-10 animate-bounce"></div>
+        </div>
 
-          {/* ログインカード */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-soft p-8 border border-primary-200/50">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-              ログイン
-            </h2>
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* メールアドレス */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  メールアドレス
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                  placeholder="example@email.com"
-                />
+        {/* メインコンテンツ */}
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="flex items-center justify-center min-h-[calc(100vh-180px)]">
+            <div className="bg-white rounded-3xl shadow-xl border border-pink-100 p-10 w-full max-w-lg backdrop-blur-sm">
+              {/* ロゴ・タイトル */}
+              <div className="text-center mb-10">
+                <div className="flex items-center justify-center mb-8">
+                  <Image
+                    src="/melty-logo.jpg"
+                    alt="Melty+"
+                    width={200}
+                    height={100}
+                    className="object-contain"
+                  />
+                </div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent mb-3" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
+                  ユーザーログイン
+                </h1>
+                <p className="text-gray-600 text-lg" style={{ fontFamily: 'Nunito, sans-serif' }}>Melty+アプリへようこそ</p>
               </div>
 
-              {/* パスワード */}
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  パスワード
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                  placeholder="••••••••"
-                />
-              </div>
+              {/* ログインフォーム */}
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* メールアドレス */}
+                <div>
+                  <label className="block text-base font-semibold text-gray-700 mb-3">
+                    メールアドレス
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-pink-400 w-5 h-5" />
+                    <input
+                      type="email"
+                      name="email"
+                      className="w-full pl-12 pr-4 py-4 border border-pink-200 rounded-2xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 hover:border-pink-300 bg-pink-50/30 text-base"
+                      placeholder="your@example.com"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                </div>
 
-              {/* ログインボタン */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-primary-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-xl hover:from-primary-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-pop"
-              >
-                {isLoading ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    ログイン中...
-                  </span>
-                ) : (
-                  'ログイン'
-                )}
-              </button>
-            </form>
+                {/* パスワード */}
+                <div>
+                  <label className="block text-base font-semibold text-gray-700 mb-3">
+                    パスワード
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-pink-400 w-5 h-5" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      className="w-full pl-12 pr-14 py-4 border border-pink-200 rounded-2xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 hover:border-pink-300 bg-pink-50/30 text-base"
+                      placeholder="パスワードを入力"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-pink-400 hover:text-pink-600 transition-colors"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
 
-            {/* フッターリンク */}
-            <div className="mt-6 text-center space-y-2">
-              <a href="#" className="text-sm text-primary-600 hover:text-primary-700 block">
-                パスワードを忘れた方
-              </a>
-              <div className="text-sm text-gray-600">
-                アカウントをお持ちでない方は{' '}
-                <Link href="/user/register" className="text-primary-600 hover:text-primary-700 font-medium">
-                  新規登録
+                {/* ログインボタン */}
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-semibold py-4 rounded-2xl hover:from-pink-600 hover:to-rose-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg text-lg"
+                >
+                  ログイン
+                </button>
+              </form>
+
+              {/* フッターリンク */}
+              <div className="mt-8 text-center">
+                <span className="text-base text-gray-600">新規登録は </span>
+                <Link
+                  className="text-base text-rose-600 hover:text-rose-800 font-semibold transition-colors"
+                  href="/user/register"
+                >
+                  こちら
                 </Link>
               </div>
             </div>
-          </div>
-
-          {/* バージョン情報 */}
-          <div className="mt-6 text-center text-xs text-gray-500">
-            © 2025 Melty+ All rights reserved.
           </div>
         </div>
       </div>

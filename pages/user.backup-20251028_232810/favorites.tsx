@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react'
-import UserLayout from '@/components/user/Layout'
+import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { 
+  ArrowLeft, 
   Heart, 
   Store, 
   Gift, 
   Star, 
   MapPin, 
   Trash2,
-  ExternalLink
+  ExternalLink,
+  Bell,
+  Settings
 } from 'lucide-react'
 
 interface FavoriteStore {
@@ -128,17 +131,64 @@ export default function FavoritesPage() {
   }
 
   return (
-    <UserLayout title="お気に入り - Melty+">
-      <div className="px-4 py-6">
-        {/* タブ */}
-          <div className="bg-white rounded-2xl shadow-lg border border-pink-200 p-2 mb-6">
+    <>
+      <Head>
+        <title>Melty+ (メルティプラス) - お気に入り</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link 
+          href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&family=Nunito:wght@300;400;500;600;700;800&family=Comfortaa:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=Dancing+Script:wght@400;500;600;700&family=Pacifico&family=Great+Vibes&family=Satisfy&family=Fredoka+One&family=Bungee&display=swap" 
+          rel="stylesheet" 
+        />
+      </Head>
+
+      <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50">
+        {/* ヘッダー */}
+        <div className="bg-white shadow-lg">
+          <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 sm:space-x-4">
+                <button
+                  onClick={() => router.push('/user')}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5 text-gray-600" />
+                </button>
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-rose-500 to-pink-500 rounded-xl flex items-center justify-center shadow-md">
+                    <Heart className="w-5 h-5 sm:w-7 sm:h-7 text-white fill-current" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900">お気に入り</h1>
+                    <p className="text-sm sm:text-base text-gray-600 hidden sm:block">保存した店舗とギフト</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <Bell className="w-5 h-5 text-gray-600" />
+                </button>
+                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <Settings className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* メインコンテンツ */}
+        <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+          {/* タブ */}
+          <div className="bg-white rounded-xl shadow-sm border p-2 mb-6">
             <div className="flex space-x-2">
               <button
                 onClick={() => setActiveTab('stores')}
-                className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-xl font-medium transition-all ${
+                className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all ${
                   activeTab === 'stores'
-                    ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg'
-                    : 'text-gray-600 hover:bg-pink-50'
+                    ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md'
+                    : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 <Store className="w-5 h-5" />
@@ -147,10 +197,10 @@ export default function FavoritesPage() {
               </button>
               <button
                 onClick={() => setActiveTab('gifts')}
-                className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-xl font-medium transition-all ${
+                className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all ${
                   activeTab === 'gifts'
-                    ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg'
-                    : 'text-gray-600 hover:bg-pink-50'
+                    ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md'
+                    : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 <Gift className="w-5 h-5" />
@@ -168,7 +218,7 @@ export default function FavoritesPage() {
                   <Store className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <p className="text-gray-500 mb-4">お気に入りの店舗がありません</p>
                   <button
-                    onClick={() => window.location.href = '/user/stores/'}
+                    onClick={() => router.push('/user/stores')}
                     className="bg-gradient-to-r from-rose-500 to-pink-500 text-white px-6 py-2 rounded-lg hover:from-rose-600 hover:to-pink-600 transition-all"
                   >
                     店舗を探す
@@ -205,7 +255,7 @@ export default function FavoritesPage() {
                       </div>
                       <div className="flex space-x-2 ml-4">
                         <button
-                          onClick={() => window.location.href = `/user/stores/${store.id}/`}
+                          onClick={() => router.push(`/user/stores/${store.id}`)}
                           className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                           title="詳細を見る"
                         >
@@ -234,7 +284,7 @@ export default function FavoritesPage() {
                   <Gift className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <p className="text-gray-500 mb-4">お気に入りのギフトがありません</p>
                   <button
-                    onClick={() => window.location.href = '/user/gifts/'}
+                    onClick={() => router.push('/user/gifts')}
                     className="bg-gradient-to-r from-rose-500 to-pink-500 text-white px-6 py-2 rounded-lg hover:from-rose-600 hover:to-pink-600 transition-all"
                   >
                     ギフトを探す
@@ -261,7 +311,7 @@ export default function FavoritesPage() {
                       </div>
                       <div className="flex space-x-2">
                         <button
-                          onClick={() => window.location.href = `/user/gifts/`}
+                          onClick={() => router.push(`/user/gifts`)}
                           className="flex-1 bg-gradient-to-r from-rose-500 to-pink-500 text-white py-2 px-3 rounded-lg text-sm hover:from-rose-600 hover:to-pink-600 transition-all"
                         >
                           交換する
@@ -280,6 +330,7 @@ export default function FavoritesPage() {
             </div>
           )}
         </div>
-    </UserLayout>
+      </div>
+    </>
   )
 }

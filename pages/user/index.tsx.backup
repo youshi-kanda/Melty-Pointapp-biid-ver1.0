@@ -1,0 +1,360 @@
+import { useState } from 'react'
+import UserLayout from '@/components/user/Layout'
+import { 
+  Heart, Zap, MapPin, Users, Gift, 
+  CreditCard, TrendingUp, Sparkles, Clock, Activity, Star,
+  MessageCircle, ArrowRight, User
+} from 'lucide-react'
+
+export default function WelcomePage() {
+  const [userName] = useState('ユーザーさん')
+  const [userId] = useState('USER001')
+  const [userLocation] = useState('東京都')
+  const [points] = useState('48,800')
+
+  const handleLogout = () => {
+    window.location.href = '/user/login'
+  }
+
+  const handleQuickAction = (action: string) => {
+    window.location.href = `/user/${action}`
+  }
+
+  return (
+    <UserLayout title="ホーム - Melty+">
+      <div className="px-4 py-6">
+        {/* クイックアクション */}
+        <div className="bg-white rounded-2xl shadow-lg p-5 mb-6 border border-pink-200 relative overflow-hidden">
+            <h2 className="text-lg font-bold text-gray-800 mb-5 flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-rose-500 rounded-lg flex items-center justify-center">
+                <Zap className="w-4 h-4 text-white" />
+              </div>
+              <span>クイックアクション</span>
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <button 
+                onClick={() => handleQuickAction('map')}
+                className="flex items-center space-x-3 p-4 rounded-2xl border border-pink-100 hover:border-pink-300 hover:bg-gradient-to-r hover:from-pink-50 hover:to-rose-50 transition-all duration-200 text-left group relative hover:shadow-lg transform hover:scale-[1.01] bg-gradient-to-br from-white to-pink-50"
+              >
+                <div className="bg-blue-500 rounded-xl p-3 text-white group-hover:scale-105 transition-all duration-200 shadow-md">
+                  <MapPin className="w-[18px] h-[18px]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <h3 className="font-bold text-gray-800 text-sm group-hover:text-gray-900 truncate">店舗を探す</h3>
+                  </div>
+                  <p className="text-xs text-gray-600 font-medium line-clamp-1">近くの加盟店を地図で検索</p>
+                </div>
+                <ArrowRight className="w-[14px] h-[14px] text-pink-400 group-hover:text-pink-600 flex-shrink-0" />
+              </button>
+
+              <button 
+                onClick={() => handleQuickAction('social')}
+                className="flex items-center space-x-3 p-4 rounded-2xl border border-pink-100 hover:border-pink-300 hover:bg-gradient-to-r hover:from-pink-50 hover:to-rose-50 transition-all duration-200 text-left group relative hover:shadow-lg transform hover:scale-[1.01] bg-gradient-to-br from-white to-pink-50"
+              >
+                <div className="bg-pink-500 rounded-xl p-3 text-white group-hover:scale-105 transition-all duration-200 shadow-md">
+                  <Users className="w-[18px] h-[18px]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <h3 className="font-bold text-gray-800 text-sm group-hover:text-gray-900 truncate">ソーシャル</h3>
+                    <span className="px-2 py-0.5 text-xs bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full font-bold">NEW</span>
+                  </div>
+                  <p className="text-xs text-gray-600 font-medium line-clamp-1">友達とつながり、活動を共有</p>
+                </div>
+                <ArrowRight className="w-[14px] h-[14px] text-pink-400 group-hover:text-pink-600 flex-shrink-0" />
+              </button>
+
+              <button 
+                onClick={() => handleQuickAction('gifts')}
+                className="flex items-center space-x-3 p-4 rounded-2xl border border-pink-100 hover:border-pink-300 hover:bg-gradient-to-r hover:from-pink-50 hover:to-rose-50 transition-all duration-200 text-left group relative hover:shadow-lg transform hover:scale-[1.01] bg-gradient-to-br from-white to-pink-50"
+              >
+                <div className="bg-purple-500 rounded-xl p-3 text-white group-hover:scale-105 transition-all duration-200 shadow-md">
+                  <Gift className="w-[18px] h-[18px]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <h3 className="font-bold text-gray-800 text-sm group-hover:text-gray-900 truncate">ギフト交換</h3>
+                  </div>
+                  <p className="text-xs text-gray-600 font-medium line-clamp-1">ポイントをギフトに交換</p>
+                </div>
+                <ArrowRight className="w-[14px] h-[14px] text-pink-400 group-hover:text-pink-600 flex-shrink-0" />
+              </button>
+
+              <button 
+                onClick={() => handleQuickAction('points')}
+                className="flex items-center space-x-3 p-4 rounded-2xl border border-pink-100 hover:border-pink-300 hover:bg-gradient-to-r hover:from-pink-50 hover:to-rose-50 transition-all duration-200 text-left group relative hover:shadow-lg transform hover:scale-[1.01] bg-gradient-to-br from-white to-pink-50"
+              >
+                <div className="bg-green-500 rounded-xl p-3 text-white group-hover:scale-105 transition-all duration-200 shadow-md">
+                  <CreditCard className="w-[18px] h-[18px]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <h3 className="font-bold text-gray-800 text-sm group-hover:text-gray-900 truncate">ポイント履歴</h3>
+                  </div>
+                  <p className="text-xs text-gray-600 font-medium line-clamp-1">ポイントの獲得・利用履歴</p>
+                </div>
+                <ArrowRight className="w-[14px] h-[14px] text-pink-400 group-hover:text-pink-600 flex-shrink-0" />
+              </button>
+
+              <button 
+                onClick={() => handleQuickAction('profile')}
+                className="flex items-center space-x-3 p-4 rounded-2xl border border-pink-100 hover:border-pink-300 hover:bg-gradient-to-r hover:from-pink-50 hover:to-rose-50 transition-all duration-200 text-left group relative hover:shadow-lg transform hover:scale-[1.01] bg-gradient-to-br from-white to-pink-50"
+              >
+                <div className="bg-orange-500 rounded-xl p-3 text-white group-hover:scale-105 transition-all duration-200 shadow-md">
+                  <User className="w-[18px] h-[18px]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <h3 className="font-bold text-gray-800 text-sm group-hover:text-gray-900 truncate">プロフィール</h3>
+                  </div>
+                  <p className="text-xs text-gray-600 font-medium line-clamp-1">個人情報・設定の管理</p>
+                </div>
+                <ArrowRight className="w-[14px] h-[14px] text-pink-400 group-hover:text-pink-600 flex-shrink-0" />
+              </button>
+
+              <button 
+                onClick={() => handleQuickAction('security')}
+                className="flex items-center space-x-3 p-4 rounded-2xl border border-pink-100 hover:border-pink-300 hover:bg-gradient-to-r hover:from-pink-50 hover:to-rose-50 transition-all duration-200 text-left group relative hover:shadow-lg transform hover:scale-[1.01] bg-gradient-to-br from-white to-pink-50"
+              >
+                <div className="bg-red-500 rounded-xl p-3 text-white group-hover:scale-105 transition-all duration-200 shadow-md">
+                  <User className="w-[18px] h-[18px]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <h3 className="font-bold text-gray-800 text-sm group-hover:text-gray-900 truncate">セキュリティ</h3>
+                  </div>
+                  <p className="text-xs text-gray-600 font-medium line-clamp-1">2FA設定・パスワード管理</p>
+                </div>
+                <ArrowRight className="w-[14px] h-[14px] text-pink-400 group-hover:text-pink-600 flex-shrink-0" />
+              </button>
+            </div>
+          </div>
+
+          {/* ソーシャル活動 & 今日の統計 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* ソーシャル活動 */}
+            <div className="bg-white rounded-2xl shadow-lg p-5 border border-pink-200">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-lg font-bold text-gray-800 flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-rose-500 rounded-lg flex items-center justify-center">
+                    <Users className="w-4 h-4 text-white" />
+                  </div>
+                  <span>ソーシャル活動</span>
+                </h2>
+                <button className="text-xs text-pink-600 hover:text-pink-700 flex items-center space-x-1 font-bold bg-gradient-to-r from-pink-50 to-rose-50 px-3 py-2 rounded-xl transition-all duration-200">
+                  <span>もっと見る</span>
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-2xl border border-pink-200 hover:shadow-md transition-all duration-200">
+                  <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-rose-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                    <Users className="h-4 w-4 text-white" />
+                  </div>
+                  <p className="text-xl font-bold text-gray-800 mb-1">12</p>
+                  <p className="text-xs text-gray-600 font-bold">友達</p>
+                </div>
+                <div className="text-center p-4 bg-gradient-to-br from-amber-50 to-yellow-100 rounded-2xl border border-amber-200 hover:shadow-md transition-all duration-200">
+                  <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                    <Star className="h-4 w-4 text-white" />
+                  </div>
+                  <p className="text-xl font-bold text-gray-800 mb-1">8</p>
+                  <p className="text-xs text-gray-600 font-bold">レビュー</p>
+                </div>
+                <div className="text-center p-4 bg-gradient-to-br from-red-50 to-rose-100 rounded-2xl border border-red-200 hover:shadow-md transition-all duration-200">
+                  <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                    <Heart className="h-4 w-4 text-white" />
+                  </div>
+                  <p className="text-xl font-bold text-gray-800 mb-1">47</p>
+                  <p className="text-xs text-gray-600 font-bold">いいね</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 今日の統計 */}
+            <div className="bg-white rounded-2xl shadow-lg p-5 border border-pink-200">
+              <h2 className="text-lg font-bold text-gray-800 mb-5 flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-white" />
+                </div>
+                <span>今日の統計</span>
+              </h2>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 font-medium">獲得ポイント</p>
+                      <p className="text-lg font-bold text-gray-800">+125pt</p>
+                    </div>
+                  </div>
+                  <div className="text-green-600 text-xs font-bold bg-green-100 px-2 py-1 rounded-full">+15%</div>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl border border-purple-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-violet-500 rounded-lg flex items-center justify-center">
+                      <MapPin className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 font-medium">訪問店舗数</p>
+                      <p className="text-lg font-bold text-gray-800">3店舗</p>
+                    </div>
+                  </div>
+                  <div className="text-purple-600 text-xs font-bold bg-purple-100 px-2 py-1 rounded-full">達成</div>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg flex items-center justify-center">
+                      <Clock className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 font-medium">アクティブ時間</p>
+                      <p className="text-lg font-bold text-gray-800">2.5時間</p>
+                    </div>
+                  </div>
+                  <div className="text-orange-600 text-xs font-bold bg-orange-100 px-2 py-1 rounded-full">良好</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 最近のアクティビティ */}
+          <div className="bg-white rounded-2xl shadow-lg p-5 mb-6 border border-pink-200">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-800 flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-rose-500 rounded-lg flex items-center justify-center">
+                  <Activity className="w-4 h-4 text-white" />
+                </div>
+                <span>最近のアクティビティ</span>
+              </h2>
+              <button className="text-xs text-pink-600 hover:text-pink-700 flex items-center space-x-1 font-bold bg-gradient-to-r from-pink-50 to-rose-50 px-3 py-2 rounded-xl transition-all duration-200">
+                <span>フィードを見る</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-pink-50 to-rose-50 rounded-2xl border border-pink-200 hover:shadow-md transition-all duration-200">
+                <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-rose-500 rounded-xl flex items-center justify-center text-sm">
+                  👩‍💼
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-800 font-bold mb-1">
+                    <span className="text-pink-700">yuki_tanaka</span>さんが<span className="text-gray-900">オーガニック カフェ リーフ</span>を訪問
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-xs text-gray-500">2時間前</p>
+                    <div className="w-1 h-1 bg-pink-400 rounded-full"></div>
+                    <p className="text-xs text-pink-600 font-bold">+150pt</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded-xl shadow-sm">
+                  <button className="flex items-center space-x-1 text-red-500">
+                    <Heart className="h-3 w-3" />
+                    <span className="text-xs font-bold">8</span>
+                  </button>
+                  <div className="w-px h-4 bg-gray-200"></div>
+                  <button className="flex items-center space-x-1 text-gray-500">
+                    <MessageCircle className="h-3 w-3" />
+                    <span className="text-xs font-bold">3</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200 hover:shadow-md transition-all duration-200">
+                <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl flex items-center justify-center text-sm">
+                  👩‍🍳
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-800 font-bold mb-1">
+                    <span className="text-orange-700">mama_foodie</span>さんが<span className="text-gray-900">ファミリー レストラン</span>にレビュー投稿
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-xs text-gray-500">4時間前</p>
+                    <div className="w-1 h-1 bg-amber-400 rounded-full"></div>
+                    <div className="flex items-center space-x-1">
+                      <Star className="h-3 w-3 fill-current text-yellow-500" />
+                      <span className="text-xs text-amber-600 font-bold">4.0</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded-xl shadow-sm">
+                  <button className="flex items-center space-x-1 text-red-500">
+                    <Heart className="h-3 w-3" />
+                    <span className="text-xs font-bold">12</span>
+                  </button>
+                  <div className="w-px h-4 bg-gray-200"></div>
+                  <button className="flex items-center space-x-1 text-gray-500">
+                    <MessageCircle className="h-3 w-3" />
+                    <span className="text-xs font-bold">5</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* お知らせ */}
+          <div className="bg-white rounded-2xl shadow-lg p-5 border border-pink-200">
+            <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
+                <MessageCircle className="w-4 h-4 text-white" />
+              </div>
+              <span>お知らせ</span>
+            </h2>
+            <div className="space-y-3">
+              <div className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-2xl p-4 border-l-4 border-pink-500 hover:shadow-md transition-all duration-200">
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-rose-500 rounded-lg flex items-center justify-center text-lg flex-shrink-0">
+                    🎉
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-800 mb-2 text-sm">ソーシャル機能がリリースされました！</h3>
+                    <p className="text-gray-600 text-xs leading-relaxed mb-2">友達とつながり、レビューを共有して楽しくポイ活しよう</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-400">2025年1月14日</p>
+                      <span className="bg-pink-500 text-white px-2 py-0.5 rounded-full text-xs font-bold">NEW</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-4 border-l-4 border-blue-500 hover:shadow-md transition-all duration-200">
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center text-lg flex-shrink-0">
+                    🎁
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-800 mb-2 text-sm">新しいギフトが追加されました</h3>
+                    <p className="text-gray-600 text-xs leading-relaxed mb-2">人気ブランドの商品券が交換可能になりました</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-400">2025年1月12日</p>
+                      <span className="bg-blue-500 text-white px-2 py-0.5 rounded-full text-xs font-bold">更新</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-4 border-l-4 border-green-500 hover:shadow-md transition-all duration-200">
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center text-lg flex-shrink-0">
+                    ⚡
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-800 mb-2 text-sm">ポイント2倍キャンペーン開催中</h3>
+                    <p className="text-gray-600 text-xs leading-relaxed mb-2">対象店舗でのお買い物でポイント2倍獲得</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-400">2025年1月10日</p>
+                      <span className="bg-green-500 text-white px-2 py-0.5 rounded-full text-xs font-bold animate-pulse">開催中</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </UserLayout>
+  )
+}
