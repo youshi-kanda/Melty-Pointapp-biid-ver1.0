@@ -70,6 +70,9 @@ urlpatterns = [
     # Social Skin API
     path('social-skin/', views.SocialSkinView.as_view(), name='social-skin'),
     
+    # Melty連携 - 業種マスターAPI
+    path('industries/', views.IndustryListView.as_view(), name='industry-list'),
+    
     # ソーシャル機能API（一時的に無効化）
     # path('', include('core.social_urls')),
     

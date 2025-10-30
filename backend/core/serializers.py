@@ -254,3 +254,19 @@ class ReportContentSerializer(serializers.Serializer):
         'spam', 'harassment', 'inappropriate', 'misinformation', 'copyright', 'other'
     ])
     description = serializers.CharField(max_length=1000, required=False, allow_blank=True)
+
+
+# ==========================================
+# Melty連携用シリアライザー
+# ==========================================
+
+class IndustrySerializer(serializers.ModelSerializer):
+    """
+    業種マスターシリアライザー
+    MELTY_ACCOUNT_INTEGRATION_SPEC.md準拠
+    """
+    class Meta:
+        from .models import Industry
+        model = Industry
+        fields = ['id', 'code', 'name', 'category', 'display_order']
+        read_only_fields = ['id', 'code', 'name', 'category', 'display_order']

@@ -1042,3 +1042,22 @@ class SocialSkinView(APIView):
                 'success': False,
                 'error': f'スキンの保存に失敗しました: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ==========================================
+# Melty連携 - 業種マスターAPI
+# ==========================================
+
+class IndustryListView(generics.ListAPIView):
+    """
+    業種マスター一覧取得API
+    GET /api/industries/
+    
+    認証不要（プロフィール設定時に使用）
+    """
+    from .models import Industry
+    from .serializers import IndustrySerializer
+    
+    queryset = Industry.objects.all().order_by('display_order')
+    serializer_class = IndustrySerializer
+    permission_classes = []  # 認証不要
