@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { ArrowLeft, User, Mail, Lock, Eye, EyeOff, ArrowRight, Phone, Calendar, MapPin, Briefcase, Users } from 'lucide-react'
+import { getApiUrl } from '@/lib/api-config'
 
 export default function RegisterFormPage() {
   const router = useRouter()
@@ -25,83 +26,120 @@ export default function RegisterFormPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
     
     // 必須項目チェック
     if (!formData.lastName || !formData.firstName) {
-      alert('姓名を入力してください')
+      setError('姓名を入力してください')
       return
     }
     
     if (!formData.birthday) {
-      alert('生年月日を入力してください')
+      setError('生年月日を入力してください')
       return
     }
     
     if (!formData.gender) {
-      alert('性別を選択してください')
+      setError('性別を選択してください')
       return
     }
     
     // 電話番号バリデーション
     if (!formData.phone) {
-      alert('電話番号を入力してください')
+      setError('電話番号を入力してください')
       return
     }
     
     const phoneRegex = /^0[789]0-?\d{4}-?\d{4}$/
     if (!phoneRegex.test(formData.phone)) {
-      alert('正しい電話番号を入力してください（例: 090-1234-5678）')
+      setError('正しい電話番号を入力してください（例: 090-1234-5678）')
       return
     }
     
     if (!formData.email) {
-      alert('メールアドレスを入力してください')
+      setError('メールアドレスを入力してください')
       return
     }
     
     if (!formData.workRegion) {
-      alert('勤務地域を選択してください')
+      setError('勤務地域を選択してください')
       return
     }
     
     if (!formData.industry) {
-      alert('業種を選択してください')
+      setError('業種を選択してください')
       return
     }
     
     if (!formData.employmentType) {
-      alert('働き方を選択してください')
+      setError('働き方を選択してください')
       return
     }
     
-        // パスワード確認
+    // パスワード確認
     if (formData.password !== formData.confirmPassword) {
-      alert('パスワードが一致しません')
+      setError('パスワードが一致しません')
       return
     }
 
     if (formData.password.length < 8) {
-      alert('パスワードは8文字以上で入力してください')
+      setError('パスワードは8文字以上で入力してください')
       return
     }
 
     if (!formData.agreeToTerms) {
-      alert('利用規約およびプライバシーポリシーに同意してください')
+      setError('利用規約およびプライバシーポリシーに同意してください')
       return
     }
 
     setIsLoading(true)
     
-    // TODO: API連携
-    console.log('Registration data:', formData)
-    
-    // 登録完了後はユーザーホーム画面へ
-    setTimeout(() => {
-      router.push('/user/')
-    }, 1000)
+    try {
+      const response = await fetch(`${getApiUrl()}/api/auth/register/direct/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          phone: formData.phone,
+          birthday: formData.birthday,
+          gender: formData.gender,
+          work_region: formData.workRegion,
+          industry: formData.industry,
+          employment_type: formData.employmentType,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        // 登録成功 - トークンを保存
+        if (data.token) {
+          localStorage.setItem('auth_token', data.token)
+        }
+        if (data.user) {
+          localStorage.setItem('user_info', JSON.stringify(data.user))
+        }
+        
+        // 成功画面へリダイレクト
+        router.push('/user/register/success')
+      } else {
+        setError(data.error || '登録に失敗しました。もう一度お試しください。')
+        setIsLoading(false)
+      }
+    } catch (err) {
+      console.error('Registration error:', err)
+      setError('登録中にエラーが発生しました。もう一度お試しください。')
+      setIsLoading(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -163,6 +201,13 @@ export default function RegisterFormPage() {
 
             {/* 登録フォーム */}
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* エラーメッセージ */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl">
+                  <p className="text-sm">{error}</p>
+                </div>
+              )}
+
               {/* 姓名 */}
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
