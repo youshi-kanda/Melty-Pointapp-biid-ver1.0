@@ -150,15 +150,25 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-4">
-              <button
-                onClick={handleMeltyRegister}
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-4 rounded-2xl hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg text-lg flex items-center justify-center space-x-2 disabled:opacity-50"
-              >
-                <Crown className="w-6 h-6" />
-                <span>🎯 meltyでVIPスタート（今だけ限定）</span>
-                <ExternalLink className="w-5 h-5" />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={handleMeltyRegister}
+                  disabled={true}
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 shadow-lg text-lg flex items-center justify-center space-x-2 opacity-60 cursor-not-allowed"
+                >
+                  <Crown className="w-6 h-6" />
+                  <span>🎯 meltyでVIPスタート（今だけ限定）</span>
+                  <ExternalLink className="w-5 h-5" />
+                </button>
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="bg-white px-4 py-2 rounded-full shadow-lg border-2 border-yellow-400">
+                    <div className="flex items-center space-x-2">
+                      <Wrench className="w-4 h-4 text-yellow-600 animate-pulse" />
+                      <span className="font-bold text-yellow-700 text-sm">開発中 Coming Soon</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               <button
                 onClick={handleDirectRegister}
