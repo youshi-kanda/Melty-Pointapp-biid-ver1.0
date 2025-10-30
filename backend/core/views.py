@@ -1088,7 +1088,7 @@ class UserProfileUpdateView(APIView):
                 'industry': user.industry,
                 'employment_type': user.employment_type,
                 'melty_sync_enabled': user.melty_sync_enabled,
-                'melty_linked_at': user.melty_linked_at.isoformat() if user.melty_linked_at else None,
+                'melty_linked_at': user.melty_connected_at.isoformat() if user.melty_connected_at else None,
             }
         })
     
