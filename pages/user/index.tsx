@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useRouter } from 'next/router'
 import UserLayout from '@/components/user/Layout'
 import { 
   Heart, Zap, MapPin, Users, Gift, 
@@ -7,13 +8,18 @@ import {
 } from 'lucide-react'
 
 export default function HomePage() {
+  const router = useRouter()
   const [userName] = useState('ユーザーさん')
   const [userId] = useState('USER001')
   const [userLocation] = useState('東京都')
   const [points] = useState('48,800')
 
   const handleQuickAction = (action: string) => {
-    window.location.href = `/user/${action}`
+    router.push(`/user/${action}`)
+  }
+
+  const handleSocialAction = () => {
+    router.push('/user/social')
   }
 
   return (
@@ -93,7 +99,7 @@ export default function HomePage() {
             </button>
 
             <button 
-              onClick={() => handleQuickAction('social')}
+              onClick={handleSocialAction}
               className="flex items-center space-x-3 p-3 rounded-2xl border border-pink-100 hover:border-pink-300 hover:bg-gradient-to-r hover:from-pink-50 hover:to-rose-50 transition-all duration-200 text-left group relative hover:shadow-lg transform hover:scale-[1.01] bg-gradient-to-br from-white to-pink-50"
             >
               <div className="bg-gradient-to-r from-pink-500 to-rose-400 rounded-xl p-2.5 text-white group-hover:scale-105 transition-all duration-200 shadow-md">
@@ -109,7 +115,7 @@ export default function HomePage() {
             </button>
 
             <button 
-              onClick={() => window.location.href = '/user/favorites'}
+              onClick={() => handleQuickAction('favorites')}
               className="flex items-center space-x-3 p-3 rounded-2xl border border-pink-100 hover:border-pink-300 hover:bg-gradient-to-r hover:from-pink-50 hover:to-rose-50 transition-all duration-200 text-left group relative hover:shadow-lg transform hover:scale-[1.01] bg-gradient-to-br from-white to-pink-50"
             >
               <div className="bg-gradient-to-r from-rose-500 to-pink-500 rounded-xl p-2.5 text-white group-hover:scale-105 transition-all duration-200 shadow-md">
