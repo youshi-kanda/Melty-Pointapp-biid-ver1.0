@@ -9,13 +9,13 @@ const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIza
 
 export default function MapPage() {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const mapInstanceRef = useRef<any>(null);
   const [mapError, setMapError] = useState<string | null>(null);
 
   useEffect(() => {
     // Google Maps APIスクリプトをロード
     const loadGoogleMapsScript = () => {
-      if (typeof window.google !== 'undefined') {
+      if (typeof (window as any).google !== 'undefined') {
         initMap();
         return;
       }
@@ -38,6 +38,7 @@ export default function MapPage() {
         // 大阪ミナミ（心斎橋）の座標
         const center = { lat: 34.6718, lng: 135.5023 };
 
+        const google = (window as any).google;
         const map = new google.maps.Map(mapRef.current, {
           center: center,
           zoom: 15,
