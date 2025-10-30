@@ -7,7 +7,7 @@ const API_BASE_URL = process.env.NODE_ENV === 'production'
 // 認証トークンを取得
 function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('access_token');
+  return localStorage.getItem('auth_token');
 }
 
 // 業種マスターデータの型定義

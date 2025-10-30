@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Head from 'next/head';
 import UserLayout from '@/components/user/Layout';
-import { Heart, Search, MapPin, Star, Phone, Globe, Filter, Navigation, Zap, Cigarette } from 'lucide-react';
+import { Heart, Search, MapPin, Star, Phone, Globe, Filter, Navigation, Zap, Cigarette, AlertCircle } from 'lucide-react';
 
 // Google Maps APIキー（環境変数から取得、なければデモ用のキー）
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8';
@@ -10,6 +10,7 @@ const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIza
 export default function MapPage() {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   useEffect(() => {
     // Google Maps APIスクリプトをロード
@@ -20,70 +21,78 @@ export default function MapPage() {
       }
 
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&loading=async`;
       script.async = true;
       script.defer = true;
       script.onload = initMap;
+      script.onerror = () => {
+        setMapError('Google Mapsの読み込みに失敗しました。APIキーの設定を確認してください。');
+      };
       document.head.appendChild(script);
     };
 
     const initMap = () => {
       if (!mapRef.current) return;
 
-      // 大阪ミナミ（心斎橋）の座標
-      const center = { lat: 34.6718, lng: 135.5023 };
+      try {
+        // 大阪ミナミ（心斎橋）の座標
+        const center = { lat: 34.6718, lng: 135.5023 };
 
-      const map = new google.maps.Map(mapRef.current, {
-        center: center,
-        zoom: 15,
-        styles: [
-          {
-            featureType: 'poi',
-            elementType: 'labels',
-            stylers: [{ visibility: 'off' }]
-          }
-        ],
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: true,
-      });
-
-      mapInstanceRef.current = map;
-
-      // サンプル店舗マーカー
-      const stores = [
-        { name: 'オーガニック カフェ リーフ', position: { lat: 34.6728, lng: 135.5033 } },
-        { name: 'ナチュラル ビューティー ガーデン', position: { lat: 34.6708, lng: 135.5013 } },
-        { name: 'エコ フレンドリー ストア', position: { lat: 34.6738, lng: 135.5043 } },
-        { name: 'アロマテラピー ライフ', position: { lat: 34.6698, lng: 135.5003 } },
-        { name: 'ヘルシー ライフスタイル カフェ', position: { lat: 34.6748, lng: 135.5053 } },
-      ];
-
-      stores.forEach(store => {
-        const marker = new google.maps.Marker({
-          position: store.position,
-          map: map,
-          title: store.name,
-          icon: {
-            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 32 40">
-                <path fill="#EC4899" d="M16 0C7.163 0 0 7.163 0 16c0 12 16 24 16 24s16-12 16-24c0-8.837-7.163-16-16-16z"/>
-                <circle cx="16" cy="16" r="6" fill="white"/>
-              </svg>
-            `),
-            scaledSize: new google.maps.Size(32, 40),
-            anchor: new google.maps.Point(16, 40),
-          }
+        const map = new google.maps.Map(mapRef.current, {
+          center: center,
+          zoom: 15,
+          styles: [
+            {
+              featureType: 'poi',
+              elementType: 'labels',
+              stylers: [{ visibility: 'off' }]
+            }
+          ],
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: true,
         });
 
-        const infoWindow = new google.maps.InfoWindow({
-          content: `<div style="padding: 8px; font-weight: bold; color: #1f2937;">${store.name}</div>`
-        });
+        mapInstanceRef.current = map;
 
-        marker.addListener('click', () => {
-          infoWindow.open(map, marker);
+        // サンプル店舗マーカー
+        const stores = [
+          { name: 'オーガニック カフェ リーフ', position: { lat: 34.6728, lng: 135.5033 } },
+          { name: 'ナチュラル ビューティー ガーデン', position: { lat: 34.6708, lng: 135.5013 } },
+          { name: 'エコ フレンドリー ストア', position: { lat: 34.6738, lng: 135.5043 } },
+          { name: 'アロマテラピー ライフ', position: { lat: 34.6698, lng: 135.5003 } },
+          { name: 'ヘルシー ライフスタイル カフェ', position: { lat: 34.6748, lng: 135.5053 } },
+        ];
+
+        stores.forEach(store => {
+          const marker = new google.maps.Marker({
+            position: store.position,
+            map: map,
+            title: store.name,
+            icon: {
+              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 32 40">
+                  <path fill="#EC4899" d="M16 0C7.163 0 0 7.163 0 16c0 12 16 24 16 24s16-12 16-24c0-8.837-7.163-16-16-16z"/>
+                  <circle cx="16" cy="16" r="6" fill="white"/>
+                </svg>
+              `),
+              scaledSize: new google.maps.Size(32, 40),
+              anchor: new google.maps.Point(16, 40),
+            }
+          });
+
+          const infoWindow = new google.maps.InfoWindow({
+            content: `<div style="padding: 8px; font-weight: bold; color: #1f2937;">${store.name}</div>`
+          });
+
+          marker.addListener('click', () => {
+            infoWindow.open(map, marker);
+          });
         });
-      });
+      } catch (error) {
+        console.error('Map initialization error:', error);
+        setMapError('マップの初期化に失敗しました。Google Maps APIの請求設定を確認してください。');
+      }
     };
 
     loadGoogleMapsScript();
@@ -203,8 +212,30 @@ export default function MapPage() {
                     <span className="text-xs text-pink-600 bg-pink-100 px-3 py-1.5 rounded-full font-medium shadow-sm">5件</span>
                   </div>
                 </div>
-                <div className="h-64 sm:h-72 md:h-80 lg:h-96 p-2">
-                  <div ref={mapRef} style={{ width: '100%', height: '100%', borderRadius: '12px', overflow: 'hidden', position: 'relative' }} />
+                <div className="h-64 sm:h-72 md:h-80 lg:h-96 p-2 relative">
+                  {mapError ? (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-dashed border-gray-300">
+                      <div className="text-center p-6">
+                        <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-3" />
+                        <p className="text-gray-700 font-bold mb-2">マップ機能準備中</p>
+                        <p className="text-sm text-gray-600 mb-3">{mapError}</p>
+                        <p className="text-xs text-gray-500">
+                          Google Maps API の請求設定を有効にしてください
+                          <br />
+                          <a 
+                            href="https://console.cloud.google.com/google/maps-apis/start" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-pink-600 hover:text-pink-700 underline mt-2 inline-block"
+                          >
+                            Google Cloud Console →
+                          </a>
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div ref={mapRef} style={{ width: '100%', height: '100%', borderRadius: '12px', overflow: 'hidden', position: 'relative' }} />
+                  )}
                 </div>
               </div>
 
