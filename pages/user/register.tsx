@@ -1,118 +1,28 @@
 import { useState } from 'react'
 import Head from 'next/head'
-import { useRouter } from 'next/router'
-import { 
-  User, 
-  Mail, 
-  Lock, 
-  Phone, 
-  MapPin, 
-  Calendar,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  CheckCircle
-} from 'lucide-react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { Cherry, Crown, User, CheckCircle, Star, Sparkles, ExternalLink, Wrench } from 'lucide-react'
 
 export default function RegisterPage() {
-  const router = useRouter()
-  const [step, setStep] = useState(1)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    phone: '',
-    address: '',
-    birthday: '',
-    agreeToTerms: false
-  })
-  const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const validateStep1 = () => {
-    const newErrors: Record<string, string> = {}
-    
-    if (!formData.email) {
-      newErrors.email = 'メールアドレスを入力してください'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = '有効なメールアドレスを入力してください'
-    }
-    
-    if (!formData.password) {
-      newErrors.password = 'パスワードを入力してください'
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'パスワードは8文字以上で入力してください'
-    }
-    
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'パスワードが一致しません'
-    }
-    
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+  const handleMeltyRegister = () => {
+    // 開発中のため無効化
+    alert('🚧 Melty連携登録は現在開発中です。もうしばらくお待ちください。\n\n今すぐご利用の場合は「Melty+アプリのみで登録」をお選びください。')
+    // setIsLoading(true)
+    // window.location.href = 'https://melty.app/register?source=biid'
   }
 
-  const validateStep2 = () => {
-    const newErrors: Record<string, string> = {}
-    
-    if (!formData.firstName) newErrors.firstName = '名を入力してください'
-    if (!formData.lastName) newErrors.lastName = '姓を入力してください'
-    if (!formData.phone) newErrors.phone = '電話番号を入力してください'
-    if (!formData.agreeToTerms) newErrors.agreeToTerms = '利用規約に同意してください'
-    
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleNextStep = () => {
-    if (step === 1 && validateStep1()) {
-      setStep(2)
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!validateStep2()) return
-    
+  const handleDirectRegister = () => {
     setIsLoading(true)
-    try {
-      // TODO: API連携
-      // await AuthAPI.register(formData)
-      console.log('Registration data:', formData)
-      
-      // 仮の成功処理
-      setTimeout(() => {
-        router.push('/user/welcome')
-      }, 1000)
-    } catch (error) {
-      console.error('Registration failed:', error)
-      setErrors({ submit: '登録に失敗しました。もう一度お試しください。' })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-    // エラーをクリア
-    if (errors[field]) {
-      setErrors(prev => {
-        const newErrors = { ...prev }
-        delete newErrors[field]
-        return newErrors
-      })
-    }
+    window.location.href = '/user/register/form'
   }
 
   return (
     <>
       <Head>
-        <title>Melty+ (メルティプラス) - 新規登録</title>
+        <title>新規会員登録 - Melty+ (メルティプラス)</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -122,267 +32,151 @@ export default function RegisterPage() {
         />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          {/* ロゴ */}
-          <div className="text-center mb-8">
-            <h1 className="text-5xl font-cutie font-bold bg-gradient-to-r from-primary-500 to-pink-500 bg-clip-text text-transparent mb-2">
-              Melty+
-            </h1>
-            <p className="text-gray-600">新規アカウント作成</p>
-          </div>
-
-          {/* ステップインジケーター */}
-          <div className="flex items-center justify-center mb-8">
-            <div className="flex items-center">
-              <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-                step >= 1 ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' : 'bg-gray-200 text-gray-500'
-              }`}>
-                {step > 1 ? <CheckCircle className="w-5 h-5" /> : '1'}
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-white">
+        <div className="max-w-4xl mx-auto px-4 py-12">
+          <div className="bg-white rounded-3xl shadow-xl border border-pink-100 p-10">
+            <div className="text-center mb-8">
+              <div className="w-32 h-32 bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
+                <Crown className="w-16 h-16 text-white" />
               </div>
-              <div className={`w-16 h-1 ${step >= 2 ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gray-200'}`} />
-              <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-                step >= 2 ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' : 'bg-gray-200 text-gray-500'
-              }`}>
-                2
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
+                Melty+ Appへようこそ！
+              </h1>
+              <p className="text-xl text-gray-600 mb-8" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                新規会員登録の方法をお選びください<br />
+                <span className="font-bold text-purple-600 animate-pulse">meltyアプリ経由なら超お得！</span>
+                <span className="font-bold text-pink-600">今だけ限定特典満載！</span>
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6 mb-10">
+              <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
+                <div className="text-center mb-4">
+                  <div className="w-16 h-16 bg-gray-400 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <User className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-700">Melty+直接登録</h3>
+                  <p className="text-sm text-gray-500">ブロンズランクスタート</p>
+                </div>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-center">
+                    <CheckCircle className="w-4 h-4 text-gray-400 mr-2" />
+                    基本ポイント機能
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-4 h-4 text-gray-400 mr-2" />
+                    店舗検索
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-4 h-4 text-gray-400 mr-2" />
+                    ギフト交換
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-4 h-4 text-gray-400 mr-2" />
+                    <span className="font-medium">500pt ウェルカムボーナス</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200 relative overflow-hidden opacity-75">
+                <div className="absolute inset-0 bg-gray-900 bg-opacity-10 backdrop-blur-[1px] flex items-center justify-center z-10">
+                  <div className="bg-white px-6 py-3 rounded-full shadow-lg border-2 border-yellow-400">
+                    <div className="flex items-center space-x-2">
+                      <Wrench className="w-5 h-5 text-yellow-600 animate-pulse" />
+                      <span className="font-bold text-yellow-700">開発中 Coming Soon</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="absolute top-2 right-2">
+                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                    おすすめ
+                  </div>
+                </div>
+                <div className="text-center mb-4">
+                  <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <Crown className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-purple-700">melty経由登録</h3>
+                  <p className="text-sm text-purple-600 font-semibold">シルバーランクスタート</p>
+                </div>
+                <ul className="space-y-2 text-sm text-purple-700">
+                  <li className="flex items-center">
+                    <CheckCircle className="w-4 h-4 text-purple-500 mr-2" />
+                    <span className="font-medium">基本ポイント機能</span>
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-4 h-4 text-purple-500 mr-2" />
+                    <span className="font-medium">店舗検索</span>
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-4 h-4 text-purple-500 mr-2" />
+                    <span className="font-medium">ギフト交換</span>
+                  </li>
+                  <li className="flex items-center">
+                    <Star className="w-4 h-4 text-yellow-500 mr-2" />
+                    <span className="font-bold text-purple-800">🎁 1000pt 超豪華ボーナス！</span>
+                  </li>
+                  <li className="flex items-center">
+                    <Star className="w-4 h-4 text-yellow-500 mr-2" />
+                    <span className="font-bold text-purple-800">👑 VIP優先サポート</span>
+                  </li>
+                  <li className="flex items-center">
+                    <Star className="w-4 h-4 text-yellow-500 mr-2" />
+                    <span className="font-bold text-purple-800">✨ 限定キャンペーン招待</span>
+                  </li>
+                  <li className="flex items-center">
+                    <Star className="w-4 h-4 text-yellow-500 mr-2" />
+                    <span className="font-bold text-purple-800">💰 お仕事関連店舗でポイント2倍</span>
+                  </li>
+                </ul>
               </div>
             </div>
-          </div>
 
-          {/* フォームカード */}
-          <div className="bg-white rounded-3xl shadow-soft backdrop-blur-sm p-8">
-            <form onSubmit={handleSubmit}>
-              {/* ステップ1: アカウント情報 */}
-              {step === 1 && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">アカウント情報</h2>
-                  
-                  {/* メールアドレス */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      メールアドレス
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => handleChange('email', e.target.value)}
-                        className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 ${
-                          errors.email ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="example@email.com"
-                      />
-                    </div>
-                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-                  </div>
-
-                  {/* パスワード */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      パスワード
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={formData.password}
-                        onChange={(e) => handleChange('password', e.target.value)}
-                        className={`w-full pl-12 pr-12 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 ${
-                          errors.password ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="8文字以上"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-                    {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-                  </div>
-
-                  {/* パスワード確認 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      パスワード（確認）
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        value={formData.confirmPassword}
-                        onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                        className={`w-full pl-12 pr-12 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 ${
-                          errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="パスワードを再入力"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-                    {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleNextStep}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-xl font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center space-x-2"
-                  >
-                    <span>次へ</span>
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
+            <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-6 mb-8 border border-purple-200">
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-6 h-6 text-white" />
                 </div>
-              )}
-
-              {/* ステップ2: 個人情報 */}
-              {step === 2 && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">個人情報</h2>
-                  
-                  {/* 姓名 */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">姓</label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <input
-                          type="text"
-                          value={formData.lastName}
-                          onChange={(e) => handleChange('lastName', e.target.value)}
-                          className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 ${
-                            errors.lastName ? 'border-red-500' : 'border-gray-300'
-                          }`}
-                          placeholder="山田"
-                        />
-                      </div>
-                      {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">名</label>
-                      <input
-                        type="text"
-                        value={formData.firstName}
-                        onChange={(e) => handleChange('firstName', e.target.value)}
-                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 ${
-                          errors.firstName ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="太郎"
-                      />
-                      {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
-                    </div>
-                  </div>
-
-                  {/* 電話番号 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">電話番号</label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => handleChange('phone', e.target.value)}
-                        className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 ${
-                          errors.phone ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="090-1234-5678"
-                      />
-                    </div>
-                    {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
-                  </div>
-
-                  {/* 住所（任意） */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">住所（任意）</label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
-                        type="text"
-                        value={formData.address}
-                        onChange={(e) => handleChange('address', e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
-                        placeholder="東京都渋谷区"
-                      />
-                    </div>
-                  </div>
-
-                  {/* 生年月日（任意） */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">生年月日（任意）</label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
-                        type="date"
-                        value={formData.birthday}
-                        onChange={(e) => handleChange('birthday', e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
-                      />
-                    </div>
-                  </div>
-
-                  {/* 利用規約同意 */}
-                  <div>
-                    <label className="flex items-start space-x-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.agreeToTerms}
-                        onChange={(e) => handleChange('agreeToTerms', e.target.checked)}
-                        className="mt-1 w-4 h-4 text-purple-500 border-gray-300 rounded focus:ring-purple-400"
-                      />
-                      <span className="text-sm text-gray-700">
-                        <a href="/terms" className="text-purple-600 hover:underline">利用規約</a>
-                        および
-                        <a href="/privacy" className="text-purple-600 hover:underline">プライバシーポリシー</a>
-                        に同意します
-                      </span>
-                    </label>
-                    {errors.agreeToTerms && <p className="text-red-500 text-sm mt-1">{errors.agreeToTerms}</p>}
-                  </div>
-
-                  {errors.submit && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                      {errors.submit}
-                    </div>
-                  )}
-
-                  <div className="flex space-x-4">
-                    <button
-                      type="button"
-                      onClick={() => setStep(1)}
-                      className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-300 transition-colors"
-                    >
-                      戻る
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isLoading}
-                      className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-xl font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50"
-                    >
-                      {isLoading ? '登録中...' : '登録する'}
-                    </button>
-                  </div>
+                <div>
+                  <h4 className="text-lg font-bold text-purple-800 mb-2">meltyアプリについて</h4>
+                  <p className="text-purple-700 text-sm leading-relaxed">
+                    <span className="font-bold text-purple-800">もうmeltyを使ってる？</span>それなら絶対こっちがお得！🌟<br />
+                    Melty（メルティ）は、ナイトワークや接客業で働く女性の強い味方。<br />
+                    顧客管理・スケジュール・収入管理が一つになった専用アプリです。<br />
+                    <span className="font-bold text-purple-800">melty×melty+連携で、毎日の頑張りが2倍のポイントに！💎</span>
+                  </p>
                 </div>
-              )}
-            </form>
+              </div>
+            </div>
 
-            {/* ログインリンク */}
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                すでにアカウントをお持ちですか？
-                <button
-                  onClick={() => router.push('/user/login')}
-                  className="text-purple-600 hover:text-purple-700 font-medium ml-1"
-                >
-                  ログイン
-                </button>
-              </p>
+            <div className="space-y-4">
+              <button
+                onClick={handleMeltyRegister}
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-4 rounded-2xl hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg text-lg flex items-center justify-center space-x-2 disabled:opacity-50"
+              >
+                <Crown className="w-6 h-6" />
+                <span>🎯 meltyでVIPスタート（今だけ限定）</span>
+                <ExternalLink className="w-5 h-5" />
+              </button>
+
+              <button
+                onClick={handleDirectRegister}
+                disabled={isLoading}
+                className="w-full bg-gray-100 text-gray-700 font-semibold py-4 rounded-2xl hover:bg-gray-200 transition-all duration-200 text-lg border border-gray-300"
+              >
+                Melty+アプリのみで登録（通常スタート）
+              </button>
+            </div>
+
+            <div className="mt-8 text-center">
+              <span className="text-base text-gray-600">すでにアカウントをお持ちの方は </span>
+              <Link 
+                href="/user/login" 
+                className="text-base text-rose-600 hover:text-rose-800 font-semibold transition-colors"
+              >
+                ログイン
+              </Link>
             </div>
           </div>
         </div>
