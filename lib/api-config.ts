@@ -47,7 +47,7 @@ export function getApiUrl(): string {
     // クライアントサイドの場合
     const hostname = window.location.hostname
     if (hostname === 'biid-user.pages.dev' || hostname.includes('biid-user')) {
-      return 'https://biid-user.fly.dev/api'
+      return 'https://biid-user-api.fly.dev'
     }
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
       return 'http://localhost:8000'
@@ -55,7 +55,7 @@ export function getApiUrl(): string {
   }
   // サーバーサイド or デフォルト
   return process.env.NODE_ENV === 'production' 
-    ? 'https://biid-user.fly.dev/api'
+    ? 'https://biid-user-api.fly.dev'
     : 'http://localhost:8000'
 }
 
