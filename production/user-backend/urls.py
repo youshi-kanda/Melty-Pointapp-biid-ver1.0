@@ -217,7 +217,23 @@ def serve_icon(request, size):
 
 def serve_favicon(request):
     """favicon.ico配信"""
-    return serve_icon(request, '32x32')
+    from django.http import FileResponse, Http404
+    import os
+    
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    
+    # 開発環境のout/を優先
+    dev_file_path = os.path.join(base_dir, 'out', 'favicon.ico')
+    static_file_path = os.path.join(os.path.dirname(__file__), 'static', 'favicon.ico')
+    
+    if os.path.exists(dev_file_path):
+        file_path = dev_file_path
+    elif os.path.exists(static_file_path):
+        file_path = static_file_path
+    else:
+        raise Http404("favicon.ico not found")
+    
+    return FileResponse(open(file_path, 'rb'), content_type='image/x-icon')
 
 def serve_config(request):
     """設定ファイル配信"""
