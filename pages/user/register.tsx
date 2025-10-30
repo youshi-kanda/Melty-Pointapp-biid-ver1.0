@@ -16,7 +16,7 @@ export default function RegisterPage() {
 
   const handleDirectRegister = () => {
     setIsLoading(true)
-    window.location.href = '/user/register/form'
+    window.location.href = '/user/register/form/'
   }
 
   return (
