@@ -6,7 +6,7 @@ export default function RegisterSuccess() {
   const router = useRouter();
 
   const handleGoToDashboard = () => {
-    router.push('/user');
+    router.push('/user/map');
   };
 
   return (
@@ -105,12 +105,12 @@ export default function RegisterSuccess() {
             </div>
           </div>
 
-          {/* ダッシュボードへボタン */}
+          {/* マップへボタン */}
           <button
             onClick={handleGoToDashboard}
             className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-4 rounded-2xl transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg text-lg flex items-center justify-center space-x-2 disabled:opacity-50"
           >
-            <span>マイダッシュボードへ</span>
+            <span>店舗マップを見る</span>
             <ArrowRight className="w-5 h-5" />
           </button>
 
