@@ -73,6 +73,9 @@ urlpatterns = [
     # Melty連携 - 業種マスターAPI
     path('industries/', views.IndustryListView.as_view(), name='industry-list'),
     
+    # Melty連携 - プロフィール更新API
+    path('user/profile/', views.UserProfileUpdateView.as_view(), name='user-profile'),
+    
     # ソーシャル機能API（一時的に無効化）
     # path('', include('core.social_urls')),
     

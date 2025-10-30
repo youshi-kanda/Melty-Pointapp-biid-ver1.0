@@ -1061,3 +1061,107 @@ class IndustryListView(generics.ListAPIView):
     queryset = Industry.objects.all().order_by('display_order')
     serializer_class = IndustrySerializer
     permission_classes = []  # 認証不要
+
+
+class UserProfileUpdateView(APIView):
+    """
+    ユーザープロフィール更新API
+    PATCH /api/user/profile/
+    
+    Melty連携フィールドを含むプロフィール情報を更新
+    認証必須
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """現在のプロフィール情報を取得"""
+        user = request.user
+        
+        return Response({
+            'success': True,
+            'data': {
+                'username': user.username,
+                'email': user.email,
+                'phone': user.phone,
+                'phone_verified': user.phone_verified,
+                'work_region': user.work_region,
+                'industry': user.industry,
+                'employment_type': user.employment_type,
+                'melty_sync_enabled': user.melty_sync_enabled,
+                'melty_linked_at': user.melty_linked_at.isoformat() if user.melty_linked_at else None,
+            }
+        })
+    
+    def patch(self, request):
+        """プロフィール情報を部分更新"""
+        user = request.user
+        data = request.data
+        
+        # 更新可能なフィールド
+        updatable_fields = {
+            'phone': str,
+            'work_region': str,
+            'industry': str,
+            'employment_type': str,
+        }
+        
+        updated_fields = []
+        
+        try:
+            for field_name, field_type in updatable_fields.items():
+                if field_name in data:
+                    value = data[field_name]
+                    
+                    # バリデーション
+                    if value is not None and not isinstance(value, field_type):
+                        return Response({
+                            'success': False,
+                            'error': f'{field_name}は{field_type.__name__}型である必要があります'
+                        }, status=status.HTTP_400_BAD_REQUEST)
+                    
+                    # 電話番号の場合は追加バリデーション
+                    if field_name == 'phone' and value:
+                        # 既存の電話番号チェック（自分以外）
+                        if User.objects.filter(phone=value).exclude(id=user.id).exists():
+                            return Response({
+                                'success': False,
+                                'error': 'この電話番号は既に登録されています'
+                            }, status=status.HTTP_400_BAD_REQUEST)
+                        
+                        # 電話番号フォーマットチェック（簡易）
+                        import re
+                        if not re.match(r'^[0-9\-+() ]+$', value):
+                            return Response({
+                                'success': False,
+                                'error': '電話番号の形式が正しくありません'
+                            }, status=status.HTTP_400_BAD_REQUEST)
+                    
+                    setattr(user, field_name, value)
+                    updated_fields.append(field_name)
+            
+            # 変更がある場合のみ保存
+            if updated_fields:
+                user.save(update_fields=updated_fields)
+                
+                return Response({
+                    'success': True,
+                    'message': 'プロフィールを更新しました',
+                    'updated_fields': updated_fields,
+                    'data': {
+                        'phone': user.phone,
+                        'work_region': user.work_region,
+                        'industry': user.industry,
+                        'employment_type': user.employment_type,
+                    }
+                })
+            else:
+                return Response({
+                    'success': True,
+                    'message': '更新するフィールドがありません'
+                })
+                
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': f'プロフィールの更新に失敗しました: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
