@@ -13,79 +13,31 @@ sys.path.append(backend_path)
 
 from core.test_views import api_status, get_totp
 
-def user_profile(request):
-    """ユーザープロフィールページ"""
-    from django.shortcuts import render
-    return render(request, 'user/profile.html')
-
-def user_points(request):
-    """ポイント管理ページ"""
-    from django.shortcuts import render
-    return render(request, 'user/points.html')
-
-def user_gifts(request):
-    """ギフト管理ページ"""
-    from django.shortcuts import render
-    return render(request, 'user/gifts.html')
-
-def user_social(request):
-    """ソーシャルページ"""
-    from django.shortcuts import render
-    return render(request, 'user/social.html')
-
-def user_stores(request):
-    """店舗検索ページ"""
-    from django.shortcuts import render
-    return render(request, 'user/stores.html')
-
-def user_map(request):
-    """マップページ"""
-    from django.shortcuts import render
-    return render(request, 'user/map.html')
-
-def user_security(request):
-    """セキュリティ設定ページ"""
-    from django.shortcuts import render
-    return render(request, 'user/security.html')
-
-def user_favorites(request):
-    """お気に入りページ"""
-    from django.shortcuts import render
-    return render(request, 'user/favorites.html')
-
-def user_login(request):
-    """ユーザーログインページ"""
-    from django.http import FileResponse
-    import os
-    static_file = os.path.join(os.path.dirname(__file__), 'static', 'login.html')
-    response = FileResponse(open(static_file, 'rb'), content_type='text/html')
-    # 開発環境でHTTPSを防ぐためのヘッダー
-    csp_policy = (
-        "default-src 'self' http://127.0.0.1:* http://localhost:* 'unsafe-inline' 'unsafe-eval'; "
-        "font-src 'self' https://fonts.gstatic.com data:; "
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com; "
-        "img-src 'self' data: https:; "
-        "connect-src 'self' http://127.0.0.1:* http://localhost:* https://maps.googleapis.com"
-    )
-    response['Content-Security-Policy'] = csp_policy
-    response['Strict-Transport-Security'] = 'max-age=0'
-    return response
-
 def serve_next_static(request, path):
     """Next.jsの静的ファイルを配信"""
-    from django.http import FileResponse, Http404
+    from django.http import FileResponse, Http404, JsonResponse
     import os
     import mimetypes
     
-    # 内部の static/_next フォルダからファイルを取得
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    
+    # _next/data/ のJSONファイルは空のオブジェクトを返す（静的エクスポートでは不要）
+    if path.startswith('data/') and path.endswith('.json'):
+        return JsonResponse({"pageProps": {}, "__N_SSG": True})
+    
+    # 開発環境のout/_nextを優先
+    dev_file_path = os.path.join(base_dir, 'out', '_next', path)
     static_file_path = os.path.join(os.path.dirname(__file__), 'static', '_next', path)
     
-    if not os.path.exists(static_file_path):
+    if os.path.exists(dev_file_path):
+        file_path = dev_file_path
+    elif os.path.exists(static_file_path):
+        file_path = static_file_path
+    else:
         raise Http404(f"Static file not found: {path}")
     
     # MIMEタイプを自動判定
-    content_type, _ = mimetypes.guess_type(static_file_path)
+    content_type, _ = mimetypes.guess_type(file_path)
     if content_type is None:
         if path.endswith('.js'):
             content_type = 'application/javascript'
@@ -94,22 +46,121 @@ def serve_next_static(request, path):
         else:
             content_type = 'application/octet-stream'
     
-    return FileResponse(open(static_file_path, 'rb'), content_type=content_type)
+    return FileResponse(open(file_path, 'rb'), content_type=content_type)
 
-def user_register(request):
-    """ユーザー登録ページ"""
-    from django.shortcuts import render
-    return render(request, 'user/register.html')
+def serve_public_file(request, filename):
+    """publicディレクトリの静的ファイルを配信（画像、アイコンなど）"""
+    from django.http import FileResponse, Http404
+    import os
+    import mimetypes
+    
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    
+    # 開発環境のout/を優先
+    dev_file_path = os.path.join(base_dir, 'out', filename)
+    static_file_path = os.path.join(os.path.dirname(__file__), 'static', filename)
+    
+    if os.path.exists(dev_file_path):
+        file_path = dev_file_path
+    elif os.path.exists(static_file_path):
+        file_path = static_file_path
+    else:
+        raise Http404(f"Public file not found: {filename}")
+    
+    # MIMEタイプを自動判定
+    content_type, _ = mimetypes.guess_type(file_path)
+    if content_type is None:
+        content_type = 'application/octet-stream'
+    
+    return FileResponse(open(file_path, 'rb'), content_type=content_type)
 
-def user_welcome(request):
-    """ウェルカムページ"""
-    from django.shortcuts import render
-    return render(request, 'user/welcome.html')
+def serve_user_page(request, page='login'):
+    """Next.jsでビルドされたユーザーページを配信"""
+    from django.http import FileResponse, Http404
+    import os
+    
+    # 開発環境: out/user/{page}/index.html
+    # 本番環境: static/user/{page}/index.html
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    
+    # 開発環境のout/ディレクトリを優先
+    dev_file_path = os.path.join(base_dir, 'out', 'user', page, 'index.html')
+    static_file_path = os.path.join(os.path.dirname(__file__), 'static', 'user', page, 'index.html')
+    
+    if os.path.exists(dev_file_path):
+        file_path = dev_file_path
+    elif os.path.exists(static_file_path):
+        file_path = static_file_path
+    else:
+        # フォールバック: user/{page}.html も試す
+        dev_fallback = os.path.join(base_dir, 'out', 'user', f'{page}.html')
+        static_fallback = os.path.join(os.path.dirname(__file__), 'static', 'user', f'{page}.html')
+        if os.path.exists(dev_fallback):
+            file_path = dev_fallback
+        elif os.path.exists(static_fallback):
+            file_path = static_fallback
+        else:
+            raise Http404(f"User page not found: {page}")
+    
+    response = FileResponse(open(file_path, 'rb'), content_type='text/html')
+    # キャッシュを無効化
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
-def social_detail(request, social_id):
-    """ソーシャル詳細ページ"""
-    from django.shortcuts import render
-    return render(request, 'social/detail.html', {'social_id': social_id})
+def serve_user_subpage(request, page, subpage):
+    """ユーザーサブページを配信（例: user/profile/settings）"""
+    from django.http import FileResponse, Http404
+    import os
+    
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    
+    # 開発環境のout/ディレクトリを優先
+    dev_file_path = os.path.join(base_dir, 'out', 'user', page, subpage, 'index.html')
+    static_file_path = os.path.join(os.path.dirname(__file__), 'static', 'user', page, subpage, 'index.html')
+    
+    if os.path.exists(dev_file_path):
+        file_path = dev_file_path
+    elif os.path.exists(static_file_path):
+        file_path = static_file_path
+    else:
+        raise Http404(f"User subpage not found: {page}/{subpage}")
+    
+    response = FileResponse(open(file_path, 'rb'), content_type='text/html')
+    # キャッシュを無効化
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
+
+def serve_user_detail_page(request, page, detail_id):
+    """詳細ページを配信（例: user/stores/123）"""
+    from django.http import FileResponse, Http404
+    import os
+    
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    
+    # Next.jsの動的ルートは[id]フォルダ構造になる
+    dev_file_path = os.path.join(base_dir, 'out', 'user', page, '[id]', 'index.html')
+    static_file_path = os.path.join(os.path.dirname(__file__), 'static', 'user', page, '[id]', 'index.html')
+    
+    if os.path.exists(dev_file_path):
+        file_path = dev_file_path
+    elif os.path.exists(static_file_path):
+        file_path = static_file_path
+    else:
+        raise Http404(f"User detail page not found: {page}/[id]")
+    
+    response = FileResponse(open(file_path, 'rb'), content_type='text/html')
+    # キャッシュを無効化
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
+
+
+
 
 def serve_manifest(request):
     """PWA用manifest.json配信"""
@@ -117,7 +168,7 @@ def serve_manifest(request):
     manifest_data = {
         "name": "Melty+ (メルティプラス)",
         "short_name": "Melty+",
-        "start_url": "/",
+        "start_url": "/user/",
         "display": "standalone",
         "background_color": "#ffffff",
         "theme_color": "#ec4899",
@@ -146,7 +197,7 @@ def serve_icon(request, size):
         
         # ダミーアイコンを生成
         img_size = int(size.split('x')[0]) if 'x' in size else 192
-        img = Image.new('RGB', (img_size, img_size), color='#4F46E5')
+        img = Image.new('RGB', (img_size, img_size), color='#ec4899')
         draw = ImageDraw.Draw(img)
         
         # 簡単なロゴ風デザイン
@@ -181,18 +232,6 @@ def serve_config(request):
     }
     return JsonResponse(config_data)
 
-def serve_next_data(request, path=None):
-    """Next.jsのデータファイル配信"""
-    from django.http import JsonResponse
-    # 空のデータを返す（Next.jsの静的エクスポート用）
-    return JsonResponse({})
-
-def serve_next_data_fixed(request):
-    """Next.jsのデータファイル配信（パスなし）"""
-    from django.http import JsonResponse
-    # 空のデータを返す（Next.jsの静的エクスポート用）
-    return JsonResponse({})
-
 def health(_request):
     """ヘルスチェック"""
     return JsonResponse({
@@ -202,69 +241,44 @@ def health(_request):
     })
 
 urlpatterns = [
-    # Next.jsデータファイル（具体的なパス - 優先順位高）
-    path('_next/data/pUNSGtetT1E1KfpW2r6R_/index.json', serve_next_data_fixed, name='next-data-index'),
-    path('_next/data/pUNSGtetT1E1KfpW2r6R_/user.json', serve_next_data_fixed, name='next-data-user'),
-    path('_next/data/pUNSGtetT1E1KfpW2r6R_/user/login.json', serve_next_data_fixed, name='next-data-user-login'),
-    path('_next/data/pUNSGtetT1E1KfpW2r6R_/user/social.json', serve_next_data_fixed, name='next-data-user-social'),
-    path('_next/data/pUNSGtetT1E1KfpW2r6R_/user/register.json', serve_next_data_fixed, name='next-data-user-register'),
-    path('_next/data/pUNSGtetT1E1KfpW2r6R_/user/map.json', serve_next_data_fixed, name='next-data-user-map'),
-    path('_next/data/pUNSGtetT1E1KfpW2r6R_/<path:path>', serve_next_data, name='next-data-catchall'),
-    
     # Next.js静的ファイル配信
     path('_next/<path:path>', serve_next_static, name='next-static'),
     
+    # Publicファイル（画像、ロゴなど）
+    path('melty-logo.jpg', lambda request: serve_public_file(request, 'melty-logo.jpg'), name='melty-logo'),
+    path('<str:filename>.jpg', serve_public_file, name='public-jpg'),
+    path('<str:filename>.png', serve_public_file, name='public-png'),
+    path('<str:filename>.svg', serve_public_file, name='public-svg'),
+    path('<str:filename>.ico', serve_public_file, name='public-ico'),
+    
     # PWAとConfig
     path('manifest.json', serve_manifest, name='manifest'),
-    path('static/manifest.json', serve_manifest, name='manifest-static'),  # 静的パスからもアクセス可能に
+    path('static/manifest.json', serve_manifest, name='manifest-static'),
     path('config.json', serve_config, name='config'),
     path('favicon.ico', serve_favicon, name='favicon'),
     path('static/icons/icon-<str:size>.png', serve_icon, name='pwa-icon'),
     
-    # userルート追加
-    path('user', user_login, name='user-alt'),
-    path('user/', user_login, name='user-alt-slash'),
-    path('user.html', user_login, name='user-html'),
-    path('user/map', user_map, name='user-map-direct'),
-    
-    # ユーザー画面のルート（ログインページ）
-    path('', user_login, name='user-root'),
-    path('profile/', user_profile, name='user-profile'),
-    path('profile.html', user_profile, name='user-profile-html'),
-    
-    # ユーザー画面の各ページ
-    path('points/', user_points, name='user-points'),
-    path('points.html', user_points, name='user-points-html'),
-    path('gifts/', user_gifts, name='user-gifts'),
-    path('gifts.html', user_gifts, name='user-gifts-html'),
-    path('social/', user_social, name='user-social'),
-    path('social.html', user_social, name='user-social-html'),
-    path('stores/', user_stores, name='user-stores'),
-    path('stores.html', user_stores, name='user-stores-html'),
-    path('map/', user_map, name='user-map'),
-    path('map.html', user_map, name='user-map-html'),
-    path('security/', user_security, name='user-security'),
-    path('security.html', user_security, name='user-security-html'),
-    path('favorites/', user_favorites, name='user-favorites'),
-    path('favorites.html', user_favorites, name='user-favorites-html'),
-    path('login/', user_login, name='user-login'),
-    path('login.html', user_login, name='user-login-html'),
-    path('register/', user_register, name='user-register'),
-    path('register.html', user_register, name='user-register-html'),
-    path('welcome/', user_welcome, name='user-welcome'),
-    path('welcome.html', user_welcome, name='user-welcome-html'),
-    
-    # ソーシャル機能
-    path('social/<int:social_id>/', social_detail, name='social-detail'),
-    path('social/<int:social_id>.html', social_detail, name='social-detail-html'),
-    
-    # API エンドポイント（ユーザー用）
+    # API エンドポイント
     path('api/', include('core.urls')),
-    path('api/social/', include('core.social_urls')),  # ソーシャル機能API
-    path('api/user/', include('core.urls')),  # ユーザー専用API
+    path('api/social/', include('core.social_urls')),
+    path('api/user/', include('core.urls')),
     path('api/status/', api_status, name='user-api-status'),
     path('api/health/', health, name='user-api-health'),
     path('api/get-totp/', get_totp, name='user-get-totp'),
+    
+    # ユーザーページルーティング（動的）
+    # 詳細ページ（例: /user/stores/123/）
+    path('user/<str:page>/<int:detail_id>/', serve_user_detail_page, name='user-detail-page'),
+    
+    # サブページ（例: /user/profile/settings/）
+    path('user/<str:page>/<str:subpage>/', serve_user_subpage, name='user-subpage'),
+    
+    # メインページ（例: /user/login/）
+    path('user/<str:page>/', serve_user_page, name='user-page'),
+    
+    # ルート（/user/ → login）
+    path('user/', lambda request: serve_user_page(request, 'login'), name='user-root'),
+    path('', lambda request: serve_user_page(request, 'login'), name='root'),
 ]
 
 # 静的ファイル配信（開発時のみ）
