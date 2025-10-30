@@ -50,13 +50,13 @@ export function getApiUrl(): string {
       return 'https://biid-user.fly.dev/api'
     }
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return 'http://localhost:8001/api'
+      return 'http://localhost:8000'
     }
   }
   // サーバーサイド or デフォルト
   return process.env.NODE_ENV === 'production' 
     ? 'https://biid-user.fly.dev/api'
-    : 'http://localhost:8001/api'
+    : 'http://localhost:8000'
 }
 
 // APIクライアント関数（エラーハンドリング強化版）
