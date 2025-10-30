@@ -1,7 +1,7 @@
 # Fly.io configuration for User Backend
 # BIID Point App - ユーザーサービス
 
-app = "biid-user"
+app = "biid-user-api"
 primary_region = "nrt"  # Tokyo (Narita)
 
 [build]
