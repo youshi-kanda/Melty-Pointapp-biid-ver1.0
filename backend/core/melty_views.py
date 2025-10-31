@@ -226,10 +226,13 @@ def register_direct(request):
         }, status=status.HTTP_201_CREATED)
         
     except Exception as e:
-        logger.error(f"Direct registration failed: {str(e)}")
+        import traceback
+        error_details = traceback.format_exc()
+        logger.error(f"Direct registration failed: {str(e)}\n{error_details}")
         return Response({
             'success': False,
-            'error': '登録処理中にエラーが発生しました'
+            'error': '登録処理中にエラーが発生しました',
+            'details': str(e) if settings.DEBUG else None
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
