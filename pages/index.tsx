@@ -6,21 +6,21 @@ export default function Home() {
   const router = useRouter()
 
   useEffect(() => {
-    // 安全なリダイレクト処理（Invariant エラーを防ぐ）
-    const redirectToTerminal = () => {
+    // ユーザーログイン画面にリダイレクト
+    const redirectToUserLogin = () => {
       try {
-        router.replace('/terminal/login')
+        router.replace('/user/login')
       } catch (error) {
         console.warn('Navigation error:', error)
         // フォールバック: 直接 window.location を使用
         if (typeof window !== 'undefined') {
-          window.location.href = '/terminal/login'
+          window.location.href = '/user/login'
         }
       }
     }
 
     // 少し遅延させて React の初期化を待つ
-    const timeoutId = setTimeout(redirectToTerminal, 100)
+    const timeoutId = setTimeout(redirectToUserLogin, 100)
     
     return () => clearTimeout(timeoutId)
   }, [router])
