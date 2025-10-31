@@ -59,6 +59,8 @@ if DEBUG:
 else:
     CORS_ALLOWED_ORIGINS = [
         'https://app.biid.app',
+        'https://biid-user.fly.dev',
+        'https://extending-guys-chess-prescribed.trycloudflare.com',
     ]
 
 CORS_ALLOW_CREDENTIALS = True
