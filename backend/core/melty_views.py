@@ -205,6 +205,10 @@ def register_direct(request):
         # Django認証
         login(request, user)
         
+        # JWTトークン生成
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(user)
+        
         # ユーザー情報をシリアライズ
         serializer = UserSerializer(user)
         
@@ -212,6 +216,8 @@ def register_direct(request):
         
         return Response({
             'success': True,
+            'token': str(refresh.access_token),
+            'refresh': str(refresh),
             'user': serializer.data,
             'is_new_user': True,
             'rank': user.rank,
