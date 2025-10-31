@@ -52,8 +52,8 @@ export default function LoginPage() {
           localStorage.setItem('user_info', JSON.stringify(data.data.user))
         }
 
-        // ダッシュボードへリダイレクト
-        router.push('/user')
+        // マップ画面へリダイレクト
+        router.push('/user/map')
       } else {
         setError(data.error || data.message || 'ログインに失敗しました。メールアドレスとパスワードを確認してください。')
         setIsLoading(false)
