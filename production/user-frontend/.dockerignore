@@ -1,0 +1,22 @@
+../../node_modules
+../../.next
+../../out
+../../backend
+../../backups
+../../production
+../../client-mockups
+../../client-delivery-temp
+../../admin-production
+../../.git
+../../*.md
+../../.vscode
+../../.idea
+../../.DS_Store
+../../.env*
+../../*.log
+
+# ユーザーアプリに不要なページを除外
+../../pages/terminal
+../../pages/admin
+../../pages/store
+../../pages/payment-test.tsx
