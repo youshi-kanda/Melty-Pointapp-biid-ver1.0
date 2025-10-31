@@ -121,6 +121,7 @@ export default function LoginPage() {
                     <input
                       type="email"
                       name="email"
+                      autoComplete="off"
                       className="w-full pl-12 pr-4 py-4 border border-pink-200 rounded-2xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 hover:border-pink-300 bg-pink-50/30 text-base"
                       placeholder="your@example.com"
                       required
@@ -140,6 +141,7 @@ export default function LoginPage() {
                     <input
                       type={showPassword ? 'text' : 'password'}
                       name="password"
+                      autoComplete="off"
                       className="w-full pl-12 pr-14 py-4 border border-pink-200 rounded-2xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 hover:border-pink-300 bg-pink-50/30 text-base"
                       placeholder="パスワードを入力"
                       required
