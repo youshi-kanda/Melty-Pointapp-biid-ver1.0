@@ -1,0 +1,25 @@
+# Node.js関連 (バックエンドには不要)
+node_modules/
+.next/
+.vercel/
+
+# その他の開発ファイル
+.git/
+.github/
+.vscode/
+*.md
+*.log
+
+# フロントエンドファイル (バックエンドには不要)
+pages/
+components/
+styles/
+public/
+client-mockups/
+
+# テストとバックアップ
+__pycache__/
+*.pyc
+*.pyo
+*.db
+backups/
