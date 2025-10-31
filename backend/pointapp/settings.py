@@ -223,6 +223,10 @@ else:
     # 本番環境では特定のオリジンのみ許可
     CORS_ALLOWED_ORIGINS = [
         'https://extending-guys-chess-prescribed.trycloudflare.com',
+        'https://biid-user.fly.dev',
+        'https://biid-terminal.fly.dev',
+        'https://biid-admin.fly.dev',
+        'https://biid-store.fly.dev',
     ]
     CORS_ALLOW_CREDENTIALS = True
     CORS_ALLOW_HEADERS = [
