@@ -20,7 +20,14 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch(`${getApiUrl()}/api/auth/login/customer/`, {
+      // 本番環境では必ずFly.ioのAPIを使用
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://biid-user-api.fly.dev'
+        : getApiUrl()
+      
+      console.log('Login API URL:', `${apiUrl}/api/auth/login/customer/`)
+      
+      const response = await fetch(`${apiUrl}/api/auth/login/customer/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
