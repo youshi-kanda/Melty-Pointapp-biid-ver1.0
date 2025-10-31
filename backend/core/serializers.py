@@ -14,7 +14,7 @@ from .models import (
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'member_id', 'points', 'registration_date', 
+        fields = ['id', 'username', 'email', 'member_id', 'point_balance', 'registration_date', 
                  'last_login_date', 'status', 'location', 'avatar']
         read_only_fields = ['id', 'registration_date']
 
