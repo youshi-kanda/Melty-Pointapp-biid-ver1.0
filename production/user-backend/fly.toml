@@ -17,6 +17,11 @@ primary_region = "nrt"  # Tokyo (Narita)
   SESSION_COOKIE_SECURE = "False"
   CSRF_COOKIE_SECURE = "False"
 
+[vm]
+  memory = "512mb"  # メモリを512MBに増量
+  cpu_kind = "shared"
+  cpus = 1
+
 [[services]]
   internal_port = 8003
   protocol = "tcp"
