@@ -20,35 +20,35 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch(`${getApiUrl()}/auth/login/`, {
+      const response = await fetch(`${getApiUrl()}/api/auth/login/customer/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: email,
+          email: email,
           password: password,
         }),
       })
 
       const data = await response.json()
 
-      if (response.ok && data.access) {
+      if (response.ok && data.success && data.data?.tokens) {
         // JWTトークンを保存
-        localStorage.setItem('auth_token', data.access)
-        if (data.refresh) {
-          localStorage.setItem('refresh_token', data.refresh)
+        localStorage.setItem('auth_token', data.data.tokens.access)
+        if (data.data.tokens.refresh) {
+          localStorage.setItem('refresh_token', data.data.tokens.refresh)
         }
 
         // ユーザー情報を保存
-        if (data.user) {
-          localStorage.setItem('user_info', JSON.stringify(data.user))
+        if (data.data.user) {
+          localStorage.setItem('user_info', JSON.stringify(data.data.user))
         }
 
         // ダッシュボードへリダイレクト
         router.push('/user')
       } else {
-        setError(data.error || 'ログインに失敗しました。メールアドレスとパスワードを確認してください。')
+        setError(data.error || data.message || 'ログインに失敗しました。メールアドレスとパスワードを確認してください。')
         setIsLoading(false)
       }
     } catch (err) {
