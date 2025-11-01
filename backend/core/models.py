@@ -672,11 +672,36 @@ class Gift(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    # デジタルギフト連携用フィールド
+    is_external_gift = models.BooleanField(default=False, help_text='RealPay等の外部デジタルギフトAPI経由か')
+    external_brand = models.ForeignKey(
+        'DigitalGiftBrand',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='gifts',
+        help_text='連携するデジタルギフトブランド'
+    )
+    external_price = models.IntegerField(null=True, blank=True, help_text='外部API購入金額(円)')
+    
     class Meta:
         ordering = ['-created_at']
     
     def __str__(self):
         return f"{self.name} ({self.points_required} pts)"
+    
+    def calculate_commission(self):
+        """手数料計算"""
+        if not self.is_external_gift or not self.external_brand or not self.external_price:
+            return {
+                'price': 0,
+                'commission': 0,
+                'commission_tax': 0,
+                'total': 0,
+                'currency': 'JPY'
+            }
+        
+        return self.external_brand.calculate_total_cost(self.external_price)
     
     def is_available(self):
         """ギフトが交換可能かチェック"""

@@ -17,16 +17,46 @@ build/
 **/.next/
 **/out/
 
+# Backend & Database (完全除外)
+backend/
+*.sqlite3
+*.db
+
+# Backups & Archives (完全除外)  
+backups/
+client-mockups/
+client-delivery-temp/
+admin-production/
+
+# Git (完全除外)
+.git/
+.gitignore
+.github/
+
+# Production configs (他のサービス用 - ユーザーフロントエンド以外)
+production/user-backend/
+production/admin-*/
+production/store-*/
+production/terminal-*/
+production/*.md
+production/docker-compose*.yml
+production/setup-*.sh
+production/start_*.sh
+production/README*.md
+
+
 # Environment files
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*
+!.env.example
 
 # IDE
-.vscode
-.idea
+.vscode/
+.idea/
 *.swp
 *.swo
 *~
@@ -35,30 +65,27 @@ build/
 .DS_Store
 Thumbs.db
 
-# Git
-.git
-.gitignore
-
-# Backups
-backups/
-
 # Testing
-coverage
-.nyc_output
+coverage/
+.nyc_output/
+*.test.js
+*.test.ts
+*.test.tsx
 
-# Misc
+# Logs & Cache
 *.log
-.cache
-temp
-tmp
-client-delivery-temp/
-client-mockups/
-admin-production/
+.cache/
+logs/
+temp/
+tmp/
 
 # Documentation
 *.md
 !README.md
 
-# Database
-*.sqlite3
-*.db
+# ユーザーアプリに不要なページ
+pages/terminal/
+pages/admin/
+pages/store/
+pages/payment-test.tsx
+

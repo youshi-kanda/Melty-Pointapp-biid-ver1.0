@@ -1,22 +1,74 @@
-../../node_modules
-../../.next
-../../out
-../../backend
-../../backups
-../../production
-../../client-mockups
-../../client-delivery-temp
-../../admin-production
-../../.git
-../../*.md
-../../.vscode
-../../.idea
-../../.DS_Store
-../../.env*
-../../*.log
+# Dependencies (ルートから除外)
+node_modules
+.pnpm-debug.log*
 
-# ユーザーアプリに不要なページを除外
-../../pages/terminal
-../../pages/admin
-../../pages/store
-../../pages/payment-test.tsx
+# Build outputs (ルートから除外)
+.next
+out
+dist
+build
+
+# Backend & Database (完全除外)
+backend/
+*.sqlite3
+*.db
+
+# Backups & Archives (完全除外)
+backups/
+client-mockups/
+client-delivery-temp/
+admin-production/
+
+# Git (完全除外)
+.git/
+.gitignore
+.github/
+
+# Production configs (他のサービス用)
+production/user-backend/
+production/admin-backend/
+production/store-backend/
+production/terminal-backend/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.nyc_output/
+*.test.js
+*.test.ts
+*.test.tsx
+
+# Logs
+*.log
+logs/
+
+# Documentation
+*.md
+!README.md
+
+# Misc
+.cache/
+temp/
+tmp/
+
+# ユーザーアプリに不要なページ
+pages/terminal/
+pages/admin/
+pages/store/
+pages/payment-test.tsx
+

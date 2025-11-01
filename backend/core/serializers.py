@@ -87,6 +87,9 @@ class GiftCategorySerializer(serializers.ModelSerializer):
 class GiftSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
     is_available = serializers.BooleanField(read_only=True)
+    external_brand_name = serializers.SerializerMethodField()
+    external_brand_code = serializers.SerializerMethodField()
+    commission_info = serializers.SerializerMethodField()
     
     class Meta:
         model = Gift
@@ -95,8 +98,28 @@ class GiftSerializer(serializers.ModelSerializer):
             'points_required', 'original_price', 'stock_quantity', 'unlimited_stock',
             'image_url', 'thumbnail_url', 'provider_name', 'provider_url',
             'status', 'available_from', 'available_until', 'usage_instructions',
-            'terms_conditions', 'exchange_count', 'is_available', 'created_at'
+            'terms_conditions', 'exchange_count', 'is_available', 'created_at',
+            'is_external_gift', 'external_brand', 'external_brand_name', 
+            'external_brand_code', 'external_price', 'commission_info'
         ]
+    
+    def get_external_brand_name(self, obj):
+        """外部ブランド名を取得"""
+        if obj.external_brand:
+            return obj.external_brand.name
+        return None
+    
+    def get_external_brand_code(self, obj):
+        """外部ブランドコードを取得"""
+        if obj.external_brand:
+            return obj.external_brand.code
+        return None
+    
+    def get_commission_info(self, obj):
+        """手数料情報を取得"""
+        if obj.is_external_gift:
+            return obj.calculate_commission()
+        return None
 
 
 class GiftExchangeSerializer(serializers.ModelSerializer):
