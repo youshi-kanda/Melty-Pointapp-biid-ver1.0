@@ -120,7 +120,7 @@ export default function GiftsPage() {
       }
 
       // ユーザーのポイント残高を取得
-      const profileResponse = await fetch(`${getApiUrl()}/user/profile/`, {
+      const profileResponse = await fetch(`${getApiUrl()}/api/user/profile/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ export default function GiftsPage() {
       }
 
       // カテゴリ一覧を取得
-      const categoriesResponse = await fetch(`${getApiUrl()}/gifts/categories/`, {
+      const categoriesResponse = await fetch(`${getApiUrl()}/api/gifts/categories/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -146,7 +146,7 @@ export default function GiftsPage() {
       }
 
       // ギフト一覧を取得
-      const giftsResponse = await fetch(`${getApiUrl()}/gifts/`, {
+      const giftsResponse = await fetch(`${getApiUrl()}/api/gifts/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
