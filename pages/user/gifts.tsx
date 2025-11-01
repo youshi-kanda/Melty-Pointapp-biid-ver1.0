@@ -256,7 +256,7 @@ export default function GiftsPage() {
         requestBody.delivery_method = 'digital'
       }
 
-      const response = await fetch(`${getApiUrl()}/gifts/exchange/`, {
+      const response = await fetch(`${getApiUrl()}/api/gifts/exchange/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -267,6 +267,7 @@ export default function GiftsPage() {
 
       if (response.ok) {
         const data = await response.json()
+        console.log('Exchange success:', data)
         alert(`${selectedGift.name}の交換が完了しました！\n\n${
           data.exchange?.digital_code ? `ギフトコード: ${data.exchange.digital_code}` : '詳細はマイギフトからご確認ください'
         }`)
@@ -277,11 +278,12 @@ export default function GiftsPage() {
         loadGiftsData()
       } else {
         const errorData = await response.json()
-        alert(errorData.error || '交換に失敗しました')
+        console.error('Exchange error response:', errorData)
+        alert(errorData.error || errorData.message || '交換に失敗しました')
       }
     } catch (error) {
       console.error('Exchange failed:', error)
-      alert('交換に失敗しました')
+      alert(`交換に失敗しました: ${error instanceof Error ? error.message : '不明なエラー'}`)
     } finally {
       setIsExchanging(false)
     }
