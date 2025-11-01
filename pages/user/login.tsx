@@ -109,6 +109,33 @@ export default function LoginPage() {
                 <p className="text-gray-600 text-lg" style={{ fontFamily: 'Nunito, sans-serif' }}>Melty+アプリへようこそ</p>
               </div>
 
+              {/* テスト用アカウント情報 */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-5 mb-6">
+                <div className="flex items-center mb-3">
+                  <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold mr-2">
+                    TEST
+                  </div>
+                  <p className="text-sm font-bold text-blue-800">テスト用アカウント</p>
+                </div>
+                <div className="space-y-2 text-sm text-gray-700">
+                  <div className="flex items-start">
+                    <Mail className="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-blue-900">メール:</p>
+                      <p className="font-mono text-blue-700 bg-white px-2 py-1 rounded mt-1">demo@biid.jp</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <Lock className="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-blue-900">パスワード:</p>
+                      <p className="font-mono text-blue-700 bg-white px-2 py-1 rounded mt-1">DemoPass123!</p>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-blue-600 mt-3 italic">※本番稼働時に削除されます</p>
+              </div>
+
               {/* ログインフォーム */}
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* エラーメッセージ */}
