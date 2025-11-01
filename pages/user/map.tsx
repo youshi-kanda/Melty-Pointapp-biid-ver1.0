@@ -5,7 +5,7 @@ import UserLayout from '@/components/user/Layout';
 import { Heart, Search, MapPin, Star, Phone, Globe, Filter, Navigation, Zap, Cigarette, AlertCircle } from 'lucide-react';
 
 // Google Maps APIキー（環境変数から取得、なければデモ用のキー）
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8';
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyCD_Es7dW0HvvIWXUNM7uYEzaqYQNlkiDQ';
 
 export default function MapPage() {
   const mapRef = useRef<HTMLDivElement>(null);
