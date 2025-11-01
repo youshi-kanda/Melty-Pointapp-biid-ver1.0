@@ -19,6 +19,10 @@ COPY . .
 # ユーザーアプリに不要なページを削除
 RUN rm -rf pages/terminal pages/admin pages/store pages/payment-test.tsx
 
+# ビルド時の環境変数を受け取る
+ARG NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+ENV NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+
 # 環境変数を設定
 ENV NODE_ENV=production
 ENV BUILD_TARGET=docker
