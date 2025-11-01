@@ -23,6 +23,9 @@ RUN rm -rf pages/terminal pages/admin pages/store pages/payment-test.tsx
 ARG NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 ENV NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
+# デバッグ: 環境変数を確認
+RUN echo "Building with NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}"
+
 # 環境変数を設定
 ENV NODE_ENV=production
 ENV BUILD_TARGET=docker
