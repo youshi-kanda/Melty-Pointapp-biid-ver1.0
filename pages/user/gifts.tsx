@@ -231,13 +231,23 @@ export default function GiftsPage() {
   }
 
   const handleExchange = async () => {
-    if (!selectedGift) return
+    console.log('=== handleExchange called ===')
+    console.log('selectedGift:', selectedGift)
+    
+    if (!selectedGift) {
+      console.error('selectedGift is null')
+      return
+    }
 
+    console.log('Starting exchange...')
     setIsExchanging(true)
     
     try {
       const token = localStorage.getItem('auth_token')
+      console.log('Token exists:', !!token)
+      
       if (!token) {
+        console.error('No auth token, redirecting to login')
         router.push('/user/login')
         return
       }
@@ -256,6 +266,9 @@ export default function GiftsPage() {
         requestBody.delivery_method = 'digital'
       }
 
+      console.log('Request body:', requestBody)
+      console.log('API URL:', `${getApiUrl()}/api/gifts/exchange/`)
+
       const response = await fetch(`${getApiUrl()}/api/gifts/exchange/`, {
         method: 'POST',
         headers: {
@@ -264,6 +277,9 @@ export default function GiftsPage() {
         },
         body: JSON.stringify(requestBody)
       })
+
+      console.log('Response status:', response.status)
+      console.log('Response ok:', response.ok)
 
       if (response.ok) {
         const data = await response.json()
