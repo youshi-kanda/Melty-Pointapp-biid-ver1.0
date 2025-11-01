@@ -42,6 +42,19 @@ interface GiftItem {
   is_available: boolean
   status: string
   exchange_count: number
+  // デジタルギフト関連
+  is_external_gift?: boolean
+  external_brand?: number
+  external_brand_name?: string
+  external_brand_code?: string
+  external_price?: number
+  commission_info?: {
+    price: number
+    commission: number
+    commission_tax: number
+    total: number
+    currency: string
+  }
 }
 
 const categoryIcons: { [key: string]: string } = {
@@ -76,13 +89,22 @@ export default function GiftsPage() {
   const [userPoints, setUserPoints] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  // 交換モーダル用ステート
+  const [showExchangeModal, setShowExchangeModal] = useState(false)
+  const [selectedGift, setSelectedGift] = useState<GiftItem | null>(null)
+  const [deliveryMethod, setDeliveryMethod] = useState<'app' | 'convenience' | 'email'>('app')
+  const [recipientEmail, setRecipientEmail] = useState('')
+  const [isExchanging, setIsExchanging] = useState(false)
 
   useEffect(() => {
     loadGiftsData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
     filterAndSortGifts()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gifts, selectedCategory, searchQuery, sortBy, giftType, inStock])
 
   const loadGiftsData = async () => {
@@ -195,21 +217,43 @@ export default function GiftsPage() {
 
   const canAfford = (points: number) => userPoints >= points
 
-  const handleExchange = async (gift: GiftItem) => {
+  const handleExchangeClick = (gift: GiftItem) => {
     if (!canAfford(gift.points_required) || !gift.is_available) {
       alert('ポイント不足、または在庫切れです')
       return
     }
-
-    if (!confirm(`${gift.name}を${gift.points_required}ポイントで交換しますか？`)) {
-      return
+    setSelectedGift(gift)
+    setShowExchangeModal(true)
+    // デフォルトの受取方法を設定
+    if (gift.gift_type === 'digital') {
+      setDeliveryMethod('app')
     }
+  }
 
+  const handleExchange = async () => {
+    if (!selectedGift) return
+
+    setIsExchanging(true)
+    
     try {
       const token = localStorage.getItem('auth_token')
       if (!token) {
         router.push('/user/login')
         return
+      }
+
+      const requestBody: any = {
+        gift_id: selectedGift.id
+      }
+
+      // 受取方法に応じて追加情報を設定
+      if (deliveryMethod === 'convenience') {
+        requestBody.delivery_method = 'convenience_store'
+      } else if (deliveryMethod === 'email' && recipientEmail) {
+        requestBody.delivery_method = 'email'
+        requestBody.recipient_email = recipientEmail
+      } else {
+        requestBody.delivery_method = 'digital'
       }
 
       const response = await fetch(`${getApiUrl()}/gifts/exchange/`, {
@@ -218,13 +262,17 @@ export default function GiftsPage() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          gift_id: gift.id
-        })
+        body: JSON.stringify(requestBody)
       })
 
       if (response.ok) {
-        alert(`${gift.name}の交換が完了しました！`)
+        const data = await response.json()
+        alert(`${selectedGift.name}の交換が完了しました！\n\n${
+          data.exchange?.digital_code ? `ギフトコード: ${data.exchange.digital_code}` : '詳細はマイギフトからご確認ください'
+        }`)
+        setShowExchangeModal(false)
+        setSelectedGift(null)
+        setRecipientEmail('')
         // データを再読み込み
         loadGiftsData()
       } else {
@@ -234,6 +282,8 @@ export default function GiftsPage() {
     } catch (error) {
       console.error('Exchange failed:', error)
       alert('交換に失敗しました')
+    } finally {
+      setIsExchanging(false)
     }
   }
 
@@ -431,6 +481,7 @@ export default function GiftsPage() {
                 filteredGifts.map(gift => (
                   <div key={gift.id} className="bg-white rounded-xl shadow-sm border hover:shadow-lg transition-all duration-200 overflow-hidden">
                     <div className="relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={gift.thumbnail_url || gift.image_url || `https://via.placeholder.com/300x200/ec4899/ffffff?text=${encodeURIComponent(gift.name)}`}
                         alt={gift.name}
@@ -456,7 +507,14 @@ export default function GiftsPage() {
 
                     <div className="p-5 space-y-3">
                       <div>
-                        <h3 className="font-bold text-pink-800 text-lg line-clamp-2">{gift.name}</h3>
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className="font-bold text-pink-800 text-lg line-clamp-2 flex-1">{gift.name}</h3>
+                          {gift.is_external_gift && gift.external_brand_name && (
+                            <span className="ml-2 px-2 py-0.5 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs rounded-full font-semibold whitespace-nowrap">
+                              {gift.external_brand_name}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-pink-600">{gift.provider_name}</p>
                       </div>
                       <p className="text-sm text-pink-600 line-clamp-2">{gift.description}</p>
@@ -488,7 +546,7 @@ export default function GiftsPage() {
                           <Heart className="w-4 h-4 text-pink-600" />
                         </button>
                         <button
-                          onClick={() => handleExchange(gift)}
+                          onClick={() => handleExchangeClick(gift)}
                           disabled={!canAfford(gift.points_required) || !gift.is_available}
                           className={`flex-1 py-2 px-4 rounded-xl font-semibold transition-all duration-200 ${
                             canAfford(gift.points_required) && gift.is_available
@@ -507,6 +565,148 @@ export default function GiftsPage() {
             </div>
           </div>
         </main>
+
+        {/* 交換確認モーダル */}
+        {showExchangeModal && selectedGift && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setShowExchangeModal(false)}>
+            <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-xl font-bold text-pink-800">ギフト交換確認</h3>
+              
+              {/* ギフト情報 */}
+              <div className="bg-pink-50 rounded-xl p-4">
+                <h4 className="font-bold text-pink-900 mb-2">{selectedGift.name}</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-pink-600">必要ポイント</span>
+                    <span className="font-bold text-pink-800">{selectedGift.points_required.toLocaleString()} pt</span>
+                  </div>
+                  
+                  {/* 外部ギフトの場合は手数料を表示 */}
+                  {selectedGift.is_external_gift && selectedGift.commission_info && (
+                    <>
+                      <div className="border-t border-pink-200 pt-2 mt-2">
+                        <p className="text-xs text-pink-600 mb-1">手数料詳細 ({selectedGift.external_brand_name})</p>
+                        <div className="space-y-1 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-pink-600">ギフト金額</span>
+                            <span className="text-pink-700">¥{selectedGift.commission_info.price.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-pink-600">手数料</span>
+                            <span className="text-pink-700">¥{selectedGift.commission_info.commission.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-pink-600">消費税</span>
+                            <span className="text-pink-700">¥{selectedGift.commission_info.commission_tax.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between font-bold border-t border-pink-200 pt-1">
+                            <span className="text-pink-800">総額</span>
+                            <span className="text-pink-800">¥{selectedGift.commission_info.total.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  
+                  <div className="flex justify-between border-t border-pink-200 pt-2">
+                    <span className="text-pink-600">所持ポイント</span>
+                    <span className="text-pink-700">{userPoints.toLocaleString()} pt</span>
+                  </div>
+                  <div className="flex justify-between font-bold">
+                    <span className="text-pink-800">交換後ポイント</span>
+                    <span className="text-pink-800">{(userPoints - selectedGift.points_required).toLocaleString()} pt</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 受取方法選択（デジタルギフトの場合のみ） */}
+              {selectedGift.gift_type === 'digital' && (
+                <div className="space-y-3">
+                  <h4 className="font-bold text-pink-900 text-sm">受取方法</h4>
+                  
+                  <label className={`flex items-start p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                    deliveryMethod === 'app' ? 'border-pink-500 bg-pink-50' : 'border-gray-200 hover:border-pink-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="delivery"
+                      value="app"
+                      checked={deliveryMethod === 'app'}
+                      onChange={(e) => setDeliveryMethod(e.target.value as any)}
+                      className="mt-1 text-pink-500"
+                    />
+                    <div className="ml-3 flex-1">
+                      <div className="font-semibold text-pink-900">アプリで即時受取</div>
+                      <div className="text-xs text-pink-600">交換後すぐにギフトコードを確認できます</div>
+                    </div>
+                  </label>
+
+                  <label className={`flex items-start p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                    deliveryMethod === 'convenience' ? 'border-pink-500 bg-pink-50' : 'border-gray-200 hover:border-pink-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="delivery"
+                      value="convenience"
+                      checked={deliveryMethod === 'convenience'}
+                      onChange={(e) => setDeliveryMethod(e.target.value as any)}
+                      className="mt-1 text-pink-500"
+                    />
+                    <div className="ml-3 flex-1">
+                      <div className="font-semibold text-pink-900">コンビニで発券</div>
+                      <div className="text-xs text-pink-600">セブン・ファミマ・ローソンで受取可能</div>
+                    </div>
+                  </label>
+
+                  <label className={`flex items-start p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                    deliveryMethod === 'email' ? 'border-pink-500 bg-pink-50' : 'border-gray-200 hover:border-pink-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="delivery"
+                      value="email"
+                      checked={deliveryMethod === 'email'}
+                      onChange={(e) => setDeliveryMethod(e.target.value as any)}
+                      className="mt-1 text-pink-500"
+                    />
+                    <div className="ml-3 flex-1">
+                      <div className="font-semibold text-pink-900">メールで送信</div>
+                      <div className="text-xs text-pink-600">ギフトとして誰かに贈る</div>
+                    </div>
+                  </label>
+
+                  {deliveryMethod === 'email' && (
+                    <input
+                      type="email"
+                      value={recipientEmail}
+                      onChange={(e) => setRecipientEmail(e.target.value)}
+                      placeholder="送信先メールアドレス"
+                      className="w-full px-4 py-2 border border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* ボタン */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setShowExchangeModal(false)}
+                  className="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                  disabled={isExchanging}
+                >
+                  キャンセル
+                </button>
+                <button
+                  onClick={handleExchange}
+                  disabled={isExchanging || (deliveryMethod === 'email' && !recipientEmail)}
+                  className="flex-1 py-3 px-4 bg-gradient-to-r from-pink-400 to-rose-500 text-white rounded-xl font-semibold hover:from-pink-500 hover:to-rose-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isExchanging ? '交換中...' : '交換確定'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   )
