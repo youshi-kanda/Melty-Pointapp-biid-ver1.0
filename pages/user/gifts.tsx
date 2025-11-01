@@ -120,7 +120,7 @@ export default function GiftsPage() {
       }
 
       // ユーザーのポイント残高を取得
-      const profileResponse = await fetch(`${getApiUrl()}/api/user/profile/`, {
+      const profileResponse = await fetch(`${getApiUrl()}/user/profile/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ export default function GiftsPage() {
       }
 
       // カテゴリ一覧を取得
-      const categoriesResponse = await fetch(`${getApiUrl()}/api/gifts/categories/`, {
+      const categoriesResponse = await fetch(`${getApiUrl()}/gifts/categories/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -146,7 +146,7 @@ export default function GiftsPage() {
       }
 
       // ギフト一覧を取得
-      const giftsResponse = await fetch(`${getApiUrl()}/api/gifts/`, {
+      const giftsResponse = await fetch(`${getApiUrl()}/gifts/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -267,9 +267,9 @@ export default function GiftsPage() {
       }
 
       console.log('Request body:', requestBody)
-      console.log('API URL:', `${getApiUrl()}/api/gifts/exchange/`)
+      console.log('API URL:', `${getApiUrl()}/gifts/exchange/`)
 
-      const response = await fetch(`${getApiUrl()}/api/gifts/exchange/`, {
+      const response = await fetch(`${getApiUrl()}/gifts/exchange/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
