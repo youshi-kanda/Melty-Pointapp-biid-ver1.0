@@ -17,10 +17,13 @@ build/
 **/.next/
 **/out/
 
-# Backend & Database (完全除外)
-backend/
-*.sqlite3
-*.db
+# Backend & Database (SQLiteのみ除外、Pythonファイルは保持)
+backend/**/*.sqlite3
+backend/**/*.db
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/**/*.pyo
+backend/**/*.log
 
 # Backups & Archives (完全除外)  
 backups/
@@ -33,8 +36,7 @@ admin-production/
 .gitignore
 .github/
 
-# Production configs (他のサービス用 - ユーザーフロントエンド以外)
-production/user-backend/
+# Production configs (除外するものを明示的に指定)
 production/admin-*/
 production/store-*/
 production/terminal-*/
