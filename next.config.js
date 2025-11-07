@@ -1,6 +1,4 @@
 /** @type {import('next').NextConfig} */
-// ビルドターゲットの判定
-const isCloudflare = process.env.BUILD_TARGET === 'cloudflare';
 const isDocker = process.env.BUILD_TARGET === 'docker';
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -11,7 +9,6 @@ const nextConfig = {
   
   // 画像最適化設定
   images: {
-    unoptimized: isCloudflare, // Cloudflare Pagesでのみ無効化、Docker/ローカルでは最適化有効
     remotePatterns: [
       {
         protocol: 'https',
@@ -20,14 +17,7 @@ const nextConfig = {
     ],
   },
   
-  // 静的エクスポート時はtrailingSlashを有効化
-  ...(isCloudflare ? { trailingSlash: true } : {}),
-  
-  // 環境に応じた出力設定
-  // Cloudflare Pages: 静的エクスポート
-  // Docker: スタンドアロン (Node.jsサーバー)
-  // ローカル開発: デフォルト
-  ...(isCloudflare ? { output: 'export' } : {}),
+  // Docker本番環境ではスタンドアロン出力
   ...(isDocker && isProduction ? { output: 'standalone' } : {}),
   
   // 環境変数の公開設定（クライアントサイドで使用）

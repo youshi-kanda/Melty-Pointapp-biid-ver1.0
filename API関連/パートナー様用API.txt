@@ -1,0 +1,630 @@
+パートナー様用API.txt
+
+**API基本情報**
+
+このAPIは、デジタルギフトのパートナー様向けAPIドキュメントです。ベースURLは `https://digital-gift.jp/partner/document/api` となっています。
+
+**Rate Limitについて**
+
+APIの利用制限は **300リクエスト/分** に設定されています。この制限はエンドポイントごとではなく、呼び出し元IPアドレスに対して割り当てられます。この値は予告なく変更される場合がありますので、予めご了承ください。
+
+**アクセストークン**
+
+認証には、事前に共有された共通鍵を使用して生成したTOTP（Time-based One Time Password）を使用します。このトークンはHTTPヘッダーに指定する必要があります。
+
+**生成方法**
+
+TOTPの生成はRFC6238に準拠しています。
+
+**言語ごとのサンプルライブラリ**
+
+以下は参考例であり、利用を強制するものではありません。また、これらのライブラリを原因として発生した不利益や損害については、当社は一切の責任を負いません。
+
+- **Java**: https://github.com/wstrange/GoogleAuth
+- **PHP**: https://github.com/Spomky-Labs/otphp
+- **NodeJS**: https://github.com/bellstrand/totp-generator
+
+**両者サーバーで事前に共有する情報**
+
+- 共通鍵
+- ハッシュ関数アルゴリズム
+- タイムステップ値
+- TOTPの桁数
+
+**HTTPメッセージのサンプル**
+
+```http
+POST /path/to/api HTTP/1.1
+Host: digital-gift.jp
+x-realpay-gift-api-access-token: {APIアクセストークン}
+```
+
+**掲載交換先の操作**
+
+**交換先一覧の取得**
+
+購入ID作成時に指定できる掲載交換先の一覧を取得します。この情報は、APIアクセスキーに対して固定（配列要素のオブジェクトの内容は不変）です。要素数の増加は予告なく行われます。減少する際（交換先企業とデジタルギフトの接続が終了する場合など）は原則事前に通知されます。
+
+**エンドポイント**: `/brands`
+
+**認証**: APIアクセストークン
+
+**ヘッダーパラメータ**:
+- `x-realpay-gift-api-access-key` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: 128348f63167a287d2509edf88d74dbf79c44480
+  - 事前に共有するアクセスキー
+
+**レスポンス**:
+- 200: 成功
+- 400: 失敗 - パラメータ不備
+- 401: 失敗 - APIアクセストークン不備
+- 503: 失敗 - サーバーエラー
+
+**購入IDに関する操作**
+
+**購入IDとは**
+
+購入IDは、ギフト購入時に必要となる識別子です。デジタルギフトのURLへアクセスした際の表示情報や、掲載する交換先の情報などが含まれています。
+
+**購入IDの作成**
+
+購入IDを作成します。
+
+**エンドポイント**: `/purchases`
+
+**認証**: APIアクセストークン
+
+**ヘッダーパラメータ**:
+- `x-realpay-gift-api-request-id` (必須): 40文字以下の文字列 [a-zA-Z0-9_-]{1,40}
+  - 例: 7c222fb2927d828af22f592134e8932480637c0d
+  - 更新系の（POST/PUT/PATCH/DELETE）リクエストごとに一意の識別子
+- `x-realpay-gift-api-access-key` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: 128348f63167a287d2509edf88d74dbf79c44480
+  - 事前に共有するアクセスキー
+
+**リクエストボディ（application/json）**:
+- `prices` (必須): 整数の配列 - 購入IDに登録する金額のリスト。ギフト購入APIでは、ここで登録した値から1つを選択して購入を行います
+- `name` (必須): 文字列 - 作成する購入IDで購入したギフトの名前
+- `issuer` (必須): 文字列 - 作成する購入IDで購入したギフトに記載する送付者名
+- `brands` (必須): 文字列の配列 - 作成する購入IDで購入したギフトに掲載する交換先のリスト。掲載交換先一覧に含まれる値（code）のみ指定可能
+- `is_strict` (必須): ブール値 - 指定した掲載交換先と金額で、組み合わせられないペアがある場合にリクエストを拒否するかどうかのフラグ
+
+**リクエストサンプル**:
+```json
+{
+  "prices": [100, 500],
+  "name": "○○キャンペーン",
+  "issuer": "株式会社○○",
+  "brands": ["amazon", "paypay"],
+  "is_strict": true
+}
+```
+
+**レスポンス**:
+- 200: 成功
+- 400: 失敗 - パラメータ不備
+- 401: 失敗 - APIアクセストークン不備
+- 409: 失敗 - リクエストIDの衝突
+- 503: 失敗 - サーバーエラー
+
+**レスポンスサンプル（200）**:
+```json
+{
+  "purchase": {
+    "id": "b55ed98db0389a6203386be31e6f06db64f17a80"
+  }
+}
+```
+
+**購入IDに関する情報の取得**
+
+購入ID作成時の情報、または作成後に設定した配色・画像の情報を取得できます。
+
+**エンドポイント**: `/purchases/{purchaseId}`
+
+**認証**: APIアクセストークン
+
+**パスパラメータ**:
+- `purchaseId` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: b55ed98db0389a6203386be31e6f06db64f17a80
+  - 購入ID
+
+**ヘッダーパラメータ**:
+- `x-realpay-gift-api-access-key` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: 128348f63167a287d2509edf88d74dbf79c44480
+  - 事前に共有するアクセスキー
+
+**レスポンス**:
+- 200: 成功
+- 400: 失敗 - パラメータ不備
+- 401: 失敗 - APIアクセストークン不備
+- 409: 失敗 - リクエストIDの衝突
+- 503: 失敗 - サーバーエラー
+
+**レスポンスサンプル（200）**:
+```json
+{
+  "id": "b55ed98db0389a6203386be31e6f06db64f17a80",
+  "prices": [100, 500],
+  "name": "○○キャンペーン",
+  "issuer": "株式会社○○",
+  "brands": ["amazon", "paypay"],
+  "color": {
+    "main": "b3d4fc",
+    "sub": "4e77a6"
+  },
+  "image": {
+    "face": "https://example.com/img/gift/face.png",
+    "header": "https://example.com/img/gift/header.png"
+  }
+}
+```
+
+**配色に関する操作**
+
+**配色の設定**
+
+指定した購入IDで購入するギフトの配色を設定します。
+
+**エンドポイント**: `/purchases/{purchaseId}/color`
+
+**認証**: APIアクセストークン
+
+**パスパラメータ**:
+- `purchaseId` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: b55ed98db0389a6203386be31e6f06db64f17a80
+  - 購入ID
+
+**ヘッダーパラメータ**:
+- `x-realpay-gift-api-request-id` (必須): 40文字以下の文字列 [a-zA-Z0-9_-]{1,40}
+  - 例: 7c222fb2927d828af22f592134e8932480637c0d
+  - 更新系の（POST/PUT/PATCH/DELETE）リクエストごとに一意の識別子
+- `x-realpay-gift-api-access-key` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: 128348f63167a287d2509edf88d74dbf79c44480
+  - 事前に共有するアクセスキー
+
+**リクエストボディ（application/json）**:
+- `main` (必須): 文字列 - 正規表現 ^([a-fA-F0-9]{6})$
+- `sub` (必須): 文字列 - 正規表現 ^([a-fA-F0-9]{6})$
+
+**リクエストサンプル**:
+```json
+{
+  "main": "b3d4fc",
+  "sub": "4e77a6"
+}
+```
+
+**レスポンス**:
+- 200: 成功
+- 400: 失敗 - パラメータ不備
+- 401: 失敗 - APIアクセストークン不備
+- 409: 失敗 - リクエストIDの衝突
+- 503: 失敗 - サーバーエラー
+
+**レスポンスサンプル（200）**:
+```json
+{
+  "main": "b3d4fc",
+  "sub": "4e77a6"
+}
+```
+
+**画像に関する操作**
+
+**ギフト受取時画像の設定**
+
+指定した購入IDで購入したギフトの受取時画像を設定します。
+
+**エンドポイント**: `/purchases/{purchaseId}/image/face`
+
+**認証**: APIアクセストークン
+
+**HTTPメッセージのサンプル**:
+```http
+POST /path/to/api HTTP/1.1
+Host: digital-gift.jp
+Content-Type: multipart/form-data; boundary=YourBoundary
+x-realpay-gift-api-access-token: {APIアクセストークン}
+
+--YourBoundary
+Content-Disposition: form-data; name="content"; filename="your-face-image.png"
+Content-Type: image/png
+
+{{ Your file }}
+--YourBoundary--
+```
+
+**パスパラメータ**:
+- `purchaseId` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: b55ed98db0389a6203386be31e6f06db64f17a80
+  - 購入ID
+
+**ヘッダーパラメータ**:
+- `x-realpay-gift-api-request-id` (必須): 40文字以下の文字列 [a-zA-Z0-9_-]{1,40}
+  - 例: 7c222fb2927d828af22f592134e8932480637c0d
+  - 更新系の（POST/PUT/PATCH/DELETE）リクエストごとに一意の識別子
+- `x-realpay-gift-api-access-key` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: 128348f63167a287d2509edf88d74dbf79c44480
+  - 事前に共有するアクセスキー
+
+**リクエストボディ（multipart/form-data）**:
+- `content` (必須): バイナリファイル
+  - ギフト受取時のメインビジュアルに使用されます
+  - 拡張子: png/jpg(jpeg)/gif
+  - 最大ファイルサイズ: 2048KB
+  - 推奨サイズ: 650 x 433px
+
+**レスポンス**:
+- 200: 成功
+- 400: 失敗 - パラメータ不備
+- 401: 失敗 - APIアクセストークン不備
+- 409: 失敗 - リクエストIDの衝突
+- 503: 失敗 - サーバーエラー
+
+**レスポンスサンプル（200）**:
+```json
+{
+  "url": "https://example.com/path/to/image.png"
+}
+```
+
+**ギフト受取時画像を削除**
+
+ギフトの受取時画像を削除します。
+
+**エンドポイント**: `/purchases/{purchaseId}/image/face` (DELETE)
+
+**認証**: APIアクセストークン
+
+**パスパラメータ**:
+- `purchaseId` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: b55ed98db0389a6203386be31e6f06db64f17a80
+  - 購入ID
+
+**ヘッダーパラメータ**:
+- `x-realpay-gift-api-request-id` (必須): 40文字以下の文字列 [a-zA-Z0-9_-]{1,40}
+  - 例: 7c222fb2927d828af22f592134e8932480637c0d
+  - 更新系の（POST/PUT/PATCH/DELETE）リクエストごとに一意の識別子
+- `x-realpay-gift-api-access-key` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: 128348f63167a287d2509edf88d74dbf79c44480
+  - 事前に共有するアクセスキー
+
+**レスポンス**:
+- 200: 成功
+- 400: 失敗 - パラメータ不備
+- 401: 失敗 - APIアクセストークン不備
+- 409: 失敗 - リクエストIDの衝突
+- 503: 失敗 - サーバーエラー
+
+**ギフトのヘッダーロゴ画像の設定**
+
+指定した購入IDで購入したギフトのヘッダーロゴ画像を設定します。
+
+**エンドポイント**: `/purchases/{purchaseId}/image/header`
+
+**認証**: APIアクセストークン
+
+**HTTPメッセージのサンプル**:
+```http
+POST /path/to/api HTTP/1.1
+Host: digital-gift.jp
+Content-Type: multipart/form-data; boundary=YourBoundary
+x-realpay-gift-api-access-token: {APIアクセストークン}
+
+--YourBoundary
+Content-Disposition: form-data; name="content"; filename="your-header-image.png"
+Content-Type: image/png
+
+{{ Your file }}
+--YourBoundary--
+```
+
+**パスパラメータ**:
+- `purchaseId` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: b55ed98db0389a6203386be31e6f06db64f17a80
+  - 購入ID
+
+**ヘッダーパラメータ**:
+- `x-realpay-gift-api-request-id` (必須): 40文字以下の文字列 [a-zA-Z0-9_-]{1,40}
+  - 例: 7c222fb2927d828af22f592134e8932480637c0d
+  - 更新系の（POST/PUT/PATCH/DELETE）リクエストごとに一意の識別子
+- `x-realpay-gift-api-access-key` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: 128348f63167a287d2509edf88d74dbf79c44480
+  - 事前に共有するアクセスキー
+
+**リクエストボディ（multipart/form-data）**:
+- `content` (必須): バイナリファイル
+  - ギフト受取時のヘッダーロゴに使用されます
+  - 拡張子: png/jpg(jpeg)/gif
+  - 最大ファイルサイズ: 2048KB
+  - 推奨サイズ: 173 x 24px
+
+**レスポンス**:
+- 200: 成功
+- 400: 失敗 - パラメータ不備
+- 401: 失敗 - APIアクセストークン不備
+- 409: 失敗 - リクエストIDの衝突
+- 503: 失敗 - サーバーエラー
+
+**レスポンスサンプル（200）**:
+```json
+{
+  "url": "https://example.com/path/to/image.png"
+}
+```
+
+**ギフトのヘッダーロゴ画像を削除**
+
+ギフトのヘッダーロゴ画像を削除します。
+
+**エンドポイント**: `/purchases/{purchaseId}/image/header` (DELETE)
+
+**認証**: APIアクセストークン
+
+**パスパラメータ**:
+- `purchaseId` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: b55ed98db0389a6203386be31e6f06db64f17a80
+  - 購入ID
+
+**ヘッダーパラメータ**:
+- `x-realpay-gift-api-request-id` (必須): 40文字以下の文字列 [a-zA-Z0-9_-]{1,40}
+  - 例: 7c222fb2927d828af22f592134e8932480637c0d
+  - 更新系の（POST/PUT/PATCH/DELETE）リクエストごとに一意の識別子
+- `x-realpay-gift-api-access-key` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: 128348f63167a287d2509edf88d74dbf79c44480
+  - 事前に共有するアクセスキー
+
+**レスポンス**:
+- 200: 成功
+- 400: 失敗 - パラメータ不備
+- 401: 失敗 - APIアクセストークン不備
+- 409: 失敗 - リクエストIDの衝突
+- 503: 失敗 - サーバーエラー
+
+**受け取り前の動画に関する操作**
+
+**動画を設定**
+
+購入IDにYouTube動画を関連付けます。
+
+**エンドポイント**: `/purchases/{purchaseId}/video`
+
+**認証**: APIアクセストークン
+
+**パスパラメータ**:
+- `purchaseId` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: b55ed98db0389a6203386be31e6f06db64f17a80
+  - 購入ID
+
+**ヘッダーパラメータ**:
+- `x-realpay-gift-api-request-id` (必須): 40文字以下の文字列 [a-zA-Z0-9_-]{1,40}
+  - 例: 7c222fb2927d828af22f592134e8932480637c0d
+  - 更新系の（POST/PUT/PATCH/DELETE）リクエストごとに一意の識別子
+- `x-realpay-gift-api-access-key` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: 128348f63167a287d2509edf88d74dbf79c44480
+  - 事前に共有するアクセスキー
+
+**リクエストボディ（application/json）**:
+- `url` (必須): 文字列 - 設定するYouTube動画のURL
+- `play_time` (必須): 整数 - 最低視聴秒数
+
+**リクエストサンプル**:
+```json
+{
+  "url": "https://www.youtube.com/watch?v=xxxxxxxxxxx",
+  "play_time": 10
+}
+```
+
+**レスポンス**:
+- 200: 成功
+- 400: 失敗 - パラメータ不備
+- 401: 失敗 - APIアクセストークン不備
+- 409: 失敗 - リクエストIDの衝突
+- 503: 失敗 - サーバーエラー
+
+**レスポンスサンプル（200）**:
+```json
+{
+  "url": "https://www.youtube.com/watch?v=xxxxxxxxxxx",
+  "play_time": 10
+}
+```
+
+**ギフト交換完了画面での誘導枠に関する操作**
+
+**誘導枠の画像と誘導先を設定**
+
+指定した購入IDで購入したギフトの誘導枠画像と誘導先を設定します。
+
+**エンドポイント**: `/purchases/{purchaseId}/ad`
+
+**認証**: APIアクセストークン
+
+**HTTPメッセージのサンプル**:
+```http
+POST /path/to/api HTTP/1.1
+Host: digital-gift.jp
+Content-Type: multipart/form-data; boundary=YourBoundary
+x-realpay-gift-api-access-token: {APIアクセストークン}
+
+--YourBoundary
+Content-Disposition: form-data; name="image"; filename="your-ad-image.png"
+Content-Type: image/png
+
+{{ Your file }}
+--YourBoundary
+Content-Disposition: form-data; name="redirect_url"
+
+https://example.com/redirect
+--YourBoundary--
+```
+
+**パスパラメータ**:
+- `purchaseId` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: b55ed98db0389a6203386be31e6f06db64f17a80
+  - 購入ID
+
+**ヘッダーパラメータ**:
+- `x-realpay-gift-api-request-id` (必須): 40文字以下の文字列 [a-zA-Z0-9_-]{1,40}
+  - 例: 7c222fb2927d828af22f592134e8932480637c0d
+  - 更新系の（POST/PUT/PATCH/DELETE）リクエストごとに一意の識別子
+- `x-realpay-gift-api-access-key` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: 128348f63167a287d2509edf88d74dbf79c44480
+  - 事前に共有するアクセスキー
+
+**リクエストボディ（multipart/form-data）**:
+- `image` (必須): バイナリファイル
+  - ギフト交換完了の誘導枠に使用されます
+  - 拡張子: png/jpg(jpeg)/gif
+  - 最大ファイルサイズ: 2048KB
+- `redirect_url` (必須): 文字列 - 誘導先のURL
+
+**レスポンス**:
+- 200: 成功
+- 400: 失敗 - パラメータ不備
+- 401: 失敗 - APIアクセストークン不備
+- 409: 失敗 - リクエストIDの衝突
+- 503: 失敗 - サーバーエラー
+
+**レスポンスサンプル（200）**:
+```json
+{
+  "image": "https://example.com/path/to/image.png",
+  "redirect_url": "https://example.com"
+}
+```
+
+**ギフトの操作**
+
+**ギフト購入**
+
+購入IDを使ってギフトを購入します。
+
+**エンドポイント**: `/purchases/{purchaseId}/gifts`
+
+**認証**: APIアクセストークン
+
+**パスパラメータ**:
+- `purchaseId` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: b55ed98db0389a6203386be31e6f06db64f17a80
+  - 購入ID
+
+**ヘッダーパラメータ**:
+- `x-realpay-gift-api-request-id` (必須): 40文字以下の文字列 [a-zA-Z0-9_-]{1,40}
+  - 例: 7c222fb2927d828af22f592134e8932480637c0d
+  - 更新系の（POST/PUT/PATCH/DELETE）リクエストごとに一意の識別子
+- `x-realpay-gift-api-access-key` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: 128348f63167a287d2509edf88d74dbf79c44480
+  - 事前に共有するアクセスキー
+
+**リクエストボディ（application/json）**:
+- `price` (必須): 整数 - 購入するギフトの金額。購入IDに関連付いた金額のみ指定可能
+
+**リクエストサンプル**:
+```json
+{
+  "price": 10000
+}
+```
+
+**レスポンス**:
+- 200: 購入成功
+- 400: 購入失敗 - パラメータ不備
+- 401: 購入失敗 - APIアクセストークン不備
+- 409: 購入失敗 - リクエストIDの衝突
+- 503: 購入失敗 - サーバーエラー
+
+**レスポンスサンプル（200）**:
+```json
+{
+  "request": {
+    "id": "7c222fb2927d828af22f592134e8932480637c0d",
+    "payload": {}
+  },
+  "gift": {
+    "code": "k0r8jlv8bfxuiehtahu3wkqo92",
+    "url": "https://example.com/user?code=k0r8jlv8bfxuiehtahu3wkqo92",
+    "price": 10000,
+    "expire_at": "2021-01-01T12:34:56+09:00"
+  },
+  "payment": {
+    "total": 10550,
+    "price": 10000,
+    "commission": 500,
+    "commission_tax": 50,
+    "currency": "JPY"
+  },
+  "errors": []
+}
+```
+
+**購入済みギフトに関する情報の取得**
+
+購入IDとギフト購入時のリクエストIDから購入済みギフトを特定し、その情報を取得します。
+
+**エンドポイント**: `/purchases/{purchaseId}/gifts` (GET)
+
+**認証**: APIアクセストークン
+
+**パスパラメータ**:
+- `purchaseId` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: b55ed98db0389a6203386be31e6f06db64f17a80
+  - 購入ID
+
+**クエリパラメータ**:
+- `request_id` (必須): 40文字以下の文字列 [a-zA-Z0-9_-]{1,40}
+  - 例: request_id=7c222fb2927d828af22f592134e8932480637c0d
+  - ギフト購入時のリクエストID（apiRequestId）
+
+**ヘッダーパラメータ**:
+- `x-realpay-gift-api-access-key` (必須): 40文字の文字列 [a-z0-9]{40}
+  - 例: 128348f63167a287d2509edf88d74dbf79c44480
+  - 事前に共有するアクセスキー
+
+**レスポンス**:
+- 200: 成功
+- 400: 失敗 - パラメータ不備
+- 401: 失敗 - APIアクセストークン不備
+- 503: 失敗 - サーバーエラー
+
+**補足事項**
+
+**各種パラメータについて**
+
+**Purchase**
+
+購入IDに関連する基本的な情報を管理します。
+
+**is_strictについて**
+
+交換先と金額は密接に関係しており、ある金額を指定した際に、一部の交換先が掲載できなくなる仕様になっています。
+
+組み合わせられない金額と交換先のペアを指定した場合の動作:
+- `is_strict = true`であれば、リクエストは失敗します
+- `is_strict = false`であれば、リクエストは成功します
+
+ただし「is_strict = false」で作成した購入IDで購入したギフトでは、金額に対して組み合わせられない交換先は表示されません。
+
+「どの交換先」が「いくらの金額」を許容できるのかは、掲載交換先一覧の取得APIにて確認できます。
+
+**Purchase - Color**
+
+購入IDに関連するギフトの配色設定を管理します。
+
+**Purchase - Image**
+
+購入IDに関連するギフトの画像設定を管理します。
+
+**Purchase - Video**
+
+購入IDに関連するギフトの動画設定を管理します。
+
+**Purchase - Ad / Banner**
+
+購入IDに関連するギフトの誘導枠設定を管理します。
+
+**著作権表示**
+
+Copyright © DIGITAL FINTECH, Inc. All Rights Reserved.

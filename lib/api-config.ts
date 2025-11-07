@@ -46,7 +46,7 @@ export function getApiUrl(): string {
   if (typeof window !== 'undefined') {
     // クライアントサイドの場合
     const hostname = window.location.hostname
-    if (hostname === 'biid-user.pages.dev' || hostname.includes('biid-user')) {
+    if (hostname === 'biid-user.fly.dev' || hostname.includes('biid-user')) {
       return 'https://biid-user-api.fly.dev'
     }
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
