@@ -14,11 +14,11 @@ import time
 from decimal import Decimal
 
 from .models import (
-    ECPointRequest, StoreWebhookKey, PointAwardLog, DuplicateDetection,
+    ECPointRequest, ECPointRequestMessage, StoreWebhookKey, PointAwardLog, DuplicateDetection,
     Store, User, PointTransaction, Notification
 )
 from .ec_point_serializers import (
-    ECPointRequestSerializer, ReceiptUploadSerializer, WebhookRequestSerializer,
+    ECPointRequestSerializer, ECPointRequestMessageSerializer, ReceiptUploadSerializer, WebhookRequestSerializer,
     StoreApprovalSerializer, PointAwardLogSerializer, DuplicateDetectionSerializer,
     StoreWebhookKeySerializer, ECRequestListSerializer, ECRequestDetailSerializer
 )
@@ -880,3 +880,190 @@ class ECRequestManagementView(APIView):
             'total_purchase_amount': float(total_amount),
             'total_points_awarded': total_points
         }
+
+
+# === メッセージ機能 ===
+
+class ECRequestMessageView(APIView):
+    """EC申請メッセージの取得・送信"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, request_id):
+        """メッセージ一覧を取得"""
+        try:
+            ec_request = get_object_or_404(ECPointRequest, id=request_id)
+            
+            # アクセス権限チェック
+            if request.user.role == 'customer':
+                # ユーザーは自分の申請のみアクセス可
+                if ec_request.user != request.user:
+                    return Response({
+                        'error': 'アクセス権限がありません'
+                    }, status=status.HTTP_403_FORBIDDEN)
+            elif request.user.role == 'store_manager':
+                # 店舗管理者は自店舗の申請のみアクセス可
+                if not request.user.managed_stores.filter(id=ec_request.store.id).exists():
+                    return Response({
+                        'error': 'アクセス権限がありません'
+                    }, status=status.HTTP_403_FORBIDDEN)
+            elif request.user.role != 'admin':
+                return Response({
+                    'error': 'アクセス権限がありません'
+                }, status=status.HTTP_403_FORBIDDEN)
+            
+            # メッセージ取得
+            messages = ec_request.messages.all()
+            serializer = ECPointRequestMessageSerializer(messages, many=True)
+            
+            return Response({
+                'success': True,
+                'messages': serializer.data
+            })
+            
+        except Exception as e:
+            logger.error(f"Failed to get messages: {str(e)}")
+            return Response({
+                'error': 'メッセージの取得に失敗しました'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def post(self, request, request_id):
+        """メッセージを送信"""
+        try:
+            ec_request = get_object_or_404(ECPointRequest, id=request_id)
+            
+            # アクセス権限チェック（同上）
+            is_from_store = False
+            if request.user.role == 'customer':
+                if ec_request.user != request.user:
+                    return Response({
+                        'error': 'アクセス権限がありません'
+                    }, status=status.HTTP_403_FORBIDDEN)
+                is_from_store = False
+            elif request.user.role == 'store_manager':
+                if not request.user.managed_stores.filter(id=ec_request.store.id).exists():
+                    return Response({
+                        'error': 'アクセス権限がありません'
+                    }, status=status.HTTP_403_FORBIDDEN)
+                is_from_store = True
+            elif request.user.role == 'admin':
+                is_from_store = True
+            else:
+                return Response({
+                    'error': 'アクセス権限がありません'
+                }, status=status.HTTP_403_FORBIDDEN)
+            
+            # メッセージ作成
+            message_text = request.data.get('message', '').strip()
+            if not message_text:
+                return Response({
+                    'error': 'メッセージを入力してください'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            message = ECPointRequestMessage.objects.create(
+                request=ec_request,
+                sender=request.user,
+                message=message_text,
+                is_from_store=is_from_store
+            )
+            
+            serializer = ECPointRequestMessageSerializer(message)
+            
+            return Response({
+                'success': True,
+                'message': serializer.data
+            }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            logger.error(f"Failed to send message: {str(e)}")
+            return Response({
+                'error': 'メッセージの送信に失敗しました'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# === 店舗向け追加API ===
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_store_all_requests(request):
+    """店舗のすべての申請を取得"""
+    try:
+        # 店舗管理者のみアクセス可能
+        if request.user.role != 'store_manager':
+            return Response({
+                'error': '店舗管理者のみアクセス可能です'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # 管理している店舗を取得
+        managed_stores = request.user.managed_stores.all()
+        if not managed_stores.exists():
+            return Response({
+                'error': '管理している店舗がありません'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # クエリパラメータ
+        page = int(request.GET.get('page', 1))
+        per_page = min(int(request.GET.get('per_page', 20)), 50)
+        
+        # すべての申請を取得
+        queryset = ECPointRequest.objects.filter(
+            store__in=managed_stores
+        ).prefetch_related('messages').order_by('-created_at')
+        
+        # ページネーション
+        paginator = Paginator(queryset, per_page)
+        requests_page = paginator.get_page(page)
+        
+        serializer = ECRequestListSerializer(requests_page, many=True)
+        
+        return Response({
+            'success': True,
+            'requests': serializer.data,
+            'pagination': {
+                'current_page': page,
+                'total_pages': paginator.num_pages,
+                'total_count': paginator.count,
+                'has_next': requests_page.has_next(),
+                'has_previous': requests_page.has_previous()
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Failed to get all requests: {str(e)}")
+        return Response({
+            'error': '申請一覧の取得に失敗しました'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_store_request_detail(request, request_id):
+    """店舗の申請詳細を取得（メッセージ含む）"""
+    try:
+        # 店舗管理者のみアクセス可能
+        if request.user.role != 'store_manager':
+            return Response({
+                'error': '店舗管理者のみアクセス可能です'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # 申請を取得
+        ec_request = get_object_or_404(ECPointRequest, id=request_id)
+        
+        # 管理権限チェック
+        if not request.user.managed_stores.filter(id=ec_request.store.id).exists():
+            return Response({
+                'error': 'この申請を表示する権限がありません'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # 詳細とメッセージを含めて返す
+        serializer = ECRequestDetailSerializer(ec_request)
+        
+        return Response({
+            'success': True,
+            'request': serializer.data
+        })
+        
+    except Exception as e:
+        logger.error(f"Failed to get request detail: {str(e)}")
+        return Response({
+            'error': '申請詳細の取得に失敗しました'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

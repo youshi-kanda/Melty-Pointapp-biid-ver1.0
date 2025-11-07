@@ -6,9 +6,19 @@ import hashlib
 import re
 
 from .models import (
-    ECPointRequest, StoreWebhookKey, PointAwardLog, DuplicateDetection, 
+    ECPointRequest, ECPointRequestMessage, StoreWebhookKey, PointAwardLog, DuplicateDetection, 
     Store, User
 )
+
+
+class ECPointRequestMessageSerializer(serializers.ModelSerializer):
+    """ECポイント申請メッセージシリアライザー"""
+    sender_name = serializers.CharField(source='sender.username', read_only=True)
+    
+    class Meta:
+        model = ECPointRequestMessage
+        fields = ['id', 'sender', 'sender_name', 'message', 'is_from_store', 'created_at']
+        read_only_fields = ['id', 'sender', 'sender_name', 'is_from_store', 'created_at']
 
 
 class ECPointRequestSerializer(serializers.ModelSerializer):
@@ -322,6 +332,7 @@ class ECRequestListSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     request_type_display = serializers.CharField(source='get_request_type_display', read_only=True)
     has_receipt_image = serializers.SerializerMethodField()
+    messages = ECPointRequestMessageSerializer(many=True, read_only=True)
     
     class Meta:
         model = ECPointRequest
@@ -330,7 +341,7 @@ class ECRequestListSerializer(serializers.ModelSerializer):
             'store_name', 'purchase_amount', 'order_id', 'purchase_date',
             'status', 'status_display', 'points_to_award', 'points_awarded',
             'store_approved_at', 'rejection_reason', 'created_at',
-            'has_receipt_image'
+            'has_receipt_image', 'receipt_image', 'receipt_description', 'messages'
         ]
     
     def get_has_receipt_image(self, obj):
@@ -347,6 +358,7 @@ class ECRequestDetailSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     request_type_display = serializers.CharField(source='get_request_type_display', read_only=True)
     payment_method_display = serializers.CharField(source='get_payment_method_display', read_only=True)
+    messages = ECPointRequestMessageSerializer(many=True, read_only=True)
     
     class Meta:
         model = ECPointRequest
@@ -356,5 +368,6 @@ class ECRequestDetailSerializer(serializers.ModelSerializer):
             'receipt_image', 'receipt_description', 'status', 'status_display',
             'points_to_award', 'points_awarded', 'store_approved_at', 'approved_by_name',
             'rejection_reason', 'payment_method', 'payment_method_display', 
-            'payment_reference', 'ip_address', 'created_at', 'updated_at', 'completed_at'
+            'payment_reference', 'ip_address', 'created_at', 'updated_at', 'completed_at',
+            'messages'
         ]

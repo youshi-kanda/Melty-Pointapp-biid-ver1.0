@@ -1284,6 +1284,33 @@ class ECPointRequest(models.Model):
         self.save()
 
 
+class ECPointRequestMessage(models.Model):
+    """EC申請に対するメッセージ（ユーザー⇔店舗間の質疑応答）"""
+    request = models.ForeignKey(
+        ECPointRequest,
+        on_delete=models.CASCADE,
+        related_name='messages',
+        verbose_name='EC申請'
+    )
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='送信者')
+    message = models.TextField(verbose_name='メッセージ本文')
+    is_from_store = models.BooleanField(default=False, verbose_name='店舗からの送信')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='送信日時')
+    
+    class Meta:
+        db_table = 'ec_point_request_messages'
+        verbose_name = 'ECポイント申請メッセージ'
+        verbose_name_plural = 'ECポイント申請メッセージ'
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['request', 'created_at']),
+        ]
+    
+    def __str__(self):
+        sender_type = '店舗' if self.is_from_store else 'ユーザー'
+        return f"{sender_type}メッセージ - {self.request.order_id} - {self.created_at}"
+
+
 class StoreWebhookKey(models.Model):
     """店舗Webhook認証キー"""
     store = models.OneToOneField(

@@ -10,6 +10,9 @@ urlpatterns = [
     path('user/requests/', ec_point_views.get_user_requests, name='user_ec_requests'),
     path('user/requests/<int:request_id>/', ec_point_views.get_request_detail, name='user_request_detail'),
     
+    # メッセージAPI
+    path('requests/<int:request_id>/messages/', ec_point_views.ECRequestMessageView.as_view(), name='ec_request_messages'),
+    
     # === Webhook API ===
     # 店舗からの購入通知受信（GET方式で簡単実装）
     path('webhook/purchase/', ec_point_views.webhook_purchase, name='webhook_purchase'),
@@ -17,6 +20,12 @@ urlpatterns = [
     # === 店舗管理者向けAPI ===
     # 承認待ち申請一覧
     path('store/pending-requests/', ec_point_views.get_store_pending_requests, name='store_pending_requests'),
+    
+    # すべての申請一覧（店舗）
+    path('store/all-requests/', ec_point_views.get_store_all_requests, name='store_all_requests'),
+    
+    # 申請詳細取得（店舗）
+    path('store/requests/<int:request_id>/', ec_point_views.get_store_request_detail, name='store_request_detail'),
     
     # 申請承認・拒否処理
     path('store/requests/<int:request_id>/approve/', ec_point_views.process_store_approval, name='process_store_approval'),
