@@ -41,10 +41,9 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 # ポート公開
 EXPOSE 8001
 
-# エントリーポイントスクリプト
-COPY production/admin-backend/docker-entrypoint.sh /app/docker-entrypoint.sh
-RUN chmod +x /app/docker-entrypoint.sh
+# エントリーポイントスクリプト（既にコピー済み）
+RUN chmod +x /app/admin-backend/docker-entrypoint.sh
 
 # 起動コマンド
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+ENTRYPOINT ["/app/admin-backend/docker-entrypoint.sh"]
 CMD ["gunicorn", "--bind", "0.0.0.0:8001", "--workers", "3", "--timeout", "120", "--chdir", "/app/backend", "--env", "DJANGO_SETTINGS_MODULE=admin_settings", "pointapp.wsgi:application"]
