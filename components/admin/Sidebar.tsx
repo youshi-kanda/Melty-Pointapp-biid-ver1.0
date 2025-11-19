@@ -11,7 +11,8 @@ import {
   ToggleLeft,
   LogOut,
   Menu,
-  X
+  X,
+  Shield
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -60,19 +61,24 @@ export default function AdminSidebar({ currentPage }: SidebarProps) {
       {/* サイドバー */}
       <aside
         className={`
-          fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-purple-600 to-indigo-700 text-white shadow-2xl z-40 transform transition-transform duration-300
+          fixed top-0 left-0 h-full w-64 bg-slate-800 text-slate-300 shadow-2xl z-40 transform transition-transform duration-300
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0
         `}
       >
         {/* ロゴ */}
-        <div className="p-6 border-b border-white/10">
-          <h1 className="text-2xl font-bold">BIID 管理</h1>
-          <p className="text-purple-200 text-sm mt-1">Admin Panel</p>
+        <div className="p-5 border-b border-slate-700">
+          <div className="flex items-center gap-3">
+            <Shield className="w-10 h-10 text-white flex-shrink-0" strokeWidth={1.5} />
+            <div>
+              <h1 className="text-lg font-bold text-white whitespace-nowrap">Melty+ 管理画面</h1>
+              <p className="text-slate-400 text-xs">Admin Dashboard</p>
+            </div>
+          </div>
         </div>
 
         {/* メニュー */}
-        <nav className="p-4 space-y-2 overflow-y-auto h-[calc(100vh-180px)]">
+        <nav className="p-3 space-y-1 overflow-y-auto h-[calc(100vh-165px)]">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPage === item.id || router.pathname === item.href;
@@ -82,30 +88,41 @@ export default function AdminSidebar({ currentPage }: SidebarProps) {
                 key={item.id}
                 href={item.href}
                 className={`
-                  flex items-center gap-3 px-4 py-3 rounded-lg transition-all
+                  flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-all
                   ${isActive 
-                    ? 'bg-white text-purple-600 shadow-lg' 
-                    : 'text-white hover:bg-white/10'
+                    ? 'bg-slate-700 text-white shadow-sm' 
+                    : 'text-slate-300 hover:bg-slate-700/50'
                   }
                 `}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <Icon size={20} />
-                <span className="font-medium">{item.label}</span>
+                <Icon size={18} />
+                <span className="font-medium text-sm">{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        {/* ログアウト */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-white hover:bg-white/10 transition-all"
-          >
-            <LogOut size={20} />
-            <span className="font-medium">ログアウト</span>
-          </button>
+        {/* ユーザー情報とログアウト */}
+        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-slate-700 bg-slate-900">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 bg-slate-700 rounded-full flex items-center justify-center">
+                <Users size={18} className="text-slate-300" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-white">運営</p>
+                <p className="text-xs text-slate-400">admin@example.com</p>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="p-1.5 hover:bg-slate-700 rounded-lg transition-all"
+              title="ログアウト"
+            >
+              <LogOut size={18} className="text-slate-300" />
+            </button>
+          </div>
         </div>
       </aside>
     </>

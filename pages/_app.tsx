@@ -1,7 +1,13 @@
 import type { AppProps } from 'next/app'
 import { useEffect } from 'react'
 import { setupGlobalErrorHandling } from '../lib/error-handler'
+import { Comfortaa } from 'next/font/google'
 import '../styles/globals.css'
+
+const comfortaa = Comfortaa({ 
+  subsets: ['latin'],
+  display: 'swap',
+})
 
 // Console エラーを防ぐためのグローバル設定
 if (typeof window !== 'undefined') {
@@ -32,5 +38,9 @@ export default function App({ Component, pageProps }: AppProps) {
     }
   }, [])
 
-  return <Component {...pageProps} />
+  return (
+    <main className={comfortaa.className}>
+      <Component {...pageProps} />
+    </main>
+  )
 }
