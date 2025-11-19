@@ -155,47 +155,47 @@ export default function StoresManagement() {
         <title>店舗管理 - Melty+ 管理</title>
       </Head>
 
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-white">
         <AdminSidebar currentPage="stores" />
 
         <main className="flex-1 lg:ml-64">
           {/* ヘッダー */}
-          <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
-            <div className="px-6 py-4 flex items-center justify-between">
+          <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-30 h-14">
+            <div className="px-4 py-3 flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">店舗管理</h1>
-                <p className="text-gray-600 text-sm mt-1">加盟店の承認・管理</p>
+                <h1 className="text-lg font-bold text-slate-900">店舗管理</h1>
+                <p className="text-slate-600 text-xs mt-0.5">加盟店の承認・管理</p>
               </div>
-              <button className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                <Plus size={20} />
-                新規店舗追加
+              <button className="flex items-center gap-2 px-3 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors text-sm">
+                <Plus size={14} />
+                新規店舗登録
               </button>
             </div>
           </header>
 
-          <div className="p-6">
+          <div className="p-3">
             {/* 検索・フィルター */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-              <div className="flex flex-col md:flex-row gap-4">
+            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-2.5 mb-3">
+              <div className="flex flex-col md:flex-row gap-2">
                 {/* 検索 */}
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                   <input
                     type="text"
                     placeholder="店舗名、住所で検索..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent text-sm"
                   />
                 </div>
 
                 {/* エリアフィルター */}
                 <div className="flex items-center gap-2">
-                  <Filter size={20} className="text-gray-400" />
+                  <Filter size={16} className="text-slate-400" />
                   <select
                     value={areaFilter}
                     onChange={(e) => setAreaFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent text-sm"
                   >
                     {areas.map(area => (
                       <option key={area} value={area}>
@@ -209,7 +209,7 @@ export default function StoresManagement() {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent text-sm"
                 >
                   <option value="all">全ステータス</option>
                   <option value="active">アクティブ</option>
@@ -220,12 +220,12 @@ export default function StoresManagement() {
             </div>
 
             {/* 店舗一覧テーブル */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                         店舗情報
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -248,70 +248,70 @@ export default function StoresManagement() {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredStores.map((store) => (
                       <tr key={store.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4">
+                        <td className="px-3 py-3">
                           <div>
-                            <div className="font-medium text-gray-900">{store.name}</div>
-                            <div className="text-sm text-gray-500 flex items-center gap-1 mt-1">
-                              <MapPin size={14} />
+                            <div className="font-medium text-gray-900 text-sm">{store.name}</div>
+                            <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                              <MapPin size={12} />
                               {store.address}
                             </div>
-                            <div className="text-sm text-gray-500 flex items-center gap-1 mt-1">
-                              <Phone size={14} />
+                            <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                              <Phone size={12} />
                               {store.phone}
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          <span className="px-2.5 py-0.5 bg-slate-600 text-slate-200 rounded-full text-xs font-medium">
                             {store.area}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-3 whitespace-nowrap">
                           {store.status === 'active' ? (
-                            <span className="text-purple-600 font-semibold">{store.pointRate}%</span>
+                            <span className="text-slate-600 font-semibold text-sm">{store.pointRate}%</span>
                           ) : (
-                            <span className="text-gray-400">未設定</span>
+                            <span className="text-gray-400 text-sm">未設定</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-900">
+                        <td className="px-3 py-3 whitespace-nowrap text-gray-900 text-sm">
                           {store.status === 'active' ? `${store.monthlyTransactions}回` : '-'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(store.status)}`}>
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(store.status)}`}>
                             {getStatusLabel(store.status)}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end gap-2">
+                        <td className="px-3 py-3 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex items-center justify-end gap-1">
                             <button
                               onClick={() => handleViewDetail(store)}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              className="p-1.5 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
                               title="詳細表示"
                             >
-                              <Eye size={18} />
+                              <Eye size={16} />
                             </button>
                             <button
                               onClick={() => handleEdit(store)}
-                              className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                              className="p-1.5 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
                               title="編集"
                             >
-                              <Edit size={18} />
+                              <Edit size={16} />
                             </button>
                             {store.status === 'pending' && (
                               <>
                                 <button
                                   onClick={() => handleApprove(store)}
-                                  className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                  className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                                   title="承認"
                                 >
-                                  <CheckCircle size={18} />
+                                  <CheckCircle size={16} />
                                 </button>
                                 <button
                                   onClick={() => handleReject(store)}
-                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                  className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                   title="拒否"
                                 >
-                                  <XCircle size={18} />
+                                  <XCircle size={16} />
                                 </button>
                               </>
                             )}
@@ -331,21 +331,21 @@ export default function StoresManagement() {
       {showDetailModal && selectedStore && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">店舗詳細</h2>
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">店舗詳細</h2>
               <button
                 onClick={() => setShowDetailModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 space-y-4">
               {/* 基本情報 */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">基本情報</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <h3 className="text-base font-semibold text-gray-900 mb-3">基本情報</h3>
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <p className="text-sm text-gray-500 mb-1">店舗名</p>
                     <p className="font-medium text-gray-900">{selectedStore.name}</p>
@@ -372,19 +372,19 @@ export default function StoresManagement() {
               {/* 統計情報 */}
               {selectedStore.status === 'active' && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">統計情報</h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="p-4 bg-purple-50 rounded-lg">
-                      <p className="text-sm text-purple-600 mb-1">ポイント還元率</p>
-                      <p className="text-2xl font-bold text-purple-700">{selectedStore.pointRate}%</p>
+                  <h3 className="text-base font-semibold text-gray-900 mb-3">統計情報</h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-3 bg-slate-700 rounded-lg">
+                      <p className="text-xs text-slate-300 mb-0.5">ポイント還元率</p>
+                      <p className="text-xl font-bold text-white">{selectedStore.pointRate}%</p>
                     </div>
-                    <div className="p-4 bg-blue-50 rounded-lg">
-                      <p className="text-sm text-blue-600 mb-1">月間取引数</p>
-                      <p className="text-2xl font-bold text-blue-700">{selectedStore.monthlyTransactions}回</p>
+                    <div className="p-3 bg-slate-700 rounded-lg">
+                      <p className="text-xs text-slate-300 mb-0.5">月間取引数</p>
+                      <p className="text-xl font-bold text-white">{selectedStore.monthlyTransactions}回</p>
                     </div>
-                    <div className="p-4 bg-green-50 rounded-lg">
-                      <p className="text-sm text-green-600 mb-1">総売上</p>
-                      <p className="text-xl font-bold text-green-700">¥{selectedStore.totalRevenue.toLocaleString()}</p>
+                    <div className="p-3 bg-slate-700 rounded-lg">
+                      <p className="text-xs text-slate-300 mb-0.5">総売上</p>
+                      <p className="text-lg font-bold text-white">¥{selectedStore.totalRevenue.toLocaleString()}</p>
                     </div>
                   </div>
                 </div>

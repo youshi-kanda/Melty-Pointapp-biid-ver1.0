@@ -1,133 +1,166 @@
 import { useState } from 'react';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import AdminSidebar from '../../components/admin/Sidebar';
 import { 
   Search, 
-  Filter, 
-  X,
-  Eye,
-  Ban,
+  Download,
+  Upload,
+  Plus,
+  Users,
   CheckCircle,
-  Edit,
+  AlertTriangle,
+  Ban,
+  Eye,
+  Pen,
   MoreVertical,
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  Coins
+  Menu,
+  Bell,
+  User,
+  LogOut
 } from 'lucide-react';
 
 interface User {
-  id: number;
+  id: string;
   name: string;
+  username: string;
+  memberId: string;
   email: string;
-  phone: string;
+  status: 'active' | 'pending' | 'suspended';
+  verified: boolean;
+  role: string;
   points: number;
-  status: 'active' | 'suspended';
+  level: number;
+  transactions: number;
+  totalSpent: number;
   joinDate: string;
-  lastActive: string;
-  area: string;
-  totalTransactions: number;
+  lastLogin: string;
+  loginCount: number;
 }
 
 export default function UsersManagement() {
+  const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended'>('all');
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showPointAdjustModal, setShowPointAdjustModal] = useState(false);
-  const [pointAdjustment, setPointAdjustment] = useState({ amount: 0, reason: '' });
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [verifiedFilter, setVerifiedFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('registrationDate');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // デモデータ
+  // デモデータ（本番HTMLより）
   const [users] = useState<User[]>([
     {
-      id: 1,
-      name: '田中太郎',
-      email: 'tanaka@example.com',
-      phone: '090-1234-5678',
+      id: '1',
+      name: '山田太郎',
+      username: 'yamada_taro',
+      memberId: 'M001234',
+      email: 'yamada@example.com',
+      status: 'active',
+      verified: true,
+      role: 'ユーザー',
       points: 15000,
-      status: 'active',
+      level: 3,
+      transactions: 42,
+      totalSpent: 125000,
       joinDate: '2024-01-15',
-      lastActive: '2024-10-22',
-      area: '大阪',
-      totalTransactions: 42
+      lastLogin: '2024-10-22 14:30',
+      loginCount: 89
     },
     {
-      id: 2,
+      id: '2',
       name: '佐藤花子',
+      username: 'sato_hanako',
+      memberId: 'M001567',
       email: 'sato@example.com',
-      phone: '090-2345-6789',
+      status: 'active',
+      verified: true,
+      role: 'ユーザー',
       points: 8500,
-      status: 'active',
+      level: 2,
+      transactions: 28,
+      totalSpent: 78000,
       joinDate: '2024-02-20',
-      lastActive: '2024-10-21',
-      area: '東京',
-      totalTransactions: 28
+      lastLogin: '2024-10-21 10:15',
+      loginCount: 56
     },
     {
-      id: 3,
+      id: '3',
       name: '鈴木一郎',
+      username: 'suzuki_ichiro',
+      memberId: 'M001890',
       email: 'suzuki@example.com',
-      phone: '090-3456-7890',
+      status: 'pending',
+      verified: false,
+      role: 'ユーザー',
       points: 0,
-      status: 'suspended',
-      joinDate: '2024-03-10',
-      lastActive: '2024-10-10',
-      area: '名古屋',
-      totalTransactions: 5
+      level: 1,
+      transactions: 0,
+      totalSpent: 0,
+      joinDate: '2024-10-20',
+      lastLogin: '2024-10-20 09:00',
+      loginCount: 1
     },
     {
-      id: 4,
+      id: '4',
       name: '高橋美咲',
+      username: 'takahashi_misaki',
+      memberId: 'M000789',
       email: 'takahashi@example.com',
-      phone: '090-4567-8901',
-      points: 23000,
       status: 'active',
+      verified: true,
+      role: 'ユーザー',
+      points: 23000,
+      level: 4,
+      transactions: 67,
+      totalSpent: 234000,
       joinDate: '2024-01-05',
-      lastActive: '2024-10-23',
-      area: '大阪',
-      totalTransactions: 67
+      lastLogin: '2024-10-23 16:45',
+      loginCount: 124
     },
     {
-      id: 5,
-      name: '伊藤健太',
-      email: 'ito@example.com',
-      phone: '090-5678-9012',
+      id: '5',
+      name: '田中健太',
+      username: 'tanaka_kenta',
+      memberId: 'M001456',
+      email: 'tanaka@example.com',
+      status: 'suspended',
+      verified: true,
+      role: 'ユーザー',
       points: 12000,
-      status: 'active',
-      joinDate: '2024-04-12',
-      lastActive: '2024-10-20',
-      area: '福岡',
-      totalTransactions: 35
+      level: 3,
+      transactions: 35,
+      totalSpent: 98000,
+      joinDate: '2024-03-10',
+      lastLogin: '2024-10-10 13:20',
+      loginCount: 67
     }
   ]);
 
+  // フィルタリング
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchQuery.toLowerCase());
+                         user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         user.username.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    const matchesVerified = verifiedFilter === 'all' || 
+                           (verifiedFilter === 'verified' && user.verified) ||
+                           (verifiedFilter === 'unverified' && !user.verified);
+    return matchesSearch && matchesStatus && matchesRole && matchesVerified;
   });
 
-  const handleViewDetail = (user: User) => {
-    setSelectedUser(user);
-    setShowDetailModal(true);
+  // 統計計算
+  const stats = {
+    total: users.length,
+    active: users.filter(u => u.status === 'active').length,
+    pending: users.filter(u => u.status === 'pending').length,
+    suspended: users.filter(u => u.status === 'suspended').length
   };
 
-  const handlePointAdjust = (user: User) => {
-    setSelectedUser(user);
-    setShowPointAdjustModal(true);
-  };
-
-  const handleToggleStatus = (user: User) => {
-    console.log('ステータス変更:', user);
-    // 実際のAPI呼び出しはここに追加
-  };
-
-  const submitPointAdjustment = () => {
-    console.log('ポイント調整:', selectedUser, pointAdjustment);
-    setShowPointAdjustModal(false);
-    setPointAdjustment({ amount: 0, reason: '' });
+  // アバター色の生成（統一カラー）
+  const getAvatarColor = (id: string) => {
+    return 'from-slate-600 to-slate-700';
   };
 
   return (
@@ -136,75 +169,214 @@ export default function UsersManagement() {
         <title>ユーザー管理 - Melty+ 管理</title>
       </Head>
 
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-white">
+        {/* サイドバー */}
         <AdminSidebar currentPage="users" />
 
-        <main className="flex-1 lg:ml-64">
-          {/* ヘッダー */}
-          <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
-            <div className="px-6 py-4">
-              <h1 className="text-2xl font-bold text-gray-900">ユーザー管理</h1>
-              <p className="text-gray-600 text-sm mt-1">登録ユーザーの閲覧・管理</p>
+        {/* メインコンテンツ */}
+        <main className="flex-1 md:ml-64">
+          {/* トップバー */}
+          <header className="bg-white border-b border-slate-200 sticky top-0 z-30 h-14">
+            <div className="h-full px-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="md:hidden p-1.5 hover:bg-slate-100 rounded-lg"
+                >
+                  <Menu size={20} />
+                </button>
+                <div>
+                  <h1 className="text-lg font-bold text-slate-900">ユーザー管理</h1>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <button className="relative p-1.5 hover:bg-slate-100 rounded-lg">
+                  <Bell size={18} className="text-slate-600" />
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+                <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+                  <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">
+                    <User size={16} className="text-slate-600" />
+                  </div>
+                  <button className="hover:bg-slate-100 p-1.5 rounded-lg">
+                    <LogOut size={18} className="text-slate-600" />
+                  </button>
+                </div>
+              </div>
             </div>
           </header>
 
-          <div className="p-6">
+          <div className="p-3 space-y-3">
+            {/* ヘッダー - アクションボタン */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">ユーザー管理</h2>
+                <p className="text-slate-600 text-sm mt-0.5">登録ユーザーの閲覧・管理</p>
+              </div>
+              <div className="flex gap-2">
+                <button className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-sm">
+                  <Download size={14} />
+                  <span className="hidden sm:inline">エクスポート</span>
+                </button>
+                <button className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-sm">
+                  <Upload size={14} />
+                  <span className="hidden sm:inline">インポート</span>
+                </button>
+                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors text-sm">
+                  <Plus size={14} />
+                  <span className="hidden sm:inline">新規ユーザー</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 統計カード */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+              <div className="bg-white rounded-lg border border-slate-200 p-2.5 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-slate-600 mb-0.5">総ユーザー数</p>
+                    <p className="text-lg font-bold text-slate-900">{stats.total}</p>
+                  </div>
+                  <div className="w-9 h-9 bg-slate-700 rounded-lg flex items-center justify-center">
+                    <Users size={18} className="text-slate-300" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-slate-200 p-2.5 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-slate-600 mb-0.5">アクティブ</p>
+                    <p className="text-lg font-bold text-slate-900">{stats.active}</p>
+                  </div>
+                  <div className="w-9 h-9 bg-slate-700 rounded-lg flex items-center justify-center">
+                    <CheckCircle size={18} className="text-slate-300" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-slate-200 p-2.5 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-slate-600 mb-0.5">承認待ち</p>
+                    <p className="text-lg font-bold text-slate-900">{stats.pending}</p>
+                  </div>
+                  <div className="w-9 h-9 bg-slate-700 rounded-lg flex items-center justify-center">
+                    <AlertTriangle size={18} className="text-slate-300" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-slate-200 p-2.5 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-slate-600 mb-0.5">停止中</p>
+                    <p className="text-lg font-bold text-slate-900">{stats.suspended}</p>
+                  </div>
+                  <div className="w-9 h-9 bg-slate-700 rounded-lg flex items-center justify-center">
+                    <Ban size={18} className="text-slate-300" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* 検索・フィルター */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-              <div className="flex flex-col md:flex-row gap-4">
+            <div className="bg-white rounded-lg border border-slate-200 p-2.5 shadow-sm">
+              <div className="flex flex-col lg:flex-row gap-2">
                 {/* 検索 */}
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                   <input
                     type="text"
-                    placeholder="ユーザー名、メールアドレスで検索..."
+                    placeholder="ユーザー名、メール、ユーザーIDで検索..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent text-sm"
                   />
                 </div>
 
-                {/* ステータスフィルター */}
-                <div className="flex items-center gap-2">
-                  <Filter size={20} className="text-gray-400" />
+                {/* フィルター */}
+                <div className="flex flex-wrap gap-2">
                   <select
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as any)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent text-sm"
                   >
                     <option value="all">全ステータス</option>
                     <option value="active">アクティブ</option>
+                    <option value="inactive">非アクティブ</option>
                     <option value="suspended">停止中</option>
+                    <option value="pending">承認待ち</option>
+                  </select>
+
+                  <select
+                    value={roleFilter}
+                    onChange={(e) => setRoleFilter(e.target.value)}
+                    className="px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent text-sm"
+                  >
+                    <option value="all">全ロール</option>
+                    <option value="admin">管理者</option>
+                    <option value="moderator">モデレーター</option>
+                    <option value="user">ユーザー</option>
+                  </select>
+
+                  <select
+                    value={verifiedFilter}
+                    onChange={(e) => setVerifiedFilter(e.target.value)}
+                    className="px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent text-sm"
+                  >
+                    <option value="all">全認証状態</option>
+                    <option value="verified">認証済み</option>
+                    <option value="unverified">未認証</option>
+                    <option value="pending">認証待ち</option>
+                  </select>
+
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent text-sm"
+                  >
+                    <option value="registrationDate">登録日順</option>
+                    <option value="lastLogin">最終ログイン順</option>
+                    <option value="name">名前順</option>
+                    <option value="points">ポイント順</option>
                   </select>
                 </div>
               </div>
             </div>
 
-            {/* ユーザー一覧テーブル */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            {/* ユーザーテーブル */}
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left">
+                        <input type="checkbox" className="rounded border-gray-300" />
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         ユーザー
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        連絡先
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        ポイント
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        取引数
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         ステータス
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        最終アクティブ
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        ロール
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        ポイント
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        アクティビティ
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        登録日
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        最終ログイン
+                      </th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                         操作
                       </th>
                     </tr>
@@ -212,63 +384,84 @@ export default function UsersManagement() {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredUsers.map((user) => (
                       <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div>
-                            <div className="font-medium text-gray-900">{user.name}</div>
-                            <div className="text-sm text-gray-500">{user.area}</div>
+                        <td className="px-3 py-3">
+                          <input type="checkbox" className="rounded border-gray-300" />
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          <div className="flex items-center gap-2.5">
+                            <div className={`w-9 h-9 bg-gradient-to-br ${getAvatarColor(user.id)} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
+                              {user.name.charAt(0)}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <div className="font-medium text-gray-900 text-sm">{user.name}</div>
+                                {user.verified && (
+                                  <CheckCircle size={13} className="text-slate-500" />
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-500">@{user.username}</div>
+                              <div className="text-xs text-gray-400">{user.memberId}</div>
+                            </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{user.email}</div>
-                          <div className="text-sm text-gray-500">{user.phone}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-1 text-purple-600 font-semibold">
-                            <Coins size={16} />
-                            {user.points.toLocaleString()}P
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-900">
-                          {user.totalTransactions}回
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            user.status === 'active'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            user.status === 'active' ? 'bg-green-100 text-green-800' :
+                            user.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
                           }`}>
-                            {user.status === 'active' ? 'アクティブ' : '停止中'}
+                            {user.status === 'active' ? 'アクティブ' :
+                             user.status === 'pending' ? '承認待ち' :
+                             '停止中'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {user.lastActive}
+                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {user.role}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end gap-2">
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          <div className="text-sm font-semibold text-slate-600">
+                            {user.points.toLocaleString()}pt
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Lv.{user.level}
+                          </div>
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {user.transactions}回の取引
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            ¥{user.totalSpent.toLocaleString()}
+                          </div>
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
+                          {user.joinDate}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{user.lastLogin}</div>
+                          <div className="text-xs text-gray-500">
+                            {user.loginCount}回ログイン
+                          </div>
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-right">
+                          <div className="flex items-center justify-end gap-1">
                             <button
-                              onClick={() => handleViewDetail(user)}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              className="p-1.5 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
                               title="詳細表示"
                             >
-                              <Eye size={18} />
+                              <Eye size={15} />
                             </button>
                             <button
-                              onClick={() => handlePointAdjust(user)}
-                              className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                              title="ポイント調整"
+                              className="p-1.5 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
+                              title="編集"
                             >
-                              <Coins size={18} />
+                              <Pen size={15} />
                             </button>
                             <button
-                              onClick={() => handleToggleStatus(user)}
-                              className={`p-2 rounded-lg transition-colors ${
-                                user.status === 'active'
-                                  ? 'text-red-600 hover:bg-red-50'
-                                  : 'text-green-600 hover:bg-green-50'
-                              }`}
-                              title={user.status === 'active' ? 'アカウント停止' : 'アカウント有効化'}
+                              className="p-1.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                              title="その他"
                             >
-                              {user.status === 'active' ? <Ban size={18} /> : <CheckCircle size={18} />}
+                              <MoreVertical size={16} />
                             </button>
                           </div>
                         </td>
@@ -277,155 +470,28 @@ export default function UsersManagement() {
                   </tbody>
                 </table>
               </div>
+
+              {/* ページネーション */}
+              <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
+                <div className="text-sm text-gray-600">
+                  5件中 1 - 5件を表示
+                </div>
+                <div className="flex items-center gap-2">
+                  <button className="px-2.5 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 text-sm" disabled>
+                    前へ
+                  </button>
+                  <button className="px-2.5 py-1 bg-slate-700 text-white rounded text-sm">
+                    1
+                  </button>
+                  <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50" disabled>
+                    次へ
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </main>
       </div>
-
-      {/* ユーザー詳細モーダル */}
-      {showDetailModal && selectedUser && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">ユーザー詳細</h2>
-              <button
-                onClick={() => setShowDetailModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
-              {/* 基本情報 */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">基本情報</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">ユーザー名</p>
-                    <p className="font-medium text-gray-900">{selectedUser.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">エリア</p>
-                    <p className="font-medium text-gray-900">{selectedUser.area}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">メールアドレス</p>
-                    <p className="font-medium text-gray-900">{selectedUser.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">電話番号</p>
-                    <p className="font-medium text-gray-900">{selectedUser.phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">登録日</p>
-                    <p className="font-medium text-gray-900">{selectedUser.joinDate}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">最終アクティブ</p>
-                    <p className="font-medium text-gray-900">{selectedUser.lastActive}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* 統計情報 */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">統計情報</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-purple-50 rounded-lg">
-                    <p className="text-sm text-purple-600 mb-1">保有ポイント</p>
-                    <p className="text-2xl font-bold text-purple-700">{selectedUser.points.toLocaleString()}P</p>
-                  </div>
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <p className="text-sm text-blue-600 mb-1">総取引数</p>
-                    <p className="text-2xl font-bold text-blue-700">{selectedUser.totalTransactions}回</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* ステータス */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">アカウントステータス</h3>
-                <div className={`p-4 rounded-lg ${
-                  selectedUser.status === 'active' ? 'bg-green-50' : 'bg-red-50'
-                }`}>
-                  <p className={`text-sm font-medium ${
-                    selectedUser.status === 'active' ? 'text-green-700' : 'text-red-700'
-                  }`}>
-                    {selectedUser.status === 'active' ? 'アクティブ（正常に利用可能）' : 'アカウント停止中'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ポイント調整モーダル */}
-      {showPointAdjustModal && selectedUser && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
-            <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">ポイント調整</h2>
-              <button
-                onClick={() => setShowPointAdjustModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">対象ユーザー</p>
-                <p className="font-medium text-gray-900">{selectedUser.name}</p>
-                <p className="text-sm text-gray-600">現在のポイント: {selectedUser.points.toLocaleString()}P</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  調整額（正の数で加算、負の数で減算）
-                </label>
-                <input
-                  type="number"
-                  value={pointAdjustment.amount}
-                  onChange={(e) => setPointAdjustment({ ...pointAdjustment, amount: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="例: 1000 または -500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  調整理由
-                </label>
-                <textarea
-                  value={pointAdjustment.reason}
-                  onChange={(e) => setPointAdjustment({ ...pointAdjustment, reason: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  rows={3}
-                  placeholder="調整の理由を入力してください"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={() => setShowPointAdjustModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  キャンセル
-                </button>
-                <button
-                  onClick={submitPointAdjustment}
-                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                >
-                  調整を実行
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

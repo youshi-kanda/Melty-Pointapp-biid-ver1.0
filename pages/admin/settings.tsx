@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import Head from 'next/head';
 import AdminSidebar from '../../components/admin/Sidebar';
 import { 
@@ -7,264 +8,301 @@ import {
   CreditCard,
   Bell,
   Code,
-  Save
+  Save,
+  Menu,
+  User,
+  LogOut,
+  Zap,
+  Users
 } from 'lucide-react';
 
-type SettingsTab = 'basic' | 'security' | 'payment' | 'notification' | 'api';
+type SettingsTab = 'general' | 'payment' | 'notification' | 'points' | 'rank';
 
 export default function SystemSettings() {
-  const [activeTab, setActiveTab] = useState<SettingsTab>('basic');
-
-  const tabs = [
-    { id: 'basic' as SettingsTab, label: '基本設定', icon: SettingsIcon },
-    { id: 'security' as SettingsTab, label: 'セキュリティ', icon: Shield },
-    { id: 'payment' as SettingsTab, label: '支払い', icon: CreditCard },
-    { id: 'notification' as SettingsTab, label: '通知', icon: Bell },
-    { id: 'api' as SettingsTab, label: 'API', icon: Code }
-  ];
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<SettingsTab>('general');
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   return (
     <>
       <Head>
-        <title>システム設定 - Melty+ 管理</title>
+        <title>システム設定 - BIID Admin</title>
       </Head>
 
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-white">
         <AdminSidebar currentPage="settings" />
 
-        <main className="flex-1 lg:ml-64">
-          <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
-            <div className="px-6 py-4">
-              <h1 className="text-2xl font-bold text-gray-900">システム設定</h1>
-              <p className="text-gray-600 text-sm mt-1">システム全体の設定管理</p>
-            </div>
-          </header>
+        <main className="flex-1 md:ml-64">
+          {/* トップバー */}
+          <div className="bg-white border-b border-slate-200 px-4 py-3 h-14 sticky top-0 z-30 shadow-sm">
+            <div className="flex items-center justify-between">
+              <button className="lg:hidden p-1.5 hover:bg-slate-100 rounded-lg">
+                <Menu size={20} />
+              </button>
+              
+              <h1 className="text-lg font-semibold text-slate-900">システム設定</h1>
+              
+              <div className="flex items-center gap-3">
+                <button className="p-1.5 hover:bg-slate-100 rounded-lg relative">
+                  <Bell size={18} />
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+                
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex items-center gap-2 p-1.5 hover:bg-slate-100 rounded-lg"
+                  >
+                    <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">
+                      <User size={16} className="text-slate-600" />
+                    </div>
+                    <div className="hidden md:block text-left">
+                      <div className="text-sm font-medium text-slate-900">運営</div>
+                      <div className="text-xs text-slate-500">admin@example.com</div>
+                    </div>
+                  </button>
 
-          <div className="p-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-              {/* タブナビゲーション */}
-              <div className="border-b border-gray-200">
-                <nav className="flex overflow-x-auto">
-                  {tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-6 py-4 whitespace-nowrap border-b-2 transition-colors ${
-                          activeTab === tab.id
-                            ? 'border-purple-600 text-purple-600 bg-purple-50'
-                            : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                        }`}
+                  {showUserMenu && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50">
+                      <button 
+                        onClick={() => router.push('/admin/login')}
+                        className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
                       >
-                        <Icon size={20} />
-                        <span className="font-medium">{tab.label}</span>
+                        <LogOut size={16} />
+                        ログアウト
                       </button>
-                    );
-                  })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ヘッダー */}
+          <div className="bg-white border-b border-slate-200 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-lg font-bold text-slate-900">システム設定</h1>
+                <p className="text-sm text-slate-600 mt-0.5">基本設定・セキュリティ・API管理</p>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <button 
+                  disabled={!hasChanges}
+                  className="flex items-center gap-2 px-3 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                >
+                  <Save size={16} />
+                  <span className="text-sm font-medium">設定を保存</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+              {/* サイドバーナビゲーション */}
+              <div className="lg:col-span-1">
+                <nav className="space-y-1">
+                  <button
+                    onClick={() => setActiveTab('general')}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-left rounded-lg transition-colors text-sm ${
+                      activeTab === 'general'
+                        ? 'bg-slate-600 text-white border-r-4 border-slate-600'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    <SettingsIcon size={18} className={activeTab === 'general' ? 'text-slate-300' : 'text-gray-400'} />
+                    <span className="font-medium">一般設定</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('payment')}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-left rounded-lg transition-colors text-sm ${
+                      activeTab === 'payment'
+                        ? 'bg-slate-600 text-white border-r-4 border-slate-600'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    <CreditCard size={18} className={activeTab === 'payment' ? 'text-slate-300' : 'text-gray-400'} />
+                    <span className="font-medium">決済設定</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('notification')}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-left rounded-lg transition-colors text-sm ${
+                      activeTab === 'notification'
+                        ? 'bg-slate-600 text-white border-r-4 border-slate-600'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    <Bell size={18} className={activeTab === 'notification' ? 'text-slate-300' : 'text-gray-400'} />
+                    <span className="font-medium">通知設定</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('points')}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-left rounded-lg transition-colors text-sm ${
+                      activeTab === 'points'
+                        ? 'bg-slate-600 text-white border-r-4 border-slate-600'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    <Zap size={18} className={activeTab === 'points' ? 'text-slate-300' : 'text-gray-400'} />
+                    <span className="font-medium">運営設定</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('rank')}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-left rounded-lg transition-colors text-sm ${
+                      activeTab === 'rank'
+                        ? 'bg-slate-600 text-white border-r-4 border-slate-600'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    <Users size={18} className={activeTab === 'rank' ? 'text-slate-300' : 'text-gray-400'} />
+                    <span className="font-medium">会員ランク</span>
+                  </button>
                 </nav>
               </div>
 
-              {/* タブコンテンツ */}
-              <div className="p-6">
-                {/* 基本設定 */}
-                {activeTab === 'basic' && (
-                  <div className="space-y-6">
-                    <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                        サービス名
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                        defaultValue="Melty+"
-                      />
-                    </div>
-                    <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                        サービスURL
-                      </label>
-                      <input
-                        type="url"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                        defaultValue="https://meltyplus.example.com"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        メンテナンスモード
-                      </label>
-                      <label className="flex items-center gap-3">
-                        <input type="checkbox" className="w-5 h-5 text-purple-600 rounded" />
-                        <span className="text-gray-700">メンテナンスモードを有効にする</span>
-                      </label>
-                    </div>
-                  </div>
-                )}
+              {/* メインコンテンツ */}
+              <div className="lg:col-span-3">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                  {/* 一般設定 */}
+                  {activeTab === 'general' && (
+                    <div className="space-y-4">
+                      <h2 className="text-base font-semibold text-gray-900">一般設定</h2>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            サイト名
+                          </label>
+                          <input
+                            type="text"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                            defaultValue="biid Point Management"
+                            onChange={() => setHasChanges(true)}
+                          />
+                        </div>
 
-                {/* セキュリティ */}
-                {activeTab === 'security' && (
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        パスワード最小文字数
-                      </label>
-                      <input
-                        type="number"
-                        defaultValue="8"
-                        min="6"
-                        max="20"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        セッションタイムアウト（分）
-                      </label>
-                      <input
-                        type="number"
-                        defaultValue="30"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div className="space-y-3">
-                      <label className="flex items-center gap-3">
-                        <input type="checkbox" defaultChecked className="w-5 h-5 text-purple-600 rounded" />
-                        <span className="text-gray-700">二段階認証を必須にする</span>
-                      </label>
-                      <label className="flex items-center gap-3">
-                        <input type="checkbox" defaultChecked className="w-5 h-5 text-purple-600 rounded" />
-                        <span className="text-gray-700">ログイン試行回数制限</span>
-                      </label>
-                      <label className="flex items-center gap-3">
-                        <input type="checkbox" className="w-5 h-5 text-purple-600 rounded" />
-                        <span className="text-gray-700">IP制限を有効にする</span>
-                      </label>
-                    </div>
-                  </div>
-                )}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            サポートメール
+                          </label>
+                          <input
+                            type="email"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                            defaultValue="support@biid.com"
+                            onChange={() => setHasChanges(true)}
+                          />
+                        </div>
 
-                {/* 支払い設定 */}
-                {activeTab === 'payment' && (
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        デフォルトポイント還元率（%）
-                      </label>
-                      <input
-                        type="number"
-                        defaultValue="5"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        最小取引金額（円）
-                      </label>
-                      <input
-                        type="number"
-                        defaultValue="100"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        返金可能期間（日）
-                      </label>
-                      <input
-                        type="number"
-                        defaultValue="7"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-                )}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            サポート電話
+                          </label>
+                          <input
+                            type="tel"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                            defaultValue="03-1234-5678"
+                            onChange={() => setHasChanges(true)}
+                          />
+                        </div>
 
-                {/* 通知設定 */}
-                {activeTab === 'notification' && (
-                  <div className="space-y-6">
-                    <div className="space-y-3">
-                      <label className="flex items-center gap-3">
-                        <input type="checkbox" defaultChecked className="w-5 h-5 text-purple-600 rounded" />
-                        <span className="text-gray-700">新規ユーザー登録通知</span>
-                      </label>
-                      <label className="flex items-center gap-3">
-                        <input type="checkbox" defaultChecked className="w-5 h-5 text-purple-600 rounded" />
-                        <span className="text-gray-700">店舗承認リクエスト通知</span>
-                      </label>
-                      <label className="flex items-center gap-3">
-                        <input type="checkbox" defaultChecked className="w-5 h-5 text-purple-600 rounded" />
-                        <span className="text-gray-700">返金リクエスト通知</span>
-                      </label>
-                      <label className="flex items-center gap-3">
-                        <input type="checkbox" className="w-5 h-5 text-purple-600 rounded" />
-                        <span className="text-gray-700">システムエラー通知</span>
-                      </label>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        通知先メールアドレス
-                      </label>
-                      <input
-                        type="email"
-                        defaultValue="admin@meltyplus.example.com"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-                )}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            タイムゾーン
+                          </label>
+                          <select 
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                            onChange={() => setHasChanges(true)}
+                          >
+                            <option value="Asia/Tokyo">Asia/Tokyo</option>
+                            <option value="UTC">UTC</option>
+                            <option value="America/New_York">America/New_York</option>
+                          </select>
+                        </div>
 
-                {/* API設定 */}
-                {activeTab === 'api' && (
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        APIキー
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value="sk_live_••••••••••••••••"
-                          readOnly
-                          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                        />
-                        <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                          再生成
-                        </button>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            運営エリア
+                          </label>
+                          <input
+                            type="text"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                            placeholder="運営対象エリアを入力"
+                            defaultValue="大阪（北新地・ミナミエリア）"
+                            onChange={() => setHasChanges(true)}
+                          />
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            サイト説明
+                          </label>
+                          <textarea
+                            rows={3}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                            defaultValue="革新的なポイント管理システム"
+                            onChange={() => setHasChanges(true)}
+                          />
+                        </div>
+
+                        <div className="md:col-span-2 flex items-center gap-6">
+                          <label className="flex items-center">
+                            <input 
+                              type="checkbox" 
+                              className="mr-2"
+                              onChange={() => setHasChanges(true)}
+                            />
+                            メンテナンスモード
+                          </label>
+                          <label className="flex items-center">
+                            <input 
+                              type="checkbox" 
+                              className="mr-2"
+                              onChange={() => setHasChanges(true)}
+                            />
+                            デバッグモード
+                          </label>
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        API呼び出し制限（回/分）
-                      </label>
-                      <input
-                        type="number"
-                        defaultValue="100"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div className="space-y-3">
-                      <label className="flex items-center gap-3">
-                        <input type="checkbox" defaultChecked className="w-5 h-5 text-purple-600 rounded" />
-                        <span className="text-gray-700">API ログを記録する</span>
-                      </label>
-                      <label className="flex items-center gap-3">
-                        <input type="checkbox" defaultChecked className="w-5 h-5 text-purple-600 rounded" />
-                        <span className="text-gray-700">CORS を有効にする</span>
-                      </label>
-                    </div>
-                  </div>
-                )}
+                  )}
 
-                {/* 保存ボタン */}
-                <div className="flex justify-end pt-6 border-t border-gray-200 mt-8">
-                  <button className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium">
-                    <Save size={20} />
-                    設定を保存
-                  </button>
+                  {/* 決済設定 */}
+                  {activeTab === 'payment' && (
+                    <div className="space-y-4">
+                      <h2 className="text-base font-semibold text-gray-900">決済設定</h2>
+                      <p className="text-sm text-gray-600">決済関連の設定を管理します</p>
+                    </div>
+                  )}
+
+                  {/* 通知設定 */}
+                  {activeTab === 'notification' && (
+                    <div className="space-y-4">
+                      <h2 className="text-base font-semibold text-gray-900">通知設定</h2>
+                      <p className="text-sm text-gray-600">システム通知の設定を管理します</p>
+                    </div>
+                  )}
+
+                  {/* 運営設定 */}
+                  {activeTab === 'points' && (
+                    <div className="space-y-4">
+                      <h2 className="text-base font-semibold text-gray-900">運営設定</h2>
+                      <p className="text-sm text-gray-600">ポイント運営に関する設定を管理します</p>
+                    </div>
+                  )}
+
+                  {/* 会員ランク */}
+                  {activeTab === 'rank' && (
+                    <div className="space-y-4">
+                      <h2 className="text-base font-semibold text-gray-900">会員ランク設定</h2>
+                      <p className="text-sm text-gray-600">会員ランクシステムの設定を管理します</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
