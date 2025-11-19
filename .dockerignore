@@ -37,9 +37,7 @@ admin-production/
 .github/
 
 # Production configs (除外するものを明示的に指定)
-production/admin-*/
-production/store-*/
-production/terminal-*/
+# admin-backend, store-backend, terminal-backend, user-backend, user-frontend は含める
 production/*.md
 production/docker-compose*.yml
 production/setup-*.sh
