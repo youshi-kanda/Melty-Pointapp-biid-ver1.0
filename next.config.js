@@ -9,6 +9,7 @@ const nextConfig = {
   
   // 画像最適化設定
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -17,8 +18,8 @@ const nextConfig = {
     ],
   },
   
-  // Docker本番環境ではスタンドアロン出力
-  ...(isDocker && isProduction ? { output: 'standalone' } : {}),
+  // 静的エクスポート設定
+  output: isDocker && isProduction ? 'standalone' : 'export',
   
   // 環境変数の公開設定（クライアントサイドで使用）
   env: {
