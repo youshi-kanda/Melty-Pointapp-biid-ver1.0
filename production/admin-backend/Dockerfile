@@ -36,14 +36,14 @@ ENV DJANGO_SETTINGS_MODULE=admin_settings
 
 # ヘルスチェック
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8001/health/', timeout=10)"
+    CMD python -c "import requests; requests.get('http://localhost:8000/health/', timeout=10)"
 
 # ポート公開
-EXPOSE 8001
+EXPOSE 8000
 
 # エントリーポイントスクリプト（既にコピー済み）
 RUN chmod +x /app/admin-backend/docker-entrypoint.sh
 
 # 起動コマンド
 ENTRYPOINT ["/app/admin-backend/docker-entrypoint.sh"]
-CMD ["gunicorn", "--bind", "0.0.0.0:8001", "--workers", "3", "--timeout", "120", "--chdir", "/app/backend", "--env", "DJANGO_SETTINGS_MODULE=admin_settings", "pointapp.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "--chdir", "/app/backend", "--env", "DJANGO_SETTINGS_MODULE=admin_settings", "pointapp.wsgi:application"]
