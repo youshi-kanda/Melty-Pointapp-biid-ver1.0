@@ -20,19 +20,23 @@ print(f"🔧 ALLOWED_HOSTS: {ALLOWED_HOSTS}")
 
 # 静的ファイル設定（管理者画面専用）
 STATIC_URL = '/static/'
-# 本番環境では静的ファイルを直接配信（collectstaticなし）
-STATIC_ROOT = None
+# WhiteNoise用の設定: staticディレクトリを直接ルートとして使用
 STATICFILES_DIRS = [
     Path(__file__).resolve().parent / 'static',
 ]
+# WhiteNoiseの設定
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = True
+WHITENOISE_INDEX_FILE = True
 
 # テンプレート設定
 TEMPLATES[0]['DIRS'].append(Path(__file__).resolve().parent / 'templates')
 
-# 管理者専用ミドルウェア（セキュリティ強化）
+# 管理者専用ミドルウェア（セキュリティ強化 + WhiteNoise for static files）
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # 静的ファイル配信用
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
