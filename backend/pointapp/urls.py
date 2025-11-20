@@ -1,6 +1,9 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
+from django.views.generic import RedirectView
+from django.conf import settings
+from django.conf.urls.static import static
 from core.test_views import PartnerAPITestView, api_status, get_totp
 from core import fincode_views
 from core.custom_admin import custom_admin_site
@@ -24,5 +27,8 @@ urlpatterns = [
     path('health/', health, name='health'),           # Fly.ioヘルスチェック用
     path('api/get-totp/', get_totp, name='get-totp'),
     path('test/', PartnerAPITestView.as_view(), name='partner-api-test'),
-    path('', PartnerAPITestView.as_view(), name='home'),
+    path('', RedirectView.as_view(url='/static/login.html', permanent=False), name='home'),
 ]
+
+# 静的ファイル配信（本番環境でもWhiteNoiseまたは直接配信）
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
