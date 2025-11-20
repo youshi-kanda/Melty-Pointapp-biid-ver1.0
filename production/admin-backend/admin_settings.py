@@ -20,7 +20,8 @@ print(f"🔧 ALLOWED_HOSTS: {ALLOWED_HOSTS}")
 
 # 静的ファイル設定（管理者画面専用）
 STATIC_URL = '/static/'
-STATIC_ROOT = Path(__file__).resolve().parent / 'staticfiles'
+# 本番環境では静的ファイルを直接配信（collectstaticなし）
+STATIC_ROOT = None
 STATICFILES_DIRS = [
     Path(__file__).resolve().parent / 'static',
 ]

@@ -57,11 +57,11 @@ fi
 echo "🔧 Running migrations..."
 python manage.py migrate --settings=admin_settings --noinput
 
-# 静的ファイル収集（本番用）
-if [ "${DEBUG}" != "True" ]; then
-    echo "📦 Collecting static files..."
-    python manage.py collectstatic --settings=admin_settings --noinput
-fi
+# 静的ファイル収集は不要（すでに/app/admin-backend/static/に配置済み）
+# if [ "${DEBUG}" != "True" ]; then
+#     echo "📦 Collecting static files..."
+#     python manage.py collectstatic --settings=admin_settings --noinput
+# fi
 
 # スーパーユーザー作成（初回のみ）
 if [ "${CREATE_SUPERUSER}" = "True" ] && [ -n "${DJANGO_SUPERUSER_EMAIL}" ]; then
