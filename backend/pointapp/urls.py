@@ -21,6 +21,7 @@ urlpatterns = [
     path('api/fincode/payment/initiate', fincode_views.initiate_payment, name='fincode_initiate_no_slash'),
     path('api/status/', api_status, name='api-status'),
     path('api/health/', health, name='api-health'),   # 追加: /api/health/
+    path('health/', health, name='health'),           # Fly.ioヘルスチェック用
     path('api/get-totp/', get_totp, name='get-totp'),
     path('test/', PartnerAPITestView.as_view(), name='partner-api-test'),
     path('', PartnerAPITestView.as_view(), name='home'),
