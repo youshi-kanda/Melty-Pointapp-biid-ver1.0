@@ -21,7 +21,10 @@ fi
 
 # データベース接続確認
 echo "⏳ Waiting for database..."
-while ! python -c "
+MAX_RETRIES=30
+RETRY_COUNT=0
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if python -c "
 import os
 import psycopg2
 try:
@@ -30,16 +33,25 @@ try:
         port=os.getenv('DB_PORT', '5432'),
         user=os.getenv('DB_USER', 'biid_user'),
         password=os.getenv('DB_PASSWORD', ''),
-        dbname=os.getenv('DB_NAME', 'biid_production')
+        dbname=os.getenv('DB_NAME', 'biid_production'),
+        connect_timeout=5
     )
     print('✅ Database connection OK')
 except Exception as e:
     print('❌ Database not ready:', e)
     exit(1)
-"; do
-    echo "   Database not ready, waiting 2 seconds..."
+"; then
+        break
+    fi
+    RETRY_COUNT=$((RETRY_COUNT+1))
+    echo "   Database not ready (attempt $RETRY_COUNT/$MAX_RETRIES), waiting 2 seconds..."
     sleep 2
 done
+
+if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+    echo "❌ Database connection failed after $MAX_RETRIES attempts"
+    echo "   Proceeding anyway..."
+fi
 
 # マイグレーション実行
 echo "🔧 Running migrations..."
