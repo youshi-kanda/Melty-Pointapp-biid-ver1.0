@@ -25,19 +25,19 @@ export default function AdminSidebar({ currentPage }: SidebarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'ダッシュボード', href: '/admin', id: 'dashboard' },
-    { icon: Users, label: 'ユーザー管理', href: '/admin/users', id: 'users' },
-    { icon: Store, label: '店舗管理', href: '/admin/stores', id: 'stores' },
-    { icon: Receipt, label: '取引管理', href: '/admin/transactions', id: 'transactions' },
-    { icon: Gift, label: 'ギフト管理', href: '/admin/gifts', id: 'gifts' },
-    { icon: BarChart3, label: 'レポート', href: '/admin/reports', id: 'reports' },
-    { icon: Settings, label: 'システム設定', href: '/admin/settings', id: 'settings' },
-    { icon: ToggleLeft, label: '機能管理', href: '/admin/features', id: 'features' },
+    { icon: LayoutDashboard, label: 'ダッシュボード', href: '/static/admin/', id: 'dashboard' },
+    { icon: Users, label: 'ユーザー管理', href: '/static/admin/users.html', id: 'users' },
+    { icon: Store, label: '店舗管理', href: '/static/admin/stores.html', id: 'stores' },
+    { icon: Receipt, label: '取引管理', href: '/static/admin/transactions.html', id: 'transactions' },
+    { icon: Gift, label: 'ギフト管理', href: '/static/admin/gifts.html', id: 'gifts' },
+    { icon: BarChart3, label: 'レポート', href: '/static/admin/reports.html', id: 'reports' },
+    { icon: Settings, label: 'システム設定', href: '/static/admin/settings.html', id: 'settings' },
+    { icon: ToggleLeft, label: '機能管理', href: '/static/admin/features.html', id: 'features' },
   ];
 
   const handleLogout = () => {
     console.log('ログアウト');
-    router.push('/admin/login');
+    window.location.href = '/static/admin/login.html';
   };
 
   return (

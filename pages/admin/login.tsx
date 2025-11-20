@@ -37,7 +37,8 @@ export default function AdminLogin() {
     
     // 開発環境では認証成功としてダッシュボードに遷移
     if (email && password) {
-      router.push('/admin');
+      // 静的エクスポート環境では直接URLに遷移
+      window.location.href = '/static/admin/';
     } else {
       setIsLoading(false);
     }
