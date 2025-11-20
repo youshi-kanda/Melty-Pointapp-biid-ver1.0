@@ -14,7 +14,9 @@ from pointapp.settings import *
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 # 管理者用ホスト設定
-ALLOWED_HOSTS = os.getenv('ADMIN_ALLOWED_HOSTS', 'admin.biid.app,localhost,127.0.0.1').split(',')
+allowed_hosts_env = os.getenv('ADMIN_ALLOWED_HOSTS', 'admin.biid.app,localhost,127.0.0.1')
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',')]
+print(f"🔧 ADMIN_ALLOWED_HOSTS: {ALLOWED_HOSTS}")
 
 # 静的ファイル設定（管理者画面専用）
 STATIC_URL = '/static/'
