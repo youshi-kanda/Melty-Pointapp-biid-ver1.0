@@ -27,7 +27,7 @@ urlpatterns = [
     path('health/', health, name='health'),           # Fly.ioヘルスチェック用
     path('api/get-totp/', get_totp, name='get-totp'),
     path('test/', PartnerAPITestView.as_view(), name='partner-api-test'),
-    path('', RedirectView.as_view(url='/static/login.html', permanent=False), name='home'),
+    path('', RedirectView.as_view(url='/static/admin/login.html', permanent=False), name='home'),
 ]
 
 # 静的ファイル配信（本番環境でもWhiteNoiseまたは直接配信）
