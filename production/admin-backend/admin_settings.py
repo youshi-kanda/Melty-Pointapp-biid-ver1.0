@@ -103,4 +103,4 @@ USER_INTERFACE_ENABLED = False
 TERMINAL_INTERFACE_ENABLED = False
 
 # 管理者専用URL設定
-ROOT_URLCONF = 'urls'
+ROOT_URLCONF = 'pointapp.urls'
