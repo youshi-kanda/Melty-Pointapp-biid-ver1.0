@@ -1,0 +1,354 @@
+/* モバイル最適化CSS - ユーザーアプリと決済端末用 */
+
+/* タッチターゲットサイズの最適化 (44px以上) */
+@media (hover: none) and (pointer: coarse) {
+  /* ボタン */
+  button,
+  .btn,
+  a.button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 12px 16px;
+  }
+
+  /* 小さいアイコンボタン */
+  button.icon-button,
+  .icon-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px;
+  }
+
+  /* リンク */
+  a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* チェックボックス・ラジオボタン */
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-width: 24px;
+    min-height: 24px;
+    margin: 10px;
+  }
+}
+
+/* フォントサイズの最適化 (16px以上で自動ズーム防止) */
+@media screen and (max-width: 768px) {
+  /* 入力フィールド */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* 本文テキスト */
+  body {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* 小さいテキストの最小サイズ */
+  .text-xs,
+  small {
+    font-size: 14px !important;
+  }
+}
+
+/* フルスクリーンサポート (PWA standaloneモード) */
+@media (display-mode: standalone) {
+  /* ステータスバー下のセーフエリア対応 */
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* ヘッダーの調整 */
+  header,
+  .header {
+    padding-top: calc(env(safe-area-inset-top) + 12px);
+  }
+
+  /* フッター/ボトムナビゲーションの調整 */
+  footer,
+  .footer,
+  .bottom-nav {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+  }
+
+  /* スクロール時のバウンス効果を無効化 */
+  body {
+    overscroll-behavior-y: contain;
+  }
+}
+
+/* プルツーリフレッシュの無効化（PWAでは不要） */
+@media (display-mode: standalone) {
+  body {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 上方向のスクロールバウンスを防ぐ */
+  html,
+  body {
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+  }
+}
+
+/* タッチ操作の最適化 */
+@media (hover: none) {
+  /* タップハイライト色の調整 */
+  * {
+    -webkit-tap-highlight-color: rgba(236, 72, 153, 0.2); /* ピンク系 */
+  }
+
+  /* スクロールのスムーズ化 */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* テキスト選択の最適化 */
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* 入力フィールドとテキストは選択可能に */
+  input,
+  textarea,
+  [contenteditable],
+  .selectable {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  /* ホバー効果をタップに変換 */
+  button:active,
+  .btn:active,
+  a.button:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+}
+
+/* 横向き表示の最適化 */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+  /* ヘッダーを小さく */
+  header,
+  .header {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  /* ボトムナビゲーションを非表示にするか小さく */
+  .bottom-nav {
+    height: 48px;
+  }
+}
+
+/* ダークモード対応（システム設定に応じて） */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #1a1a1a;
+    --text-color: #ffffff;
+    --border-color: #333333;
+  }
+
+  /* PWAインストールプロンプトのダークモード */
+  .pwa-prompt {
+    background: #2d2d2d;
+    color: #ffffff;
+  }
+}
+
+/* モーション削減の対応（アクセシビリティ） */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 高コントラストモード対応 */
+@media (prefers-contrast: high) {
+  button,
+  .btn {
+    border: 2px solid currentColor;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+}
+
+/* iOS Safari特有の調整 */
+@supports (-webkit-touch-callout: none) {
+  /* iOS SafariのデフォルトUI要素のリセット */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="search"],
+  select,
+  textarea {
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 8px;
+  }
+
+  /* iOSのタップ時の半透明オーバーレイを無効化 */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* iOSのピンチズーム無効化（PWAで必要な場合） */
+  @media (display-mode: standalone) {
+    html {
+      touch-action: manipulation;
+    }
+  }
+}
+
+/* Android Chrome特有の調整 */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  /* Androidのテキスト自動調整を無効化 */
+  body {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+}
+
+/* タブレット向けの最適化 */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  /* タブレットではより大きなタッチターゲット */
+  button,
+  .btn {
+    min-height: 48px;
+    padding: 14px 20px;
+  }
+
+  /* 2カラムレイアウトの活用 */
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+}
+
+/* ノッチ対応（iPhone X以降） */
+@supports (padding: env(safe-area-inset-top)) {
+  .full-width {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .fixed-header {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .fixed-footer {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* スクロールバーのスタイル（Webkit） */
+@media (display-mode: standalone) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(236, 72, 153, 0.3);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(236, 72, 153, 0.5);
+  }
+}
+
+/* オフライン時のスタイル */
+.offline-indicator {
+  position: fixed;
+  top: env(safe-area-inset-top, 0);
+  left: 0;
+  right: 0;
+  background: #fbbf24;
+  color: #78350f;
+  padding: 8px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 9999;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
+}
+
+.offline-indicator.show {
+  transform: translateY(0);
+}
+
+/* ローディングスピナーの最適化 */
+@media (prefers-reduced-motion: no-preference) {
+  .spinner {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+/* フォーカス表示の改善（キーボードナビゲーション） */
+@media (hover: hover) {
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 3px solid #ec4899;
+    outline-offset: 2px;
+  }
+}
+
+/* 印刷時の最適化 */
+@media print {
+  .no-print,
+  .bottom-nav,
+  header button,
+  .pwa-prompt {
+    display: none !important;
+  }
+
+  body {
+    padding: 0;
+  }
+
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+}
