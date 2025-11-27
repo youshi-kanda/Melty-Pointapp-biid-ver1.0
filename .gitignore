@@ -65,3 +65,8 @@ production/user-backend/static/
 _ul*
 next.config-*.js
 middleware.ts.bak
+# PWA / Service Worker
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map

@@ -17,9 +17,9 @@ ALLOWED_HOSTS = os.getenv('USER_ALLOWED_HOSTS', 'app.biid.app,localhost,127.0.0.
 
 # 静的ファイル設定（ユーザー画面専用）
 STATIC_URL = '/static/'
-STATIC_ROOT = Path(__file__).resolve().parent / 'staticfiles'
+STATIC_ROOT = '/app/staticfiles'
 STATICFILES_DIRS = [
-    Path(__file__).resolve().parent / 'static',
+    '/app/static',
 ]
 
 # テンプレート設定
@@ -42,6 +42,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'user_settings.ForceHTTPMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # 静的ファイル配信用
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -123,4 +124,4 @@ USER_FEATURES = {
 }
 
 # URL設定 - ユーザー専用URLを使用
-ROOT_URLCONF = 'urls'
+ROOT_URLCONF = 'pointapp.urls'

@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { setupGlobalErrorHandling } from '../lib/error-handler'
 import { Comfortaa } from 'next/font/google'
 import '../styles/globals.css'
+import '../styles/mobile-optimizations.css'
 
 const comfortaa = Comfortaa({ 
   subsets: ['latin'],
@@ -35,6 +36,39 @@ export default function App({ Component, pageProps }: AppProps) {
     const isDev = process.env.NODE_ENV === 'development'
     if (isDev) {
       console.log('Melty+ (メルティプラス) - Development Mode')
+    }
+    
+    // PWA Service Worker登録（ユーザーアプリと決済端末のみ）
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+      const path = window.location.pathname
+      const isPWAPath = path.startsWith('/user/') || path.startsWith('/terminal/')
+      
+      if (isPWAPath) {
+        navigator.serviceWorker
+          .register('/sw.js')
+          .then((registration) => {
+            console.log('✅ Service Worker registered:', registration.scope)
+            
+            // 更新チェック
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // 新しいバージョンが利用可能
+                    console.log('🆕 New version available!')
+                    if (confirm('新しいバージョンが利用可能です。更新しますか？')) {
+                      window.location.reload()
+                    }
+                  }
+                })
+              }
+            })
+          })
+          .catch((error) => {
+            console.error('❌ Service Worker registration failed:', error)
+          })
+      }
     }
   }, [])
 

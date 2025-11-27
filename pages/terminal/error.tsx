@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import TerminalHead from '@/components/terminal/TerminalHead';
 import { AlertCircle, Home, RotateCcw, XCircle } from 'lucide-react';
 
 export default function TerminalError() {
@@ -60,11 +60,9 @@ export default function TerminalError() {
 
   return (
     <>
-      <Head>
-        <title>{currentError.title} - Melty+ Terminal</title>
-      </Head>
+      <TerminalHead title={`${currentError.title} - Melty+ Terminal`} />
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex flex-col">
         {/* ヘッダー */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 sm:px-6 py-3 shadow-md">
           <div className="max-w-4xl mx-auto flex items-center justify-between">

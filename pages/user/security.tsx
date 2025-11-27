@@ -62,7 +62,7 @@ export default function SecurityPage() {
               {/* 中央: ホームボタン + ロゴ */}
               <div className="flex items-center space-x-4">
                 <button
-                  onClick={() => router.push('/user')}
+                  onClick={() => window.location.href = '/user/'}
                   className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
                 >
                   <Home className="w-5 h-5 text-gray-600" />
@@ -112,7 +112,7 @@ export default function SecurityPage() {
               {/* 右側: ホームボタン + ロゴ */}
               <div className="flex items-center space-x-2">
                 <button
-                  onClick={() => router.push('/user')}
+                  onClick={() => window.location.href = '/user/'}
                   className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                 >
                   <Home className="w-4 h-4 text-gray-600" />

@@ -43,7 +43,24 @@ export default function UserLayout({
     <>
       <Head>
         <title>{title}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="大阪ミナミ・北新地のポイント＆ギフトアプリ Melty+" />
+        
+        {/* PWA設定 */}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <meta name="theme-color" content="#ec4899" />
+        <link rel="manifest" href="/manifest-user.json" />
+        
+        {/* iOS Safari */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Melty+" />
+        <link rel="apple-touch-icon" href="/icons/user-152x152.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/user-192x192.png" />
+        
+        {/* Android Chrome */}
+        <meta name="mobile-web-app-capable" content="yes" />
+        
+        {/* Fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import TerminalHead from '@/components/terminal/TerminalHead';
 import { Wifi, QrCode, Edit3, Settings, Store, Clock } from 'lucide-react';
 
 export default function TerminalSimple() {
@@ -31,9 +31,7 @@ export default function TerminalSimple() {
 
   return (
     <>
-      <Head>
-        <title>決済端末 - Melty+ Terminal</title>
-      </Head>
+      <TerminalHead title="決済端末 - Melty+ Terminal" />
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
         {/* プログレスバー */}

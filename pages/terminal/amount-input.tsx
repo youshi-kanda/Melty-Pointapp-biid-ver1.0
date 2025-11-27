@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import TerminalHead from '@/components/terminal/TerminalHead';
 import { X, Delete, DollarSign, Coins } from 'lucide-react';
 
 export default function AmountInput() {
@@ -63,9 +63,7 @@ export default function AmountInput() {
 
   return (
     <>
-      <Head>
-        <title>金額入力 - Melty+ Terminal</title>
-      </Head>
+      <TerminalHead title="金額入力 - Melty+ Terminal" />
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
         {/* ヘッダー */}

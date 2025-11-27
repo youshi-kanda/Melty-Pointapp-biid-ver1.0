@@ -1,0 +1,54 @@
+{
+  "name": "Melty+ 決済端末",
+  "short_name": "Melty決済",
+  "description": "Melty+ QRコード決済端末アプリ（タブレット専用）",
+  "start_url": "/terminal/",
+  "display": "fullscreen",
+  "background_color": "#1a1a1a",
+  "theme_color": "#667eea",
+  "orientation": "portrait-primary",
+  "scope": "/terminal/",
+  "lang": "ja",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icons/terminal-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/terminal-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/terminal-scan.png",
+      "sizes": "720x1024",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "QRコードスキャン画面"
+    }
+  ],
+  "categories": ["business", "utilities"],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "shortcuts": [
+    {
+      "name": "QRスキャン",
+      "short_name": "スキャン",
+      "description": "QRコードをスキャンして決済",
+      "url": "/terminal/scan.html",
+      "icons": [
+        {
+          "src": "/icons/shortcut-scan.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

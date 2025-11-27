@@ -20,9 +20,10 @@ print(f"🔧 ALLOWED_HOSTS: {ALLOWED_HOSTS}")
 
 # 静的ファイル設定（管理者画面専用）
 STATIC_URL = '/static/'
+STATIC_ROOT = '/app/staticfiles'
 # WhiteNoise用の設定: staticディレクトリを直接ルートとして使用
 STATICFILES_DIRS = [
-    Path(__file__).resolve().parent / 'static',
+    '/app/static',
 ]
 # WhiteNoiseの設定
 WHITENOISE_USE_FINDERS = True

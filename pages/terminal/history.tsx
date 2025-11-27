@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import TerminalHead from '@/components/terminal/TerminalHead';
 import { Store, History, Search, Filter, ArrowLeft } from 'lucide-react';
 
 export default function TerminalHistory() {
@@ -17,9 +17,7 @@ export default function TerminalHistory() {
 
   return (
     <>
-      <Head>
-        <title>取引履歴 - Melty+ Terminal</title>
-      </Head>
+      <TerminalHead title="取引履歴 - Melty+ Terminal" />
 
       <div className="min-h-screen bg-gray-50 flex flex-col">
         {/* 上部バナー */}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import TerminalHead from '@/components/terminal/TerminalHead';
 import { Wifi, X, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function NFCReader() {
@@ -43,9 +43,7 @@ export default function NFCReader() {
 
   return (
     <>
-      <Head>
-        <title>NFC読み取り - Melty+ Terminal</title>
-      </Head>
+      <TerminalHead title="NFC読み取り - Melty+ Terminal" />
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
         {/* ヘッダー */}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import TerminalHead from '@/components/terminal/TerminalHead';
 import { X, Delete, Search } from 'lucide-react';
 
 export default function ManualInput() {
@@ -49,9 +49,7 @@ export default function ManualInput() {
 
   return (
     <>
-      <Head>
-        <title>会員ID入力 - Melty+ Terminal</title>
-      </Head>
+      <TerminalHead title="会員ID入力 - Melty+ Terminal" />
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
         {/* ヘッダー */}

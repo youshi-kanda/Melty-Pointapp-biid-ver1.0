@@ -96,6 +96,10 @@ export default function GiftsPage() {
   const [deliveryMethod, setDeliveryMethod] = useState<'app' | 'convenience' | 'email'>('app')
   const [recipientEmail, setRecipientEmail] = useState('')
   const [isExchanging, setIsExchanging] = useState(false)
+  
+  // ギフトコード表示用ステート
+  const [showGiftCodeModal, setShowGiftCodeModal] = useState(false)
+  const [exchangeResult, setExchangeResult] = useState<any>(null)
 
   useEffect(() => {
     loadGiftsData()
@@ -115,7 +119,7 @@ export default function GiftsPage() {
       // JWTトークンを取得
       const token = localStorage.getItem('auth_token')
       if (!token) {
-        router.push('/user/login')
+        window.location.href = '/user/login.html'
         return
       }
 
@@ -248,7 +252,7 @@ export default function GiftsPage() {
       
       if (!token) {
         console.error('No auth token, redirecting to login')
-        router.push('/user/login')
+        window.location.href = '/user/login.html'
         return
       }
 
@@ -284,12 +288,24 @@ export default function GiftsPage() {
       if (response.ok) {
         const data = await response.json()
         console.log('Exchange success:', data)
-        alert(`${selectedGift.name}の交換が完了しました！\n\n${
-          data.exchange?.digital_code ? `ギフトコード: ${data.exchange.digital_code}` : '詳細はマイギフトからご確認ください'
-        }`)
+        
+        // ポイント残高を更新
+        setUserPoints(data.remaining_points)
+        
+        // 交換結果を保存してギフトコードモーダルを表示
+        setExchangeResult({
+          gift: selectedGift,
+          exchange: data.exchange,
+          cost: data.cost,
+          digital_code: data.exchange?.digital_code,
+          digital_url: data.exchange?.digital_url,
+          qr_code_url: data.exchange?.qr_code_url
+        })
+        
         setShowExchangeModal(false)
-        setSelectedGift(null)
+        setShowGiftCodeModal(true)
         setRecipientEmail('')
+        
         // データを再読み込み
         loadGiftsData()
       } else {
@@ -356,7 +372,7 @@ export default function GiftsPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 sm:space-x-4">
                 <button
-                  onClick={() => router.push('/user')}
+                  onClick={() => window.location.href = '/user/'}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <Home className="w-5 h-5 text-gray-600" />
@@ -542,22 +558,47 @@ export default function GiftsPage() {
                           <span className="text-sm text-pink-600">{gift.exchange_count}人が交換</span>
                         </div>
                       )}
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-xl font-bold text-pink-600">{gift.points_required.toLocaleString()}pt</span>
-                          {gift.original_price > 0 && (
-                            <span className="text-sm text-pink-500 ml-2 line-through">¥{gift.original_price.toLocaleString()}</span>
-                          )}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="text-xl font-bold text-pink-600">{gift.points_required.toLocaleString()}pt</span>
+                            {gift.original_price > 0 && (
+                              <span className="text-sm text-pink-500 ml-2 line-through">¥{gift.original_price.toLocaleString()}</span>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            {gift.unlimited_stock ? (
+                              <span className="text-xs text-green-600 font-semibold">在庫潤沢</span>
+                            ) : gift.stock_quantity > 0 ? (
+                              <span className="text-xs text-pink-500">残り {gift.stock_quantity}個</span>
+                            ) : (
+                              <span className="text-xs text-red-500 font-semibold">在庫切れ</span>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-right">
-                          {gift.unlimited_stock ? (
-                            <span className="text-xs text-green-600 font-semibold">在庫潤沢</span>
-                          ) : gift.stock_quantity > 0 ? (
-                            <span className="text-xs text-pink-500">残り {gift.stock_quantity}個</span>
-                          ) : (
-                            <span className="text-xs text-red-500 font-semibold">在庫切れ</span>
-                          )}
-                        </div>
+                        {/* 外部ギフトの手数料情報 */}
+                        {gift.commission_info && gift.commission_info.commission > 0 && (
+                          <div className="pt-2 border-t border-pink-200">
+                            <div className="text-xs space-y-1">
+                              <div className="flex justify-between text-pink-600">
+                                <span>本体価格</span>
+                                <span>¥{gift.commission_info.price.toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between text-pink-600">
+                                <span>手数料 (5%)</span>
+                                <span>¥{gift.commission_info.commission.toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between text-pink-600">
+                                <span>消費税 (10%)</span>
+                                <span>¥{gift.commission_info.commission_tax.toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between font-bold text-pink-800 pt-1 border-t border-pink-200">
+                                <span>総額</span>
+                                <span>¥{gift.commission_info.total.toLocaleString()}</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         <button className="p-2 bg-pink-50 rounded-xl hover:bg-pink-100 transition-colors">
@@ -599,32 +640,28 @@ export default function GiftsPage() {
                     <span className="font-bold text-pink-800">{selectedGift.points_required.toLocaleString()} pt</span>
                   </div>
                   
-                  {/* 外部ギフトの場合は手数料を表示 */}
-                  {selectedGift.is_external_gift && selectedGift.commission_info && (
-                    <>
-                      <div className="border-t border-pink-200 pt-2 mt-2">
-                        <p className="text-xs text-pink-600 mb-1">手数料詳細 ({selectedGift.external_brand_name})</p>
-                        <div className="space-y-1 text-xs">
-                          <div className="flex justify-between">
-                            <span className="text-pink-600">ギフト金額</span>
-                            <span className="text-pink-700">¥{selectedGift.commission_info.price.toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-pink-600">手数料</span>
-                            <span className="text-pink-700">¥{selectedGift.commission_info.commission.toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-pink-600">消費税</span>
-                            <span className="text-pink-700">¥{selectedGift.commission_info.commission_tax.toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between font-bold border-t border-pink-200 pt-1">
-                            <span className="text-pink-800">総額</span>
-                            <span className="text-pink-800">¥{selectedGift.commission_info.total.toLocaleString()}</span>
-                          </div>
-                        </div>
+                  {/* 外部ギフトの手数料情報 */}
+                  {selectedGift.commission_info && selectedGift.commission_info.commission > 0 && (
+                    <div className="pt-2 border-t border-pink-200 space-y-1">
+                      <div className="flex justify-between text-pink-600">
+                        <span>本体価格</span>
+                        <span>¥{selectedGift.commission_info.price.toLocaleString()}</span>
                       </div>
-                    </>
+                      <div className="flex justify-between text-pink-600">
+                        <span>手数料 (5%)</span>
+                        <span>¥{selectedGift.commission_info.commission.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-pink-600">
+                        <span>消費税 (10%)</span>
+                        <span>¥{selectedGift.commission_info.commission_tax.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between font-bold text-pink-800 pt-1 border-t border-pink-200">
+                        <span>総額</span>
+                        <span>¥{selectedGift.commission_info.total.toLocaleString()}</span>
+                      </div>
+                    </div>
                   )}
+
                   
                   <div className="flex justify-between border-t border-pink-200 pt-2">
                     <span className="text-pink-600">所持ポイント</span>
@@ -720,6 +757,142 @@ export default function GiftsPage() {
                   className="flex-1 py-3 px-4 bg-gradient-to-r from-pink-400 to-rose-500 text-white rounded-xl font-semibold hover:from-pink-500 hover:to-rose-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isExchanging ? '交換中...' : '交換確定'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ギフトコード表示モーダル */}
+        {showGiftCodeModal && exchangeResult && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => {
+            setShowGiftCodeModal(false)
+            setSelectedGift(null)
+          }}>
+            <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+              {/* 成功アイコン */}
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-pink-800 mb-2">交換完了！</h3>
+                <p className="text-pink-600">{exchangeResult.gift?.name}</p>
+              </div>
+
+              {/* ギフトコード情報 */}
+              <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-5 space-y-4">
+                {/* デジタルコード */}
+                {exchangeResult.digital_code && (
+                  <div>
+                    <label className="text-sm text-pink-600 font-semibold mb-2 block">ギフトコード</label>
+                    <div className="flex gap-2">
+                      <div className="flex-1 bg-white px-4 py-3 rounded-lg font-mono text-lg font-bold text-pink-800 border-2 border-pink-200">
+                        {exchangeResult.digital_code}
+                      </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(exchangeResult.digital_code)
+                          alert('ギフトコードをコピーしました！')
+                        }}
+                        className="px-4 py-3 bg-gradient-to-r from-pink-400 to-rose-500 text-white rounded-lg font-semibold hover:from-pink-500 hover:to-rose-600 transition-all"
+                      >
+                        コピー
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* QRコード */}
+                {exchangeResult.qr_code_url && (
+                  <div className="text-center">
+                    <label className="text-sm text-pink-600 font-semibold mb-2 block">QRコード</label>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={exchangeResult.qr_code_url}
+                      alt="Gift QR Code"
+                      className="w-48 h-48 mx-auto bg-white p-2 rounded-lg border-2 border-pink-200"
+                    />
+                  </div>
+                )}
+
+                {/* ギフトURL */}
+                {exchangeResult.digital_url && (
+                  <div>
+                    <label className="text-sm text-pink-600 font-semibold mb-2 block">ギフトページ</label>
+                    <a
+                      href={exchangeResult.digital_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-center py-3 px-4 bg-white text-pink-600 rounded-lg font-semibold border-2 border-pink-200 hover:bg-pink-50 transition-colors"
+                    >
+                      ブラウザで開く →
+                    </a>
+                  </div>
+                )}
+
+                {/* コスト情報（外部ギフトの場合） */}
+                {exchangeResult.cost && exchangeResult.cost.commission > 0 && (
+                  <div className="border-t border-pink-200 pt-3">
+                    <label className="text-sm text-pink-600 font-semibold mb-2 block">料金内訳</label>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between text-pink-700">
+                        <span>本体価格</span>
+                        <span>¥{exchangeResult.cost.price.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-pink-700">
+                        <span>手数料 (5%)</span>
+                        <span>¥{exchangeResult.cost.commission.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-pink-700">
+                        <span>消費税 (10%)</span>
+                        <span>¥{exchangeResult.cost.commission_tax.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between font-bold text-pink-800 pt-2 border-t border-pink-200">
+                        <span>総額</span>
+                        <span>¥{exchangeResult.cost.total.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 残高情報 */}
+                <div className="bg-white rounded-lg p-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-pink-600">残りポイント</span>
+                    <span className="text-xl font-bold text-pink-800">{userPoints.toLocaleString()} pt</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 使用方法 */}
+              {exchangeResult.gift?.usage_instructions && (
+                <div className="bg-blue-50 rounded-xl p-4">
+                  <h4 className="text-sm font-bold text-blue-800 mb-2 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    ご利用方法
+                  </h4>
+                  <p className="text-sm text-blue-700">{exchangeResult.gift.usage_instructions}</p>
+                </div>
+              )}
+
+              {/* アクションボタン */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => router.push('/user/my-gifts')}
+                  className="flex-1 py-3 px-4 bg-gradient-to-r from-purple-400 to-indigo-500 text-white rounded-xl font-semibold hover:from-purple-500 hover:to-indigo-600 transition-all"
+                >
+                  マイギフトへ
+                </button>
+                <button
+                  onClick={() => {
+                    setShowGiftCodeModal(false)
+                    setSelectedGift(null)
+                  }}
+                  className="flex-1 py-3 px-4 bg-gradient-to-r from-pink-400 to-rose-500 text-white rounded-xl font-semibold hover:from-pink-500 hover:to-rose-600 transition-all"
+                >
+                  閉じる
                 </button>
               </div>
             </div>

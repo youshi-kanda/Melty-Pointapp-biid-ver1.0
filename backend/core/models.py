@@ -690,17 +690,19 @@ class Gift(models.Model):
     def __str__(self):
         return f"{self.name} ({self.points_required} pts)"
     
-    def calculate_commission(self):
-        """手数料計算"""
+    def calculate_total_cost(self):
+        """手数料込みの総コスト計算"""
         if not self.is_external_gift or not self.external_brand or not self.external_price:
+            # 内部ギフトの場合は手数料なし
             return {
-                'price': 0,
+                'price': self.points_required,
                 'commission': 0,
                 'commission_tax': 0,
-                'total': 0,
+                'total': self.points_required,
                 'currency': 'JPY'
             }
         
+        # 外部ギフトの場合は external_brand の計算を使用
         return self.external_brand.calculate_total_cost(self.external_price)
     
     def is_available(self):

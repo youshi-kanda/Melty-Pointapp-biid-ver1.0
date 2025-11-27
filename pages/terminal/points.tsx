@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import TerminalHead from '@/components/terminal/TerminalHead';
 import { Store, Clock, Coins, User, Gift, CheckCircle, ArrowLeft } from 'lucide-react';
 
 export default function TerminalPoints() {
@@ -26,9 +26,7 @@ export default function TerminalPoints() {
 
   return (
     <>
-      <Head>
-        <title>ポイント付与 - Melty+ Terminal</title>
-      </Head>
+      <TerminalHead title="ポイント付与 - Melty+ Terminal" />
 
       <div className="min-h-screen bg-gray-50 flex flex-col">
         {/* 上部バナー */}

@@ -1,4 +1,47 @@
 /** @type {import('next').NextConfig} */
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development',
+  runtimeCaching: [
+    {
+      urlPattern: /^https:\/\/biid-user-api\.fly\.dev\/api\/.*/i,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'api-cache',
+        expiration: {
+          maxEntries: 32,
+          maxAgeSeconds: 24 * 60 * 60 // 24 hours
+        },
+        networkTimeoutSeconds: 10
+      }
+    },
+    {
+      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'image-cache',
+        expiration: {
+          maxEntries: 64,
+          maxAgeSeconds: 30 * 24 * 60 * 60 // 30 days
+        }
+      }
+    },
+    {
+      urlPattern: /\.(?:js|css)$/i,
+      handler: 'StaleWhileRevalidate',
+      options: {
+        cacheName: 'static-resources',
+        expiration: {
+          maxEntries: 64,
+          maxAgeSeconds: 7 * 24 * 60 * 60 // 7 days
+        }
+      }
+    }
+  ]
+})
+
 const isDocker = process.env.BUILD_TARGET === 'docker';
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -19,7 +62,8 @@ const nextConfig = {
   },
   
   // 静的エクスポート設定
-  output: isDocker && isProduction ? 'standalone' : 'export',
+  // 開発環境では通常モード、本番環境ではexportモード
+  ...(isProduction && !isDocker ? { output: 'export' } : {}),
   
   // 環境変数の公開設定（クライアントサイドで使用）
   env: {
@@ -30,4 +74,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+module.exports = withPWA(nextConfig)

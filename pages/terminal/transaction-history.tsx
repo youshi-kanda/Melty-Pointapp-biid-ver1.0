@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import TerminalHead from '@/components/terminal/TerminalHead';
 import { ArrowLeft, Search, Filter, Download, DollarSign, Gift, TrendingUp, Calendar } from 'lucide-react';
 
 interface Transaction {
@@ -142,11 +142,9 @@ export default function TransactionHistory() {
 
   return (
     <>
-      <Head>
-        <title>取引履歴 - Melty+ Terminal</title>
-      </Head>
+      <TerminalHead title="取引履歴 - Melty+ Terminal" />
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
         {/* ヘッダー */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 sm:px-6 py-3 shadow-md sticky top-0 z-10">
           <div className="max-w-6xl mx-auto flex items-center justify-between">

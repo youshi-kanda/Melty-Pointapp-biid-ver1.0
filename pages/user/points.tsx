@@ -48,10 +48,6 @@ export default function PointsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadPointsData()
-  }, [router])
-
   const loadPointsData = async () => {
     try {
       setIsLoading(true)
@@ -60,7 +56,7 @@ export default function PointsPage() {
       // JWTトークンを取得
       const token = localStorage.getItem('auth_token')
       if (!token) {
-        router.push('/user/login')
+        window.location.href = '/user/login.html'
         return
       }
 
@@ -194,7 +190,7 @@ export default function PointsPage() {
               {/* 左側: 戻るボタン + タイトル */}
               <div className="flex items-center space-x-2 sm:space-x-4">
                 <button
-                  onClick={() => router.push('/user')}
+                  onClick={() => window.location.href = '/user/'}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <ArrowLeft className="w-5 h-5 text-gray-600" />
@@ -343,13 +339,13 @@ export default function PointsPage() {
           {/* アクションボタン */}
           <div className="mt-6 sm:mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
-              onClick={() => router.push('/user/gifts')}
+              onClick={() => window.location.href = '/user/gifts.html'}
               className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
             >
               ギフトと交換する
             </button>
             <button
-              onClick={() => router.push('/user/map')}
+              onClick={() => window.location.href = '/user/map.html'}
               className="bg-white hover:bg-gray-50 text-gray-900 font-medium py-3 px-6 rounded-lg border border-gray-200 transition-colors duration-200 shadow-sm hover:shadow"
             >
               ポイントが貯まる店舗を探す

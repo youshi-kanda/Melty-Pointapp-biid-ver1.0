@@ -1,0 +1,122 @@
+{
+  "name": "Melty+ (メルティプラス)",
+  "short_name": "Melty+",
+  "description": "大阪ミナミ・北新地のポイント＆ギフトアプリ",
+  "start_url": "/user/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ec4899",
+  "orientation": "portrait-primary",
+  "scope": "/user/",
+  "lang": "ja",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icons/user-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/user-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/user-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/user-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/user-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/user-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/user-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/user-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/user-home.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Melty+ ホーム画面"
+    },
+    {
+      "src": "/screenshots/user-points.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "ポイント画面"
+    }
+  ],
+  "categories": ["lifestyle", "shopping", "finance"],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "ポイント確認",
+      "short_name": "ポイント",
+      "description": "現在のポイント残高を確認",
+      "url": "/user/points.html",
+      "icons": [
+        {
+          "src": "/icons/shortcut-points.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "ギフト交換",
+      "short_name": "ギフト",
+      "description": "ポイントでギフトと交換",
+      "url": "/user/gifts.html",
+      "icons": [
+        {
+          "src": "/icons/shortcut-gift.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "店舗検索",
+      "short_name": "店舗",
+      "description": "近くの加盟店を探す",
+      "url": "/user/map.html",
+      "icons": [
+        {
+          "src": "/icons/shortcut-map.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

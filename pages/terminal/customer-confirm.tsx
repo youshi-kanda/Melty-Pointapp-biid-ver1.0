@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import TerminalHead from '@/components/terminal/TerminalHead';
 import { User, Coins, Award, Gift, ArrowRight, X, DollarSign, Plus } from 'lucide-react';
 
 export default function CustomerConfirm() {
@@ -46,9 +46,7 @@ export default function CustomerConfirm() {
   if (loading) {
     return (
       <>
-        <Head>
-          <title>顧客情報確認 - Melty+ Terminal</title>
-        </Head>
+        <TerminalHead title="顧客情報確認 - Melty+ Terminal" />
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -61,9 +59,7 @@ export default function CustomerConfirm() {
 
   return (
     <>
-      <Head>
-        <title>顧客情報確認 - Melty+ Terminal</title>
-      </Head>
+      <TerminalHead title="顧客情報確認 - Melty+ Terminal" />
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
         {/* ヘッダー */}

@@ -24,7 +24,9 @@ export default function StoreLogin() {
     
     // 実際のAPI認証処理はここに追加
     if (email && password) {
-      router.push('/store');
+      // 開発環境ではNext.jsルーティング、本番環境では静的パス
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      window.location.href = isDevelopment ? '/store/' : '/static/store/';
     }
   };
 

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
-import StoreSidebar from '@/components/store/StoreSidebar'
+import StoreSidebar from '../../components/store/Sidebar'
 import { 
   FileText, Clock, CheckCircle, XCircle, 
   Eye, MessageCircle, Send, Image as ImageIcon,
-  Loader, Search, Filter, AlertTriangle, Check, X
+  Loader, Search, Filter, AlertTriangle, Check, X,
+  Bell, User, ChevronDown, Menu
 } from 'lucide-react'
 import { getApiUrl } from '@/lib/api-config'
 
@@ -213,20 +214,70 @@ export default function StoreECRequestsPage() {
       <Head>
         <title>EC購入申請管理 - Melty+</title>
       </Head>
-      <div className="flex h-screen bg-gray-50">
-        <StoreSidebar currentPage="ec-requests" />
+      <div className="min-h-screen relative overflow-hidden">
+        {/* 背景グラデーション */}
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100"></div>
         
-        <div className="flex-1 overflow-auto">
-          <div className="p-8">
-            {/* ヘッダー */}
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">EC購入申請管理</h1>
-              <p className="text-gray-600">ユーザーからのポイント付与申請を管理</p>
-            </div>
+        {/* ドットパターン */}
+        <div 
+          className="absolute inset-0 opacity-40"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e0e7ff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+          }}
+        ></div>
 
-            {/* フィルターと検索 */}
-            <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="relative z-10">
+          <StoreSidebar currentPage="ec-requests" />
+        
+        <div className="md:pl-64 flex flex-col flex-1">
+          {/* ヘッダー */}
+          <div className="sticky top-0 z-10 flex-shrink-0 flex h-14 bg-white/95 backdrop-blur-md shadow-sm border-b border-white/20">
+            <button className="px-3 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 md:hidden">
+              <Menu className="h-5 w-5" />
+            </button>
+            <div className="flex-1 px-3 flex justify-between items-center">
+              <div className="flex items-center">
+                <h1 className="text-lg font-semibold text-gray-900">EC購入申請管理</h1>
+              </div>
+              <div className="flex items-center space-x-4">
+                {/* 検索バー */}
+                <div className="relative hidden md:block">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl leading-5 bg-white/50 backdrop-blur-md placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-300"
+                    placeholder="検索..."
+                    type="search"
+                  />
+                </div>
+                {/* 通知 */}
+                <button className="bg-white/50 backdrop-blur-md p-2 rounded-xl text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 hover:bg-white/70">
+                  <Bell className="h-5 w-5" />
+                </button>
+                {/* ユーザーメニュー */}
+                <div className="relative">
+                  <button className="max-w-xs bg-white/50 backdrop-blur-md flex items-center text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 px-3 py-2 transition-all duration-300 hover:bg-white/70">
+                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center">
+                      <User className="h-5 w-5 text-white" />
+                    </div>
+                    <span className="ml-2 text-gray-700 text-sm font-medium hidden md:block">店長</span>
+                    <ChevronDown className="ml-2 h-4 w-4 text-gray-500" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* メインコンテンツ */}
+          <main className="flex-1 overflow-auto">
+            <div className="py-4">
+              <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6">
+                <div className="space-y-4">
+
+                  {/* フィルターと検索 */}
+                  <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* ステータスフィルター */}
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">
@@ -269,15 +320,15 @@ export default function StoreECRequestsPage() {
                 <p className="text-gray-600 mt-4">読み込み中...</p>
               </div>
             ) : filteredRequests.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+              <div className="bg-white rounded-lg shadow-sm p-12 text-center border border-gray-200">
                 <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-600">申請がありません</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
                 {filteredRequests.map(request => (
-                  <div key={request.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-                    <div className="p-6">
+                  <div key={request.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200">
+                    <div className="p-4">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-2">
@@ -446,12 +497,14 @@ export default function StoreECRequestsPage() {
                 ))}
               </div>
             )}
-          </div>
+                </div>
+              </div>
+            </div>
+          </main>
         </div>
-      </div>
 
-      {/* 拒否モーダル */}
-      {showRejectModal && (
+        {/* 拒否モーダル */}
+        {showRejectModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
             <div className="flex items-center space-x-3 mb-4">
@@ -492,6 +545,8 @@ export default function StoreECRequestsPage() {
           </div>
         </div>
       )}
+      </div>
+    </div>
     </>
   )
 }

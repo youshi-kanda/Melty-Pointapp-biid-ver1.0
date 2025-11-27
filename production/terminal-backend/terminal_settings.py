@@ -17,9 +17,9 @@ ALLOWED_HOSTS = os.getenv('TERMINAL_ALLOWED_HOSTS', 'terminal.biid.app,localhost
 
 # 静的ファイル設定（決済端末画面専用）
 STATIC_URL = '/static/'
-STATIC_ROOT = Path(__file__).resolve().parent / 'staticfiles'
+STATIC_ROOT = '/app/staticfiles'
 STATICFILES_DIRS = [
-    Path(__file__).resolve().parent / 'static',
+    '/app/static',
 ]
 
 # テンプレート設定
@@ -29,6 +29,7 @@ TEMPLATES[0]['DIRS'].append(Path(__file__).resolve().parent / 'templates')
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # 静的ファイル配信用
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -100,4 +101,4 @@ TERMINAL_FEATURES = {
 }
 
 # URL設定 - 決済端末専用URLを使用
-ROOT_URLCONF = 'urls'
+ROOT_URLCONF = 'pointapp.urls'

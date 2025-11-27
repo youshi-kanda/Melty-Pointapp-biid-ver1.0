@@ -1,0 +1,40 @@
+# BIID Point App - Store Backend Dockerfile (Simplified)
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    gettext \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Copy and install Python dependencies
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy backend code
+COPY backend ./backend
+
+# Copy store-backend specific files
+COPY production/store-backend/store_settings.py ./backend/
+COPY production/store-backend/static ./static
+COPY production/store-backend/.env.production ./backend/.env
+
+# Create necessary directories
+RUN mkdir -p /var/log/biid static media
+
+WORKDIR /app/backend
+
+ENV DJANGO_SETTINGS_MODULE=store_settings
+ENV PORT=8000
+
+EXPOSE 8000
+
+# Run migrations and start server
+CMD python manage.py migrate --noinput && \
+    python manage.py collectstatic --noinput && \
+    gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 pointapp.wsgi:application

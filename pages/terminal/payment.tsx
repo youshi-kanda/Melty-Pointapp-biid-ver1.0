@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import TerminalHead from '@/components/terminal/TerminalHead';
 import { Store, Clock, CheckCircle, CreditCard, User, Coins, ArrowLeft } from 'lucide-react';
 
 export default function TerminalPayment() {
@@ -46,9 +46,7 @@ export default function TerminalPayment() {
 
   return (
     <>
-      <Head>
-        <title>決済処理 - Melty+ Terminal</title>
-      </Head>
+      <TerminalHead title="決済処理 - Melty+ Terminal" />
 
       <div className="min-h-screen bg-gray-50 flex flex-col">
         {/* プログレスバー */}

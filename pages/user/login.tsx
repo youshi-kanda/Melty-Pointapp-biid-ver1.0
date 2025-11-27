@@ -53,7 +53,7 @@ export default function LoginPage() {
         }
 
         // マップ画面へリダイレクト
-        router.push('/user/map')
+        window.location.href = '/user/map.html'
       } else {
         setError(data.error || data.message || 'ログインに失敗しました。メールアドレスとパスワードを確認してください。')
         setIsLoading(false)

@@ -14,7 +14,8 @@ from .models import (
     User, Store, PointTransaction, AccountRank, 
     PaymentTransaction, Receipt, Notification,
     Gift, GiftCategory, SecurityLog, AuditLog,
-    MeltyRankConfiguration
+    MeltyRankConfiguration, APIAccessKey, DigitalGiftBrand,
+    DigitalGiftPurchaseID, DigitalGiftPurchase
 )
 
 # ===== 基本設定 =====
@@ -202,6 +203,154 @@ class MeltyRankConfigurationAdmin(BaseAdmin):
             'fields': ('is_active', 'description')
         }),
     )
+
+
+# ===== デジタルギフトAPI関連 =====
+@admin.register(APIAccessKey)
+class APIAccessKeyAdmin(BaseAdmin):
+    """RealPay APIアクセスキー管理"""
+    list_display = ('key_display', 'environment', 'is_active', 'created_at', 'last_used_at')
+    list_filter = ('environment', 'is_active', 'created_at')
+    search_fields = ('key', 'environment')
+    readonly_fields = ('created_at', 'updated_at', 'last_used_at')
+    
+    fieldsets = (
+        ('API認証情報', {
+            'fields': ('key', 'shared_secret', 'environment', 'is_active')
+        }),
+        ('TOTP設定', {
+            'fields': ('time_step', 'totp_digits'),
+            'classes': ('collapse',)
+        }),
+        ('利用状況', {
+            'fields': ('created_at', 'updated_at', 'last_used_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def key_display(self, obj):
+        """キーを部分的に表示"""
+        return f"{obj.key[:20]}..." if obj.key else ""
+    key_display.short_description = 'APIキー'
+    
+    def save_model(self, request, obj, form, change):
+        """保存時にバリデーション"""
+        if len(obj.key) != 40:
+            from django.contrib import messages
+            messages.error(request, 'APIキーは40文字である必要があります')
+            return
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(DigitalGiftBrand)
+class DigitalGiftBrandAdmin(BaseAdmin):
+    """デジタルギフトブランド管理"""
+    list_display = ('code', 'name', 'min_price_display', 'max_price_display', 'commission_rate', 'is_active', 'last_synced')
+    list_filter = ('is_active', 'last_synced')
+    search_fields = ('code', 'name')
+    readonly_fields = ('last_synced',)
+    
+    fieldsets = (
+        ('基本情報', {
+            'fields': ('code', 'name', 'description', 'logo_url')
+        }),
+        ('金額設定', {
+            'fields': ('min_price', 'max_price', 'supported_prices')
+        }),
+        ('手数料設定', {
+            'fields': ('commission_rate', 'commission_tax_rate')
+        }),
+        ('状態', {
+            'fields': ('is_active', 'last_synced')
+        }),
+    )
+    
+    def min_price_display(self, obj):
+        return f"¥{obj.min_price:,}" if obj.min_price else "¥0"
+    min_price_display.short_description = '最小金額'
+    
+    def max_price_display(self, obj):
+        return f"¥{obj.max_price:,}" if obj.max_price else "¥0"
+    max_price_display.short_description = '最大金額'
+    
+    actions = ['sync_from_api']
+    
+    def sync_from_api(self, request, queryset):
+        """APIからブランド情報を同期"""
+        from .digital_gift_client import DigitalGiftAPIClient
+        
+        api_key = APIAccessKey.objects.filter(is_active=True).first()
+        if not api_key:
+            self.message_user(request, '有効なAPIアクセスキーがありません', level='error')
+            return
+        
+        try:
+            client = DigitalGiftAPIClient(api_key)
+            brands = client.get_brands()
+            self.message_user(request, f'{len(brands)}件のブランド情報を同期しました', level='success')
+        except Exception as e:
+            self.message_user(request, f'同期エラー: {e}', level='error')
+    
+    sync_from_api.short_description = 'APIからブランド情報を同期'
+
+
+@admin.register(DigitalGiftPurchaseID)
+class DigitalGiftPurchaseIDAdmin(BaseAdmin):
+    """購入ID管理"""
+    list_display = ('purchase_id_display', 'name', 'issuer', 'created_at', 'is_active')
+    list_filter = ('is_active', 'created_at')
+    search_fields = ('purchase_id', 'name', 'issuer')
+    readonly_fields = ('purchase_id', 'created_at')
+    
+    fieldsets = (
+        ('購入ID情報', {
+            'fields': ('purchase_id', 'name', 'issuer')
+        }),
+        ('設定', {
+            'fields': ('prices', 'brand_codes', 'is_strict')
+        }),
+        ('デザイン', {
+            'fields': ('color_main', 'color_sub', 'image_face_url', 'image_header_url'),
+            'classes': ('collapse',)
+        }),
+        ('状態', {
+            'fields': ('is_active', 'created_at')
+        }),
+    )
+    
+    def purchase_id_display(self, obj):
+        return f"{obj.purchase_id[:20]}..." if obj.purchase_id else ""
+    purchase_id_display.short_description = '購入ID'
+
+
+@admin.register(DigitalGiftPurchase)
+class DigitalGiftPurchaseAdmin(BaseAdmin):
+    """ギフト購入履歴管理"""
+    list_display = ('gift_code_display', 'user', 'price', 'total_cost', 'status', 'purchased_at')
+    list_filter = ('status', 'purchased_at')
+    search_fields = ('gift_code', 'user__username', 'user__email')
+    readonly_fields = ('purchased_at',)
+    date_hierarchy = 'purchased_at'
+    
+    fieldsets = (
+        ('購入情報', {
+            'fields': ('user', 'purchase_id', 'gift_code', 'gift_url')
+        }),
+        ('金額', {
+            'fields': ('price', 'commission', 'commission_tax', 'total_cost')
+        }),
+        ('状態', {
+            'fields': ('status', 'purchased_at', 'expire_at')
+        }),
+        ('追加情報', {
+            'fields': ('qr_code_url', 'request_id'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def gift_code_display(self, obj):
+        return f"{obj.gift_code[:15]}..." if obj.gift_code else ""
+    gift_code_display.short_description = 'ギフトコード'
 
 
 # ===== 管理画面カスタマイズ =====

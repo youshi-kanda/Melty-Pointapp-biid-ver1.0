@@ -31,6 +31,7 @@ export default function StoreSidebar({ currentPage }: StoreSidebarProps) {
     { icon: Store, label: '店舗情報', sublabel: 'プロフィール・基本情報', href: '/store/profile', id: 'profile' },
     { icon: CreditCard, label: 'チャージ', sublabel: 'アカウントチャージ', href: '/store/charge', id: 'charge' },
     { icon: Receipt, label: 'レシート', sublabel: '取引履歴・レシート', href: '/store/receipt', id: 'receipt' },
+    { icon: Gift, label: 'EC購入申請', sublabel: 'オンライン購入・承認', href: '/store/ec-requests', id: 'ec-requests' },
     { icon: BarChart3, label: '月次レポート', sublabel: '売上・統計レポート', href: '/store/reports', id: 'reports' },
     { icon: Megaphone, label: 'プロモーション', sublabel: 'キャンペーン管理', href: '/store/promotions', id: 'promotions' },
     { icon: Settings, label: '設定', sublabel: 'システム設定', href: '/store/settings', id: 'settings' },
@@ -38,7 +39,7 @@ export default function StoreSidebar({ currentPage }: StoreSidebarProps) {
 
   const handleLogout = () => {
     console.log('ログアウト');
-    router.push('/store/login');
+    window.location.href = '/static/store/login.html';
   };
 
   return (
@@ -62,26 +63,26 @@ export default function StoreSidebar({ currentPage }: StoreSidebarProps) {
       {/* サイドバー */}
       <aside
         className={`
-          fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-purple-600 via-pink-600 to-purple-700 text-white shadow-2xl z-40 transform transition-transform duration-300
+          fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-40 transform transition-transform duration-300
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0
         `}
       >
         {/* ロゴ */}
-        <div className="p-6 border-b border-white/10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <Gift size={24} className="text-white" />
+        <div className="p-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
+          <div className="flex items-center gap-2.5 mb-1.5">
+            <div className="w-9 h-9 rounded-xl bg-white/30 flex items-center justify-center shadow-md">
+              <Gift size={20} className="text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">Biid Point</h1>
-              <p className="text-xs text-purple-200">Management</p>
+              <h1 className="text-xl font-bold text-white">Melty+</h1>
+              <p className="text-xs text-white/80">店舗管理システム</p>
             </div>
           </div>
         </div>
 
         {/* メニュー */}
-        <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100vh-280px)]">
+        <nav className="p-3 space-y-1 overflow-y-auto h-[calc(100vh-260px)]">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPage === item.id || router.pathname === item.href;
@@ -91,21 +92,21 @@ export default function StoreSidebar({ currentPage }: StoreSidebarProps) {
                 key={item.id}
                 href={item.href}
                 className={`
-                  block px-4 py-3 rounded-lg transition-all group
+                  block px-3 py-2 rounded-lg transition-all group
                   ${isActive 
-                    ? 'bg-white/20 backdrop-blur-sm shadow-lg border border-white/20' 
-                    : 'hover:bg-white/10'
+                    ? 'bg-indigo-50 border-l-4 border-indigo-500' 
+                    : 'hover:bg-gray-50'
                   }
                 `}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <div className="flex items-center gap-3">
-                  <Icon size={20} className={isActive ? 'text-white' : 'text-white/80 group-hover:text-white'} />
+                <div className="flex items-center gap-2.5">
+                  <Icon size={18} className={isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600'} />
                   <div className="flex-1">
-                    <div className={`font-medium text-sm ${isActive ? 'text-white' : 'text-white/90 group-hover:text-white'}`}>
+                    <div className={`font-medium text-sm ${isActive ? 'text-indigo-700' : 'text-gray-600 group-hover:text-gray-900'}`}>
                       {item.label}
                     </div>
-                    <div className="text-xs text-white/60 mt-0.5">{item.sublabel}</div>
+                    <div className={`text-xs mt-0.5 ${isActive ? 'text-indigo-500' : 'text-gray-400'}`}>{item.sublabel}</div>
                   </div>
                 </div>
               </Link>
@@ -114,46 +115,35 @@ export default function StoreSidebar({ currentPage }: StoreSidebarProps) {
         </nav>
 
         {/* 店舗情報 & ログアウト */}
-        <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-black/10">
-          {/* 店舗情報 */}
-          <div className="p-4 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <User size={20} className="text-white" />
+        <div className="absolute bottom-0 left-0 right-0 border-t border-gray-100 bg-white">
+          {/* 今日の状況 */}
+          <div className="px-3 pt-3 pb-2.5 border-b border-gray-100">
+            <div className="text-xs text-gray-500 mb-1.5">今日の状況</div>
+            <div className="space-y-1 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600">売上</span>
+                <span className="font-semibold text-green-600">¥45,000</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-white truncate">店長</div>
-                <div className="text-xs text-purple-200 truncate">store@example.com</div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600">取引数</span>
+                <span className="font-semibold text-indigo-600">23</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600">ポイント発行</span>
+                <span className="font-semibold text-indigo-600">2,340pt</span>
               </div>
             </div>
           </div>
 
-          {/* ログアウト */}
-          <div className="p-4">
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-3 px-4 py-2 w-full rounded-lg text-white hover:bg-white/10 transition-all"
-            >
-              <LogOut size={18} />
-              <span className="text-sm font-medium">ログアウト</span>
-            </button>
-          </div>
-
-          {/* 今日の状況 */}
-          <div className="px-4 pb-4">
-            <div className="text-xs text-purple-200 mb-2">今日の状況</div>
-            <div className="space-y-1 text-xs">
-              <div className="flex items-center justify-between text-white/80">
-                <span>売上</span>
-                <span className="font-semibold text-white">¥45,000</span>
+          {/* 店舗情報 */}
+          <div className="p-3 border-b border-gray-100">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center shadow-sm">
+                <User size={18} className="text-white" />
               </div>
-              <div className="flex items-center justify-between text-white/80">
-                <span>取引数</span>
-                <span className="font-semibold text-white">23</span>
-              </div>
-              <div className="flex items-center justify-between text-white/80">
-                <span>ポイント発行</span>
-                <span className="font-semibold text-emerald-300">2,340pt</span>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-gray-800 truncate">店長</div>
+                <div className="text-xs text-gray-500 truncate">store@example.com</div>
               </div>
             </div>
           </div>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import TerminalHead from '@/components/terminal/TerminalHead';
 import { ArrowLeft, Check, Coins, DollarSign, User, Award, Gift } from 'lucide-react';
 
 export default function PaymentConfirm() {
@@ -37,9 +37,7 @@ export default function PaymentConfirm() {
 
   return (
     <>
-      <Head>
-        <title>決済確認 - Melty+ Terminal</title>
-      </Head>
+      <TerminalHead title="決済確認 - Melty+ Terminal" />
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
         {/* ヘッダー */}

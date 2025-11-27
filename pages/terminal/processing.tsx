@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import TerminalHead from '@/components/terminal/TerminalHead';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 
 export default function Processing() {
@@ -54,18 +54,16 @@ export default function Processing() {
     router.push('/terminal/');
   };
 
+  const pageTitle = `${
+    status === 'processing' ? '決済処理中' : 
+    status === 'success' ? '決済成功' : '決済エラー'
+  } - Melty+ Terminal`;
+
   return (
     <>
-      <Head>
-        <title>
-          {status === 'processing' && '決済処理中'}
-          {status === 'success' && '決済成功'}
-          {status === 'error' && '決済エラー'}
-          - Melty+ Terminal
-        </title>
-      </Head>
+      <TerminalHead title={pageTitle} />
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6">
         <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
           
           {/* 処理中 */}

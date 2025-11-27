@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import TerminalHead from '@/components/terminal/TerminalHead';
 import { QrCode, X, AlertCircle, CheckCircle, Camera, Smartphone } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { QRCodeSVG } from 'qrcode.react';
@@ -196,9 +196,7 @@ export default function QRScan() {
 
   return (
     <>
-      <Head>
-        <title>QRスキャン - Melty+ Terminal</title>
-      </Head>
+      <TerminalHead title="QRスキャン - Melty+ Terminal" />
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
         {/* ヘッダー */}

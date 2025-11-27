@@ -5,7 +5,7 @@ app = "biid-user-api"
 primary_region = "nrt"  # Tokyo (Narita)
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = "Dockerfile.simple"
 
 [env]
   PORT = "8003"
@@ -23,7 +23,7 @@ primary_region = "nrt"  # Tokyo (Narita)
   cpus = 1
 
 [[services]]
-  internal_port = 8003
+  internal_port = 8000
   protocol = "tcp"
 
   [[services.ports]]

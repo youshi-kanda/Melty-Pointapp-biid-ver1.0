@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import TerminalHead from '@/components/terminal/TerminalHead';
 import { Store, Eye, EyeOff } from 'lucide-react';
 
 export default function TerminalLogin() {
@@ -19,11 +19,9 @@ export default function TerminalLogin() {
 
   return (
     <>
-      <Head>
-        <title>決済端末ログイン - Melty+ Terminal</title>
-      </Head>
+      <TerminalHead title="決済端末ログイン - Melty+ Terminal" />
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center p-4 sm:p-6">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8">
           {/* ロゴ */}
           <div className="text-center mb-6 sm:mb-8">

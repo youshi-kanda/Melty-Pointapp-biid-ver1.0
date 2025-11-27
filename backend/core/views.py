@@ -414,10 +414,14 @@ class GiftListView(generics.ListAPIView):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         
-        # 在庫状況を追加
+        # 在庫状況と手数料情報を追加
         for item in serializer.data:
             gift = Gift.objects.get(id=item['id'])
             item['is_available'] = gift.is_available()
+            
+            # 外部ギフトの場合、手数料込みコスト情報を追加
+            if gift.is_external_gift and gift.external_brand and gift.external_price:
+                item['commission_info'] = gift.calculate_total_cost()
         
         return Response({
             'success': True,
@@ -521,25 +525,45 @@ class GiftExchangeView(APIView):
                 
                 # デジタルギフトの処理
                 digital_code = None
-                commission_data = None
+                cost_data = None
                 
                 if gift.gift_type == 'digital':
                     if gift.is_external_gift and gift.external_brand and gift.external_price:
                         # RealPay API経由でギフトコード取得
                         try:
-                            digital_code, commission_data = self._purchase_external_gift(gift, exchange)
-                            logger.info(f"External gift purchased: {exchange.exchange_code}, commission: {commission_data}")
+                            digital_code, cost_data = self._purchase_external_gift(gift, exchange)
+                            logger.info(f"External gift purchased: {exchange.exchange_code}, cost: {cost_data}")
+                            
+                            # 外部ギフト購入記録を作成
+                            from .models import DigitalGiftPurchase
+                            DigitalGiftPurchase.objects.create(
+                                user=user,
+                                gift_exchange=exchange,
+                                brand=gift.external_brand,
+                                price=gift.external_price,
+                                commission=cost_data.get('commission', 0),
+                                commission_tax=cost_data.get('commission_tax', 0),
+                                total_cost=cost_data.get('total', 0),
+                                purchase_status='completed'
+                            )
                         except DigitalGiftAPIError as e:
-                            logger.error(f"External gift purchase failed: {e}")
+                            logger.error(f"External gift purchase failed: {e.message}")
                             # トランザクションをロールバック
                             raise Exception(f"デジタルギフトの購入に失敗しました: {e.message}")
+                        except Exception as e:
+                            logger.error(f"Unexpected error during external gift purchase: {e}")
+                            raise Exception(f"デジタルギフトの購入処理中にエラーが発生しました")
                     else:
-                        # 従来のモックコード生成
+                        # 従来のモックコード生成（内部ギフト）
                         digital_code = self._generate_digital_code(gift)
+                        exchange.digital_code = digital_code
+                        
+                        # 内部ギフトのコスト情報を取得
+                        cost_data = gift.calculate_total_cost()
                     
+                    # 交換完了ステータスに更新
                     exchange.status = 'completed'
                     exchange.processed_at = timezone.now()
-                    exchange.digital_code = digital_code
                     exchange.save()
                 
                 # ポイント取引記録を作成
@@ -562,9 +586,9 @@ class GiftExchangeView(APIView):
                     'remaining_points': user.points
                 }
                 
-                # 手数料情報を追加
-                if commission_data:
-                    response_data['commission'] = commission_data
+                # コスト情報を追加
+                if cost_data:
+                    response_data['cost'] = cost_data
                 
                 return Response(response_data, status=status.HTTP_201_CREATED)
                 
@@ -580,12 +604,19 @@ class GiftExchangeView(APIView):
         try:
             client = get_digital_gift_client()
             
-            # 購入IDを作成
+            # 手数料込みの総コスト情報を取得
+            cost_data = gift.calculate_total_cost()
+            logger.info(f"Gift cost calculation: {cost_data}")
+            
+            # 購入IDを作成（30分間有効）
             purchase_id_response = client.create_purchase_id(
                 brand_code=gift.external_brand.code,
                 price=gift.external_price,
                 design_code='default'
             )
+            
+            if not purchase_id_response.get('purchase_id'):
+                raise DigitalGiftAPIError("購入ID取得に失敗しました")
             
             # ギフトを購入
             request_id = f"EXCH-{exchange.exchange_code}-{int(timezone.now().timestamp())}"
@@ -594,26 +625,40 @@ class GiftExchangeView(APIView):
                 request_id=request_id
             )
             
-            # 手数料情報を取得
-            commission_data = gift.calculate_commission()
+            if not gift_response.get('gift_code'):
+                raise DigitalGiftAPIError("ギフトコード取得に失敗しました")
+            
+            # GiftExchangeに詳細情報を保存
+            exchange.digital_code = gift_response.get('gift_code')
+            exchange.digital_url = gift_response.get('gift_url')
+            exchange.qr_code_url = gift_response.get('qr_code_url')
+            exchange.save()
             
             # 使用ログを記録
-            client.log_gift_usage(
-                gift_id=gift_response['gift_id'],
-                user_id=exchange.user.id,
-                action='exchange',
-                details={
-                    'exchange_code': exchange.exchange_code,
-                    'points_spent': gift.points_required,
-                    'commission': commission_data
-                }
-            )
+            try:
+                client.log_gift_usage(
+                    gift_id=gift_response.get('gift_id', ''),
+                    user_id=exchange.user.id,
+                    action='exchange',
+                    details={
+                        'exchange_code': exchange.exchange_code,
+                        'points_spent': gift.points_required,
+                        'cost': cost_data,
+                        'request_id': request_id
+                    }
+                )
+            except Exception as log_error:
+                # ログ記録失敗は警告のみ（トランザクションはロールバックしない）
+                logger.warning(f"Gift usage log failed: {log_error}")
             
-            return gift_response['gift_code'], commission_data
+            return gift_response['gift_code'], cost_data
             
+        except DigitalGiftAPIError as e:
+            logger.error(f"Digital gift API error: {e.message}")
+            raise
         except Exception as e:
             logger.error(f"External gift purchase error: {e}")
-            raise
+            raise DigitalGiftAPIError(f"ギフト購入処理中にエラーが発生しました: {str(e)}")
     
     def _generate_digital_code(self, gift):
         """デジタルギフトコード生成（モック）"""

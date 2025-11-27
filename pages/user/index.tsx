@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 import UserLayout from '@/components/user/Layout'
+import PWAInstallPrompt from '@/components/user/PWAInstallPrompt'
 import { 
   Heart, Zap, MapPin, Users, Gift, 
   CreditCard, TrendingUp, Sparkles, Clock, Activity, Star,
@@ -15,11 +16,11 @@ export default function HomePage() {
   const [points] = useState('48,800')
 
   const handleQuickAction = (action: string) => {
-    router.push(`/user/${action}`)
+    window.location.href = `/user/${action}.html`
   }
 
   const handleSocialAction = () => {
-    router.push('/user/social')
+    window.location.href = '/user/social/'
   }
 
   return (
@@ -261,6 +262,9 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {/* PWAインストールプロンプト */}
+      <PWAInstallPrompt />
     </UserLayout>
   )
 }
