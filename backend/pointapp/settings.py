@@ -138,34 +138,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'pointapp.wsgi.application'
 
-# Database configuration with PostgreSQL support
-import os
+# Database configuration
+import dj_database_url
 
-if config('USE_POSTGRESQL', default=False, cast=bool):
-    # PostgreSQL configuration
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME', default='biid_production'),
-            'USER': config('DB_USER', default='biid_user'),
-            'PASSWORD': config('DB_PASSWORD', default=''),
-            'HOST': config('DB_HOST', default='localhost'),
-            'PORT': config('DB_PORT', default='5432'),
-            'CONN_MAX_AGE': config('DB_CONN_MAX_AGE', default=600, cast=int),
-            'CONN_HEALTH_CHECKS': config('DB_CONN_HEALTH_CHECKS', default=True, cast=bool),
-            'OPTIONS': {
-                'connect_timeout': 10,
-            },
-        }
-    }
-else:
-    # SQLite fallback
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+DATABASES = {
+    'default': config(
+        'DATABASE_URL',
+        default=f'sqlite:///{BASE_DIR}/db.sqlite3',
+        cast=dj_database_url.parse
+    )
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -228,6 +210,11 @@ else:
         'https://biid-admin.fly.dev',
         'https://biid-store.fly.dev',
     ]
+    
+    # 環境変数から追加の許可オリジンを読み込む
+    additional_origins = config('ADDITIONAL_CORS_ORIGINS', default='')
+    if additional_origins:
+        CORS_ALLOWED_ORIGINS.extend([origin.strip() for origin in additional_origins.split(',') if origin.strip()])
     CORS_ALLOW_CREDENTIALS = True
     CORS_ALLOW_HEADERS = [
         'accept',

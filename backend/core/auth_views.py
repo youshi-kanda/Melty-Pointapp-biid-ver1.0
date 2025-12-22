@@ -13,6 +13,7 @@ import qrcode
 from io import BytesIO
 import base64
 import secrets
+from .email_service import email_service
 
 User = get_user_model()
 
@@ -65,26 +66,51 @@ class RoleBasedLoginView(APIView):
         
         # 2FA確認
         if user.is_2fa_enabled:
+            # 2FAトークンが送信されていない場合、認証コードを生成して送信
             if not two_factor_token:
+                # 6桁の認証コード生成
+                verification_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
+                expiration_time = timezone.now() + timedelta(minutes=10)
+                
+                # DBに保存
+                user.email_verification_code = verification_code
+                user.email_verification_expiry = expiration_time
+                user.save()
+                
+                # メール送信
+                email_service.send_2fa_code_email(user, verification_code)
+                
                 return Response({
                     'success': False,
-                    'error': '2FA認証が必要です',
+                    'error': '2FA認証が必要です。メールに送信されたコードを入力してください。',
                     'requires_2fa': True
                 }, status=status.HTTP_200_OK)
             
-            # 2FAトークン検証
-            totp = pyotp.TOTP(user.two_factor_secret)
-            if not totp.verify(two_factor_token, valid_window=1):
-                # バックアップコードも確認
-                if two_factor_token not in user.backup_codes:
-                    return Response({
-                        'success': False,
-                        'error': '2FA認証に失敗しました'
-                    }, status=status.HTTP_401_UNAUTHORIZED)
-                else:
-                    # バックアップコードを使用した場合は削除
-                    user.backup_codes.remove(two_factor_token)
-                    user.save()
+            # 2FAトークン検証 (Email Code)
+            is_valid = False
+            
+            # 有効期限チェック
+            if user.email_verification_code and user.email_verification_expiry:
+                if timezone.now() <= user.email_verification_expiry:
+                    # コード一致チェック
+                    if two_factor_token == user.email_verification_code:
+                        is_valid = True
+            
+            # バックアップコードチェック (Emailコードが無効な場合)
+            if not is_valid and two_factor_token in user.backup_codes:
+                user.backup_codes.remove(two_factor_token)
+                is_valid = True
+                
+            if not is_valid:
+                return Response({
+                    'success': False,
+                    'error': '認証コードが正しくないか、期限切れです'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+                
+            # 認証成功時、使い終わったコードをクリア
+            user.email_verification_code = ''
+            user.email_verification_expiry = None
+            user.save()
         
         # JWT トークン生成
         access_payload = {
@@ -499,4 +525,74 @@ class PasswordResetConfirmView(APIView):
         return Response({
             'success': True,
             'message': 'パスワードがリセットされました'
+        })
+
+
+class EmailTwoFactorSetupView(APIView):
+    """Email authentication 2FA Setup"""
+    
+    def post(self, request):
+        """Initiate setup: Send verification code"""
+        user = request.user
+        
+        if user.is_2fa_enabled:
+            return Response({
+                'success': False,
+                'error': '2FA is already enabled'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Generate code
+        verification_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
+        expiration_time = timezone.now() + timedelta(minutes=10)
+        
+        # Save to DB
+        user.email_verification_code = verification_code
+        user.email_verification_expiry = expiration_time
+        user.save()
+        
+        # Send Email
+        if email_service.send_2fa_code_email(user, verification_code):
+            return Response({
+                'success': True,
+                'message': 'Verification code sent to your email'
+            })
+        else:
+            return Response({
+                'success': False,
+                'error': 'Failed to send email'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def put(self, request):
+        """Verify code and enable 2FA"""
+        user = request.user
+        code = request.data.get('code')
+        
+        if not code:
+            return Response({
+                'success': False,
+                'error': 'Verification code is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Verify
+        is_valid = False
+        if user.email_verification_code and user.email_verification_expiry:
+            if timezone.now() <= user.email_verification_expiry:
+                 if code == user.email_verification_code:
+                     is_valid = True
+        
+        if not is_valid:
+            return Response({
+                'success': False,
+                'error': 'Invalid or expired verification code'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Enable 2FA
+        user.is_2fa_enabled = True
+        user.email_verification_code = ''
+        user.email_verification_expiry = None
+        user.save()
+        
+        return Response({
+            'success': True,
+            'message': 'Two-factor authentication enabled'
         })

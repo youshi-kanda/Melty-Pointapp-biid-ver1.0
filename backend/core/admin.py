@@ -209,21 +209,21 @@ class MeltyRankConfigurationAdmin(BaseAdmin):
 @admin.register(APIAccessKey)
 class APIAccessKeyAdmin(BaseAdmin):
     """RealPay APIアクセスキー管理"""
-    list_display = ('key_display', 'environment', 'is_active', 'created_at', 'last_used_at')
-    list_filter = ('environment', 'is_active', 'created_at')
-    search_fields = ('key', 'environment')
-    readonly_fields = ('created_at', 'updated_at', 'last_used_at')
+    list_display = ('key_display', 'is_active', 'created_at', 'last_used')
+    list_filter = ('is_active', 'created_at')
+    search_fields = ('key',)
+    readonly_fields = ('created_at', 'last_used')
     
     fieldsets = (
         ('API認証情報', {
-            'fields': ('key', 'shared_secret', 'environment', 'is_active')
+            'fields': ('key', 'shared_secret', 'is_active')
         }),
         ('TOTP設定', {
             'fields': ('time_step', 'totp_digits'),
             'classes': ('collapse',)
         }),
         ('利用状況', {
-            'fields': ('created_at', 'updated_at', 'last_used_at'),
+            'fields': ('created_at', 'last_used'),
             'classes': ('collapse',)
         }),
     )
@@ -245,10 +245,9 @@ class APIAccessKeyAdmin(BaseAdmin):
 @admin.register(DigitalGiftBrand)
 class DigitalGiftBrandAdmin(BaseAdmin):
     """デジタルギフトブランド管理"""
-    list_display = ('code', 'name', 'min_price_display', 'max_price_display', 'commission_rate', 'is_active', 'last_synced')
-    list_filter = ('is_active', 'last_synced')
+    list_display = ('code', 'name', 'min_price_display', 'max_price_display', 'commission_rate', 'is_active')
+    list_filter = ('is_active',)
     search_fields = ('code', 'name')
-    readonly_fields = ('last_synced',)
     
     fieldsets = (
         ('基本情報', {
@@ -261,7 +260,7 @@ class DigitalGiftBrandAdmin(BaseAdmin):
             'fields': ('commission_rate', 'commission_tax_rate')
         }),
         ('状態', {
-            'fields': ('is_active', 'last_synced')
+            'fields': ('is_active',)
         }),
     )
     

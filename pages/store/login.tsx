@@ -9,24 +9,75 @@ export default function StoreLogin() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [step, setStep] = useState<'login' | 'verify'>('login');
+  const [verificationCode, setVerificationCode] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
-    if (!email || !password) {
+    if (step === 'login' && (!email || !password)) {
       setError('メールアドレスとパスワードを入力してください');
+      setIsLoading(false);
       return;
     }
 
-    // 開発時はダッシュボードに直接遷移
-    console.log('店舗ログイン試行:', { email, password });
-    
-    // 実際のAPI認証処理はここに追加
-    if (email && password) {
-      // 開発環境ではNext.jsルーティング、本番環境では静的パス
-      const isDevelopment = process.env.NODE_ENV === 'development';
-      window.location.href = isDevelopment ? '/store/' : '/static/store/';
+    if (step === 'verify' && !verificationCode) {
+      setError('認証コードを入力してください');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const payload: any = {
+        email,
+        password,
+        role: 'store_manager'
+      };
+
+      if (step === 'verify') {
+        payload.token = verificationCode;
+      }
+
+      const response = await fetch('/api/auth/login/store/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // 2FA Challenge
+        if (data.requires_2fa) {
+          setStep('verify');
+          setIsLoading(false);
+          return;
+        }
+
+        // Success
+        if (data.success) {
+          if (data.data?.tokens) {
+            localStorage.setItem('accessToken', data.data.tokens.access);
+            localStorage.setItem('refreshToken', data.data.tokens.refresh);
+          }
+
+          // Redirect
+          const isDevelopment = process.env.NODE_ENV === 'development';
+          window.location.href = isDevelopment ? '/store/' : '/static/store/';
+        } else {
+          setError(data.error || '不明なエラーが発生しました');
+        }
+      } else {
+        setError(data.error || 'ログインに失敗しました');
+      }
+
+    } catch (err) {
+      setError('通信エラーが発生しました');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -109,73 +160,114 @@ export default function StoreLogin() {
 
               {/* ログインフォーム */}
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    店舗管理者メールアドレス
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="email"
-                      id="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-3 pl-10 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                      placeholder="store@example.com"
-                      required
-                    />
-                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                </div>
+                {step === 'login' ? (
+                  <>
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                        店舗管理者メールアドレス
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="email"
+                          id="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full px-4 py-3 pl-10 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                          placeholder="store@example.com"
+                          required
+                        />
+                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    </div>
 
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                    パスワード
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      id="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full px-4 py-3 pl-10 pr-12 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                      placeholder="••••••••"
-                      required
-                    />
-                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                    </button>
+                    <div>
+                      <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                        パスワード
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          id="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full px-4 py-3 pl-10 pr-12 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                          placeholder="••••••••"
+                          required
+                        />
+                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                          {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      認証コード (6桁)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        maxLength={6}
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value)}
+                        className="w-full px-4 py-3 pl-10 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-center tracking-widest text-lg"
+                        placeholder="000000"
+                        required
+                        autoFocus
+                      />
+                      <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      {email} 宛に送信された認証コードを入力してください。
+                    </p>
                   </div>
-                </div>
+                )}
 
                 <button
                   type="submit"
-                  className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 via-purple-600 to-purple-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:via-purple-700 hover:to-purple-700 transform hover:-translate-y-0.5 transition-all shadow-lg hover:shadow-xl"
+                  disabled={isLoading}
+                  className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 via-purple-600 to-purple-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:via-purple-700 hover:to-purple-700 transform hover:-translate-y-0.5 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  店舗管理システムにログイン
+                  {isLoading ? '処理中...' : (step === 'login' ? '店舗管理システムにログイン' : '認証してログイン')}
                 </button>
+
+                {step === 'verify' && (
+                  <button
+                    type="button"
+                    onClick={() => { setStep('login'); setError(''); }}
+                    className="w-full text-purple-600 text-sm font-medium hover:underline mt-2"
+                  >
+                    戻る
+                  </button>
+                )}
               </form>
 
               {/* フッターリンク */}
-              <div className="mt-6 text-center space-y-2">
-                <button className="text-sm text-purple-600 hover:text-purple-700 transition-colors">
-                  パスワードを忘れた場合
-                </button>
-                <div className="text-sm text-gray-600">
-                  新規店舗登録は{' '}
-                  <button className="text-purple-600 hover:text-purple-700 font-medium transition-colors">
-                    こちら
+              {step === 'login' && (
+                <div className="mt-6 text-center space-y-2">
+                  <button className="text-sm text-purple-600 hover:text-purple-700 transition-colors">
+                    パスワードを忘れた場合
                   </button>
+                  <div className="text-sm text-gray-600">
+                    新規店舗登録は{' '}
+                    <button className="text-purple-600 hover:text-purple-700 font-medium transition-colors">
+                      こちら
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* デモアカウント */}
               <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">

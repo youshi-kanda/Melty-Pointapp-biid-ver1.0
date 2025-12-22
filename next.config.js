@@ -49,7 +49,7 @@ const nextConfig = {
   reactStrictMode: false,
   swcMinify: true,
   poweredByHeader: false,
-  
+
   // 画像最適化設定
   images: {
     unoptimized: true,
@@ -60,11 +60,13 @@ const nextConfig = {
       },
     ],
   },
-  
+
   // 静的エクスポート設定
   // 開発環境では通常モード、本番環境ではexportモード
-  ...(isProduction && !isDocker ? { output: 'export' } : {}),
-  
+  // ...(isProduction && !isDocker ? { output: 'export' } : {}),
+  // Middlewareを使用するため、本番環境でもNode.jsサーバーモードを使用する
+  output: 'standalone',
+
   // 環境変数の公開設定（クライアントサイドで使用）
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003',

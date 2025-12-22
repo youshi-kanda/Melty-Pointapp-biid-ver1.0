@@ -147,6 +147,53 @@ class EmailService:
         except Exception as e:
             logger.error(f"Failed to send store approval email: {str(e)}")
             return False
+
+    def send_2fa_code_email(self, user: User, code: str) -> bool:
+        """2FA認証コードメールを送信"""
+        try:
+            # テンプレート取得（なければ簡易作成）
+            template = self._get_template('email_2fa_code')
+            
+            # テンプレートがDBにない場合のフォールバック（開発用）
+            if not template:
+                from .models import EmailTemplate
+                template = EmailTemplate(
+                    name='email_2fa_code',
+                    subject='【Melty+】認証コードのお知らせ',
+                    body_html='''
+                        <p>{{ user_name }} 様</p>
+                        <p>ログイン認証コードをお知らせします。</p>
+                        <p style="font-size: 24px; font-weight: bold; letter-spacing: 5px; padding: 20px; background-color: #f5f5f5; text-align: center;">
+                            {{ code }}
+                        </p>
+                        <p>有効期限は発行から10分間です。</p>
+                    ''',
+                    body_text='''
+                        {{ user_name }} 様
+                        
+                        ログイン認証コードをお知らせします。
+                        
+                        コード: {{ code }}
+                        
+                        有効期限は発行から10分間です。
+                    '''
+                )
+
+            context = {
+                'user_name': user.last_name + ' ' + user.first_name if user.last_name else user.username,
+                'code': code,
+            }
+            
+            return self._send_email(
+                template=template,
+                context=context,
+                recipient_email=user.email,
+                notification=None
+            )
+            
+        except Exception as e:
+            logger.error(f"Failed to send 2FA code email: {str(e)}")
+            return False
     
     def _get_template(self, template_name: str) -> Optional[EmailTemplate]:
         """テンプレートを取得"""

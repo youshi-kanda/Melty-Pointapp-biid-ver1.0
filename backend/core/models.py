@@ -43,6 +43,38 @@ class ServiceArea(models.Model):
         )
 
 
+class UserRank(models.Model):
+    """会員ランクマスタ"""
+    name = models.CharField(max_length=50, unique=True, help_text="ランク名 (例: Bronze, Silver)")
+    required_points = models.IntegerField(default=0, help_text="昇格に必要な累計ポイント")
+    
+    # 制限設定 (null=True は無制限)
+    ec_request_monthly_limit = models.IntegerField(null=True, blank=True, help_text="月間のEC申請回数上限 (null=無制限)")
+    digital_gift_monthly_limit = models.IntegerField(null=True, blank=True, help_text="月間のデジタルギフト交換ポイント上限 (null=無制限)")
+    physical_gift_monthly_limit = models.IntegerField(null=True, blank=True, help_text="月間の物理商品交換回数上限 (null=無制限)")
+    favorite_limit = models.IntegerField(null=True, blank=True, help_text="お気に入り登録数上限 (null=無制限)")
+    friend_limit = models.IntegerField(null=True, blank=True, help_text="友達登録数上限 (null=無制限)")
+    social_post_monthly_limit = models.IntegerField(null=True, blank=True, help_text="月間のソーシャル投稿回数上限 (null=無制限)")
+    point_purchase_monthly_limit = models.IntegerField(null=True, blank=True, help_text="月間のポイント購入額上限 (null=無制限)")
+    
+    # 還元率・ボーナス設定
+    visit_point_rate = models.FloatField(default=0.01, help_text="来店ポイント還元率 (0.01=1%)")
+    login_bonus_points = models.IntegerField(default=0, help_text="ログインボーナス (pt/日)")
+    birthday_bonus_points = models.IntegerField(default=0, help_text="誕生日ボーナス (pt)")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'user_ranks'
+        verbose_name = '会員ランク'
+        verbose_name_plural = '会員ランク'
+        ordering = ['required_points']
+
+    def __str__(self):
+        return f"{self.name} ({self.required_points}pt~)"
+
+
 class User(AbstractUser):
     ROLE_CHOICES = [
         ('customer', 'Customer'),
@@ -71,21 +103,46 @@ class User(AbstractUser):
     two_factor_secret = models.CharField(max_length=32, blank=True)
     backup_codes = models.JSONField(default=list, blank=True)
     
+    # Rank System
+    rank = models.ForeignKey(
+        'UserRank', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='users',
+        help_text="現在の会員ランク"
+    )
+    
+    # Rank Counters (Monthly)
+    ec_requests_count_this_month = models.IntegerField(default=0, verbose_name="今月のEC購入申請回数")
+    gift_exchanges_count_this_month = models.IntegerField(default=0, verbose_name="今月の物理ギフト交換回数")
+    digital_gift_points_this_month = models.IntegerField(default=0, verbose_name="今月のデジタルギフト交換ポイント")
+    social_posts_count_this_month = models.IntegerField(default=0, verbose_name="今月のソーシャル投稿回数")
+    point_purchase_amount_this_month = models.IntegerField(default=0, verbose_name="今月のポイント購入額")
+    
+    # Rank Counters (Cumulative)
+    favorite_stores_count = models.IntegerField(default=0, verbose_name="お気に入り店舗数")
+    favorite_gifts_count = models.IntegerField(default=0, verbose_name="お気に入りギフト数")
+    friends_count = models.IntegerField(default=0, verbose_name="友達数")
+    
+    monthly_counters_reset_at = models.DateTimeField(null=True, blank=True, verbose_name="月次カウンターリセット日時")
+
+    # 2FA Fields
+    email_verification_code = models.CharField(max_length=6, blank=True, help_text="Email 2FA Verification Code")
+    email_verification_expiry = models.DateTimeField(null=True, blank=True, help_text="Email 2FA Code Expiry")
+
+    # Email 2FA (Legacy fields integrated)
+    is_2fa_enabled = models.BooleanField(default=False, help_text="Is Two-Factor Authentication enabled")
+    two_factor_secret = models.CharField(max_length=32, blank=True, help_text="TOTP Secret (Legacy/Future Use)")
+
     # セキュリティ強化フィールド
     failed_login_attempts = models.IntegerField(default=0)
     locked_until = models.DateTimeField(null=True, blank=True)
     last_failed_login = models.DateTimeField(null=True, blank=True)
     suspicious_activity_count = models.IntegerField(default=0)
     
-    # アカウントランク機能
-    RANK_CHOICES = [
-        ('bronze', 'ブロンズ'),
-        ('silver', 'シルバー'),
-        ('gold', 'ゴールド'),
-        ('platinum', 'プラチナ'),
-        ('diamond', 'ダイヤモンド'),
-    ]
-    rank = models.CharField(max_length=20, choices=RANK_CHOICES, default='bronze')
+    # Remove legacy rank field
+
     
     # ソーシャル機能拡張
     display_name = models.CharField(max_length=100, blank=True)
@@ -2394,7 +2451,7 @@ class PromotionMail(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
     target_area = models.ForeignKey('Area', on_delete=models.SET_NULL, null=True, blank=True, related_name='promotion_mails')
-    target_user_rank = models.CharField(max_length=20, choices=User.RANK_CHOICES, null=True, blank=True)
+    target_user_rank = models.CharField(max_length=20, null=True, blank=True)
     send_cost = models.DecimalField(max_digits=10, decimal_places=2)  # 送信コスト
     recipients_count = models.IntegerField(default=0)
     sent_count = models.IntegerField(default=0)
@@ -2456,7 +2513,7 @@ class PromotionMail(models.Model):
 
 class AccountRank(models.Model):
     """アカウントランク詳細設定"""
-    rank = models.CharField(max_length=20, choices=User.RANK_CHOICES, unique=True)
+    rank = models.CharField(max_length=20, unique=True)
     required_points = models.IntegerField()  # ランクアップに必要なポイント
     required_transactions = models.IntegerField(default=0)  # ランクアップに必要な取引回数
     point_multiplier = models.DecimalField(max_digits=5, decimal_places=2, default=1.00)  # ポイント倍率
@@ -2489,7 +2546,6 @@ class MeltyRankConfiguration(models.Model):
     )
     biid_initial_rank = models.CharField(
         max_length=20, 
-        choices=User.RANK_CHOICES,
         verbose_name="BIID初期ランク [ユーザー向け]",
         help_text="MELTY連携ユーザーの初期ランク決定"
     )

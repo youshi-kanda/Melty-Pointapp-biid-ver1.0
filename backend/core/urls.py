@@ -12,6 +12,7 @@ urlpatterns = [
     
     # 2FA関連
     path('auth/two-factor/setup/', auth_views.TwoFactorSetupView.as_view(), name='two-factor-setup'),
+    path('auth/two-factor/email-setup/', auth_views.EmailTwoFactorSetupView.as_view(), name='email-two-factor-setup'),
     path('auth/two-factor/status/', auth_views.TwoFactorStatusView.as_view(), name='two-factor-status'),
     path('auth/two-factor/disable/', auth_views.TwoFactorDisableView.as_view(), name='two-factor-disable'),
     path('auth/two-factor/backup-codes/', auth_views.GenerateBackupCodesView.as_view(), name='generate-backup-codes'),
